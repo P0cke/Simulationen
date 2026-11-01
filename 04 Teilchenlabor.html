@@ -1,0 +1,990 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Teilchenlabor</title><style>:root{color-scheme:light dark}body{margin:0}[hidden]{display:none!important}</style></head><body><title>Teilchenlabor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#EBF0F5; --panel:#FFFFFF; --ink:#12202E; --muted:#526476; --line:#D0DAE3; --soft:#F2F5F8;
+  --hot:#D9500A; --focus:#0B62C4; --onhot:#FFFFFF; --sun:#F2B21B; --logo:#33454F;
+  --c-fest:#5877A3; --c-fl:#1F8F85; --c-gas:#D9902A;
+  --canvas:#F7F9FB; --cline:#B4C3D0; --vis:#F08A1C;
+  --font-ui:'Atkinson Hyperlegible',system-ui,'Segoe UI',Roboto,sans-serif;
+  --font-h:'Bricolage Grotesque','Atkinson Hyperlegible',system-ui,sans-serif;
+  --font-m:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B1117; --panel:#131C25; --ink:#E7EEF5; --muted:#93A5B7; --line:#26363F; --soft:#182430;
+    --hot:#FF7A33; --focus:#6BB4FF; --onhot:#1A0E05; --logo:#CFE1EB;
+    --c-fest:#7C9BC7; --c-fl:#3CB8AC; --c-gas:#F0B04D;
+    --canvas:#0E1720; --cline:#3A4E5E; --vis:#FFA23A;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B1117; --panel:#131C25; --ink:#E7EEF5; --muted:#93A5B7; --line:#26363F; --soft:#182430;
+  --hot:#FF7A33; --focus:#6BB4FF; --onhot:#1A0E05; --logo:#CFE1EB;
+  --c-fest:#7C9BC7; --c-fl:#3CB8AC; --c-gas:#F0B04D;
+  --canvas:#0E1720; --cline:#3A4E5E; --vis:#FFA23A;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:20px 40px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--font-h);font-weight:700;font-size:clamp(26px,4vw,38px);line-height:1.1;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.lede{margin:6px 0 0;color:var(--muted);font-size:19px;line-height:1.5}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.lbl{display:block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+
+/* controls */
+.controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px 28px;padding:16px 18px}
+.ctl{min-width:0}
+.ctl.wide{grid-column:1/-1}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--line);background:var(--soft);border-radius:999px;font-weight:700}
+.chip i{width:12px;height:12px;border-radius:50%;background:var(--sw);display:inline-block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.chip small{font-weight:400;color:var(--muted)}
+.chip[aria-checked="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.chip[aria-checked="true"] small{color:inherit;opacity:.75}
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--soft)}
+.seg button{border:0;background:transparent;padding:9px 6px;font-weight:700;border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:2px}
+.seg button:last-child{border-right:0}
+.seg button span{font-size:11px;font-weight:400;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--sc);color:#fff}
+.seg button[aria-pressed="true"] span{color:#fff;opacity:.9}
+.seg button[data-s="gas"][aria-pressed="true"]{color:#1c1204}
+.seg button[data-s="gas"][aria-pressed="true"] span{color:#1c1204}
+.tempRow{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:10px}
+.step{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--soft);font-size:20px;line-height:1;font-weight:700}
+.tempOut{min-width:118px;text-align:right;font-family:var(--font-m)}
+.tempOut b{display:block;font-size:26px;line-height:1.1;font-weight:500}
+.tempOut span{color:var(--muted);font-size:13px}
+.sliderBox{position:relative;padding-bottom:30px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:14px;border-radius:7px;background:var(--track);margin:10px 0 0;display:block}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--panel);border:4px solid var(--hot);box-shadow:0 1px 4px rgba(0,0,0,.35);cursor:grab}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--panel);border:4px solid var(--hot);cursor:grab}
+input[type=range]::-moz-range-track{background:transparent}
+.marks{position:absolute;left:0;right:0;top:34px;height:26px;font-size:12px;color:var(--muted)}
+.mark{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;text-align:center}
+.mark.m0::before{margin-left:13px}
+@media (max-width:640px){.mark{font-size:11px}.mark.m0{display:none}}
+.mark::before{content:"";display:block;width:1px;height:6px;background:var(--muted);margin:0 auto 1px}
+.opts{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center}
+.opt{display:flex;align-items:center;gap:8px;font-weight:700}
+.opt input[type=checkbox]{width:18px;height:18px;accent-color:var(--vis)}
+.opt.k{gap:10px;flex-wrap:wrap}
+.opt.k input[type=range]{width:150px;margin:0;height:8px;--track:var(--line)}
+.opt.k input[type=range]::-webkit-slider-thumb{width:20px;height:20px;border-width:3px}
+.mini{border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:4px 10px;font-size:13px;font-weight:700}
+.tsegs{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.tsegs button{border:0;border-right:1px solid var(--line);background:var(--soft);padding:4px 10px;font-size:13px;font-weight:700}
+.tsegs button:last-child{border-right:0}
+.tsegs button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.kval{font-family:var(--font-m);min-width:52px}
+
+/* stage */
+.stage{display:grid;grid-template-columns:1.3fr 1fr;gap:16px}
+figure{margin:0;overflow:hidden}
+figcaption{display:flex;justify-content:space-between;gap:10px;align-items:baseline;padding:10px 14px;font-family:var(--font-h);font-weight:600;font-size:17px;border-bottom:1px solid var(--line)}
+figcaption small{font-family:var(--font-ui);font-weight:400;font-size:12.5px;color:var(--muted);text-align:right}
+canvas{display:block;width:100%;height:auto;background:var(--canvas)}
+#cv1{aspect-ratio:520/440}
+#cv2{aspect-ratio:400/440}
+
+/* readouts */
+.readouts{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.ro{padding:12px 16px;border-right:1px solid var(--line);min-width:0}
+.ro:last-child{border-right:0}
+.ro .k{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ro .v{font-family:var(--font-m);font-size:20px;font-weight:500;margin:2px 0;overflow-wrap:anywhere}
+.ro .s{font-size:13px;color:var(--muted)}
+.ro.hot .v{color:var(--hot)}
+
+/* explain + chart */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.explain{padding:16px 18px}
+.explain h2,.chartbox h2{font-family:var(--font-h);font-size:18px;margin:0 0 6px;font-weight:600}
+.explain p{margin:0 0 10px;max-width:62ch}
+.explain p:last-child{margin-bottom:0}
+.note{padding:8px 12px;border-left:4px solid var(--hot);background:var(--soft);border-radius:0 8px 8px 0;font-size:14px}
+.note[hidden]{display:none}
+.chartbox{padding:14px 18px 10px}
+#cv3{height:230px;background:transparent}
+footer{color:var(--muted);font-size:16px;line-height:1.55;width:100%}
+footer p{margin:0 0 10px;max-width:none}
+footer a{color:inherit}
+.foot-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:14px;padding-top:14px;border-top:2px solid var(--line)}
+.foot-brand{display:flex;align-items:center;gap:12px;min-width:0}
+.foot-brand b{font-family:var(--font-h);font-size:18px;color:var(--ink);display:block;line-height:1.15}
+.foot-brand span.sub{font-size:15px}
+.foot-cr{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--muted)}
+.foot-cr svg#logoIco{width:28px;height:28px;flex:none;overflow:visible}
+
+@media (max-width:860px){
+  .stage,.two{grid-template-columns:1fr}
+  .readouts{grid-template-columns:1fr 1fr}
+  .ro:nth-child(2){border-right:0}
+  .ro:nth-child(-n+2){border-bottom:1px solid var(--line)}
+}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.top>div:first-child{flex:1 1 420px;min-width:0}
+.theme-btn{display:inline-flex;align-items:center;gap:8px;padding:8px 14px 8px 10px}
+.theme-btn svg{width:22px;height:22px;flex:none}
+.theme-btn .sunI{display:none}
+:root[data-theme="dark"] .theme-btn .sunI{display:block}
+:root[data-theme="dark"] .theme-btn .moonI{display:none}
+:root[data-theme="dark"] .theme-btn .l-dark{display:none}
+.theme-btn .l-light{display:none}
+:root[data-theme="dark"] .theme-btn .l-light{display:inline}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .theme-btn .sunI{display:block}
+  :root:not([data-theme="light"]) .theme-btn .moonI{display:none}
+  :root:not([data-theme="light"]) .theme-btn .l-dark{display:none}
+  :root:not([data-theme="light"]) .theme-btn .l-light{display:inline}
+}
+@media (max-width:560px){.theme-btn .tl{display:none!important}.theme-btn{padding:8px 10px}.foot-cr span{font-size:15px}}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.hbtn{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:10px 16px;font-weight:700;font-size:15px}
+.hbtn.primary{background:var(--hot);border-color:var(--hot);color:var(--onhot)}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--ink);padding:0;width:min(1020px,calc(100vw - 24px));max-height:calc(100vh - 24px);box-shadow:0 24px 70px rgba(0,0,0,.4);font-family:var(--font-ui)}
+dialog:not([open]){display:none}
+dialog::backdrop{background:rgba(8,14,20,.62)}
+.dl{display:flex;flex-direction:column;max-height:calc(100vh - 26px)}
+.dl-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:24px 28px 8px}
+.eyebrow{margin:0;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--hot)}
+.dl-head h2{font-family:var(--font-h);font-size:clamp(24px,3.6vw,36px);line-height:1.12;margin:4px 0 0;text-wrap:balance;letter-spacing:-.01em}
+.xbtn{border:1px solid var(--line);background:var(--soft);width:42px;height:42px;border-radius:50%;font-size:24px;line-height:1;flex:none}
+.dl-body{overflow:auto;display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:26px;padding:12px 28px 22px;align-items:start}
+.dl-fig{position:sticky;top:0}
+.dl-fig canvas{display:block;width:100%;aspect-ratio:420/340;border:1px solid var(--line);border-radius:12px;background:var(--canvas)}
+.dl-fig p{margin:10px 0 0;font-size:16px;color:var(--muted)}
+.dl-tasks{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.dl-tasks li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px;align-items:center;padding:16px 18px;border:1px solid var(--line);border-radius:12px;background:var(--soft);font-size:17px;line-height:1.45}
+.dl-tasks h3{font-family:var(--font-h);font-size:19px;margin:0 0 2px}
+.dl-tasks p{margin:0}
+.badge{width:40px;height:40px;border-radius:50%;background:var(--hot);color:var(--onhot);display:grid;place-items:center;font-family:var(--font-h);font-weight:700;font-size:20px}
+.load{border:1px solid var(--ink);background:transparent;border-radius:10px;padding:8px 14px;font-weight:700;font-size:15px;white-space:nowrap}
+.dl-foot{padding:14px 28px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line);color:var(--muted);font-size:15px}
+.go{background:var(--hot);color:var(--onhot);border:0;padding:13px 28px;border-radius:10px;font-weight:700;font-size:18px}
+@media (max-width:760px){.dl-foot span{display:none}.dl-foot{padding-block:10px 14px}.dl-fig canvas{aspect-ratio:420/230}.dl-head{padding-top:16px}.dl-head h2{font-size:22px}.dl-body{grid-template-columns:minmax(0,1fr)}.dl-fig{position:static}.dl-tasks li{grid-template-columns:auto minmax(0,1fr)}.load{grid-column:1/-1;justify-self:start}.dl-head,.dl-body,.dl-foot{padding-inline:18px}}
+@media (max-width:860px){
+  .marks{height:44px}.sliderBox{padding-bottom:52px}.mark:nth-child(3){margin-top:18px}
+}
+@media (max-width:640px){
+  .controls{grid-template-columns:minmax(0,1fr)}
+  .seg button{font-size:14px;padding:8px 4px}.seg button span{font-size:10.5px}
+  .chip{padding:5px 10px}
+  .tempRow{grid-template-columns:auto minmax(0,1fr) auto;}
+  .tempOut{grid-column:1/-1;text-align:left;display:flex;gap:12px;align-items:baseline}
+  .tempOut b{display:inline}
+  .step:last-of-type{grid-column:3}
+  .readouts{grid-template-columns:1fr}
+  .ro{border-right:0;border-bottom:1px solid var(--line)}
+  .ro:last-child{border-bottom:0}
+}
+</style>
+
+<main class="wrap">
+  <header class="top">
+    <div>
+      <h1>Teilchenlabor</h1>
+      <p class="lede">Alles besteht aus Teilchen, und die sind nie still. Wähle einen Stoff, stelle die Temperatur ein und sieh, warum sich Körper beim Erwärmen ausdehnen.</p>
+    </div>
+    <div class="acts">
+      <button type="button" class="hbtn primary" id="openIntro">Forscheraufträge</button>
+      <button type="button" class="hbtn" id="pause">Pause</button>
+      <button type="button" class="hbtn theme-btn" id="themeBtn" aria-label="Zwischen hellem und dunklem Modus wechseln">
+        <svg class="moonI" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" fill="var(--sun)" stroke="var(--ink)" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <svg class="sunI" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="var(--sun)" stroke="var(--ink)" stroke-width="1.6"/><g stroke="var(--sun)" stroke-width="2.2" stroke-linecap="round"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></g></svg>
+        <span class="tl l-dark">Dunkel</span><span class="tl l-light">Hell</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="controls panel" aria-label="Einstellungen">
+    <div class="ctl">
+      <span class="lbl" id="l-stoff">Stoff</span>
+      <div class="chips" id="stoffe" role="radiogroup" aria-labelledby="l-stoff"></div>
+    </div>
+    <div class="ctl">
+      <span class="lbl" id="l-zust">Aggregatzustand</span>
+      <div class="seg" id="zustaende" role="group" aria-labelledby="l-zust">
+        <button type="button" data-s="fest" style="--sc:var(--c-fest)" aria-pressed="false">fest<span>Gitterschwingung</span></button>
+        <button type="button" data-s="fluessig" style="--sc:var(--c-fl)" aria-pressed="false">flüssig<span>Brownsche Bewegung</span></button>
+        <button type="button" data-s="gas" style="--sc:var(--c-gas)" aria-pressed="false">gasförmig<span>Brownsche Bewegung</span></button>
+      </div>
+    </div>
+    <div class="ctl wide">
+      <label class="lbl" for="temp">Temperatur</label>
+      <div class="tempRow">
+        <button type="button" class="step" id="tdn" aria-label="1 Grad kälter">&minus;</button>
+        <div class="sliderBox">
+          <input type="range" id="temp" min="-273" max="300" step="1" value="20">
+          <div class="marks" id="marks"></div>
+        </div>
+        <button type="button" class="step" id="tup" aria-label="1 Grad wärmer">+</button>
+        <div class="tempOut" aria-live="off"><b id="tC">20 °C</b><span id="tK">293 K</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stage" aria-label="Animation">
+    <figure class="panel">
+      <figcaption><span>Teilchenmodell</span><small id="cap1">Ausschnitt mit 80 Teilchen</small></figcaption>
+      <canvas id="cv1" role="img" aria-label="Animation der Teilchenbewegung im gewählten Stoff und Aggregatzustand"></canvas>
+    </figure>
+    <figure class="panel">
+      <figcaption><span id="cap2t">Was man sieht</span><small id="cap2">Stab aus Metall</small></figcaption>
+      <canvas id="cv2" role="img" aria-label="Makroskopische Ansicht der Ausdehnung: Stab, Steigrohr oder Kolben"></canvas>
+    </figure>
+  </section>
+
+  <section class="readouts" aria-label="Messwerte" aria-live="off">
+    <div class="ro"><div class="k">Temperatur</div><div class="v" id="r1v">–</div><div class="s" id="r1s"></div></div>
+    <div class="ro"><div class="k" id="r2k">Bewegung</div><div class="v" id="r2v">–</div><div class="s" id="r2s"></div></div>
+    <div class="ro hot"><div class="k" id="r3k">Ausdehnung (echt)</div><div class="v" id="r3v">–</div><div class="s" id="r3s"></div></div>
+    <div class="ro"><div class="k">Mittlerer Teilchenabstand</div><div class="v" id="r4v">–</div><div class="s" id="r4s"></div></div>
+  </section>
+
+  <div class="two">
+    <section class="explain panel" aria-label="Erklärung">
+      <h2 id="exT">Was passiert hier?</h2>
+      <p id="ex1"></p>
+      <p id="ex2"></p>
+      <p class="note" id="note" hidden></p>
+    </section>
+    <section class="chartbox panel" aria-label="Diagramm">
+      <h2 id="chT">Ausdehnung und Temperatur</h2>
+      <canvas id="cv3" role="img" aria-label="Diagramm: Änderung von Länge oder Volumen in Abhängigkeit von der Temperatur"></canvas>
+    </section>
+  </div>
+
+  <footer>
+    <p><b>Modellhinweis:</b> Die Animation ist ein stark vereinfachtes zweidimensionales Modell. Teilchengröße, Anzahl und Ausdehnung sind nicht maßstäblich; im Gas sind die Teilchen zur besseren Übersicht kleiner gezeichnet, damit ihre großen Abstände sichtbar werden. Das orange Teilchen ist ein markiertes Teilchen des Stoffes, damit du seinen Weg verfolgen kannst. Für alle Gase gilt ein konstanter Druck von 1&nbsp;bar (Normaldruck). Die Zahlen in den Messwerten sind echte Rechenwerte. Mit „≈“ gekennzeichnete Werte sind Schätzwerte. Beim Schmelzen und Sieden ändert sich das Volumen sprunghaft (Wasser: Eis zu Wasser etwa &minus;8&nbsp;%, Wasser zu Dampf etwa das 1600-Fache), das ist hier nicht dargestellt. Für Festkörper gilt ein konstanter Längenausdehnungskoeffizient als Näherung.</p>
+    <p>Werte: Ausdehnungskoeffizienten nach <a href="https://www.chemie.de/lexikon/Ausdehnungskoeffizient.html" target="_blank" rel="noopener">chemie.de</a>, Dichte von Wasser nach <a href="https://www.internetchemie.info/chemie-lexikon/daten/w/wasser-dichtetabelle.php" target="_blank" rel="noopener">internetchemie.info</a>; Aluminium mit 23,8 wie in der Unterrichtsreihe. Schmelz- und Siedepunkte gerundet.</p>
+    <div class="foot-bar">
+      <div class="foot-brand">
+        <div><b>Physik</b><span class="sub">Teilchenlabor</span></div>
+      </div>
+      <div class="foot-cr">
+        <svg id="logoIco" role="img" aria-label="Ikosaeder-Logo"></svg>
+        <span>© Holtkötter</span>
+      </div>
+    </div>
+  </footer>
+</main>
+
+<dialog id="intro" aria-labelledby="introT">
+  <div class="dl">
+    <div class="dl-head">
+      <div>
+        <p class="eyebrow">Forscheraufträge</p>
+        <h2 id="introT">Warum dehnt sich alles aus, wenn es warm wird?</h2>
+      </div>
+      <button type="button" class="xbtn" id="introX" aria-label="Schließen">&times;</button>
+    </div>
+    <div class="dl-body">
+      <div class="dl-fig">
+        <canvas id="cv4" role="img" aria-label="Animation: Teilchen schwingen bei Wärme weiter und der Körper wird größer"></canvas>
+        <p>Je wärmer, desto weiter schwingen die Teilchen. Sie brauchen mehr Platz und der Körper wird größer.</p>
+      </div>
+      <ol class="dl-tasks" id="taskList"></ol>
+    </div>
+    <div class="dl-foot">
+      <span>Mit „Einstellung laden“ stellt das Labor alles für dich ein. Du kannst den Auftrag später über „Forscheraufträge“ oben wieder öffnen.</span>
+      <button type="button" class="go" id="introGo" autofocus>Los geht’s</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id)};
+var K0=273.15, R=10, RG=6, RP=10, N=80, NG=80, COLS=10, ROWS=8, D0=24;
+var FONT="'Atkinson Hyperlegible',system-ui,sans-serif", MONO="'IBM Plex Mono',ui-monospace,monospace";
+var clamp=function(v,a,b){return Math.max(a,Math.min(b,v))};
+var lerp=function(a,b,t){return a+(b-a)*t};
+var fmt=function(v,d){return v.toLocaleString('de-DE',{minimumFractionDigits:d,maximumFractionDigits:d})};
+var sgn=function(v,d){var s=fmt(Math.abs(v),d);if(Number(s.replace(',','.'))===0)return s;return (v<0?'−':'+')+s};
+
+/* ---------- Stoffdaten ---------- */
+var WT=[0,4,10,20,30,40,50,60,70,80,90,100];
+var WR=[0.999843,0.999975,0.999702,0.998207,0.99565,0.99222,0.98804,0.98320,0.97776,0.97179,0.96531,0.95835];
+function waterV(T){T=clamp(T,0,100);for(var i=0;i<WT.length-1;i++){if(T<=WT[i+1]){var f=(T-WT[i])/(WT[i+1]-WT[i]);return 1/lerp(WR[i],WR[i+1],f)}}return 1/WR[WR.length-1]}
+var STOFFE=[
+ {id:'wasser',name:'Wasser',f:'H₂O',tm:0,tb:100,M:18.02,col:'#2F8FDB',typ:{fest:-20,fluessig:20,gas:120},tmax:300,alpha:51,aNote:'Eis',water:true,vis:'Fetttöpfchen',visG:'Rauchteilchen'},
+ {id:'ethanol',name:'Ethanol',f:'C₂H₅OH',tm:-114,tb:78,M:46.07,col:'#8B6CD6',typ:{fest:-140,fluessig:20,gas:100},tmax:250,alpha:70,aEst:true,gam:1.1e-3},
+ {id:'quecksilber',name:'Quecksilber',f:'Hg',tm:-39,tb:357,M:200.6,col:'#8C99A8',typ:{fest:-60,fluessig:20,gas:400},tmax:700,alpha:60,aEst:true,gam:1.82e-4},
+ {id:'eisen',name:'Eisen',f:'Fe',tm:1538,tb:2861,M:55.85,col:'#8F7266',typ:{fest:20,fluessig:1700,gas:3000},tmax:3300,alpha:12.2,gam:1.2e-4,gEst:true},
+ {id:'aluminium',name:'Aluminium',f:'Al',tm:660,tb:2470,M:26.98,col:'#6FA1BD',typ:{fest:20,fluessig:800,gas:2600},tmax:2900,alpha:23.8,gam:1.2e-4,gEst:true},
+ {id:'kupfer',name:'Kupfer',f:'Cu',tm:1085,tb:2562,M:63.55,col:'#C9783F',typ:{fest:20,fluessig:1200,gas:2800},tmax:3000,alpha:16.5,gam:1.0e-4,gEst:true},
+ {id:'blei',name:'Blei',f:'Pb',tm:327,tb:1749,M:207.2,col:'#6B7A91',typ:{fest:20,fluessig:400,gas:1900},tmax:2100,alpha:29,gam:1.2e-4,gEst:true}
+];
+var SNAME={fest:'fest',fluessig:'flüssig',gas:'gasförmig'};
+function stateOf(s,T){return T<s.tm?'fest':(T<s.tb?'fluessig':'gas')}
+function eLin(s,T){return s.alpha*1e-6*(T-s.typ.fest)}
+function xVol(s,st,T){
+  var ref=s.typ[st];
+  if(st==='fest')return 3*eLin(s,T);
+  if(st==='fluessig'){ if(s.water)return waterV(T)/waterV(ref)-1; return s.gam*(T-ref)}
+  return (T+K0)/(ref+K0)-1;
+}
+function kAutoFor(s,st){
+  if(st==='gas')return 1;
+  var lo=st==='fest'?-K0:s.tm, hi=st==='fest'?s.tm:s.tb, ext;
+  if(st==='fest')ext=Math.abs(eLin(s,hi)-eLin(s,lo)); else ext=Math.abs(xVol(s,st,hi)-xVol(s,st,lo));
+  return clamp(Math.round(0.4/ext),1,500);
+}
+
+/* ---------- Zustand ---------- */
+var cur={s:STOFFE[0],T:20,st:'fluessig'};
+var kUser=null, paused=false, timeScale=1, simT=0;
+var showBig=false, showTrail=true;
+function curK(){return kUser==null?kAutoFor(cur.s,cur.st):kUser}
+function kToSlider(k){return Math.round(100*Math.log(k)/Math.log(500))}
+function sliderToK(v){return Math.max(1,Math.round(Math.pow(500,v/100)))}
+
+/* ---------- Teilchen ---------- */
+var P=[], sites=[], nbr=[], big={x:260,y:300,vx:0,vy:0,r:28,m:25,a:0,act:false,tr:28,tm:25};
+var trail=[], freezeT=9, s2p=[];
+var CX=260, CY=232;
+var BX0=120, BX1=400, YB=418;
+var geo={sLin:1,a:1,yT:YB-190,hb:190,boxA:0,latA:1};
+function rnd(a,b){return a+Math.random()*(b-a)}
+(function initP(){
+  var r,c,i;
+  for(r=0;r<ROWS;r++)for(c=0;c<COLS;c++){sites.push({x:(c+(r%2?0.5:0)-4.75)*D0,y:(r-3.5)*D0*0.866,r:r,c:c})}
+  for(i=0;i<N;i++){
+    s2p.push(i);
+    P.push({x:CX+sites[i].x,y:CY+sites[i].y,vx:0,vy:0,a:1,act:true,site:i,
+      w:[rnd(5,8.5),rnd(6.5,11),rnd(5,8.5),rnd(6.5,11)],ph:[rnd(0,6.3),rnd(0,6.3),rnd(0,6.3),rnd(0,6.3)]});
+  }
+  for(i=0;i<N;i++)for(var j=i+1;j<N;j++){
+    var dx=sites[i].x-sites[j].x,dy=sites[i].y-sites[j].y;
+    if(Math.sqrt(dx*dx+dy*dy)<D0*1.05)nbr.push([i,j]);
+  }
+})();
+var TRACK=45;
+
+function vT(){ // Zielgeschwindigkeit in px/s
+  var TK=Math.max(0,cur.T+K0);
+  return clamp(120*Math.sqrt((TK/cur.s.M)/16),0,330);
+}
+function boxH(){return cur.st==='gas'?200:190}
+function assignSites(){
+  var idx=[],i;
+  for(i=0;i<N;i++)idx.push(i);
+  idx.sort(function(a,b){return P[a].y-P[b].y});
+  for(var r=0;r<ROWS;r++){
+    var row=idx.slice(r*COLS,(r+1)*COLS).sort(function(a,b){return P[a].x-P[b].x});
+    for(var c=0;c<COLS;c++){P[row[c]].site=r*COLS+c;s2p[r*COLS+c]=row[c]}
+  }
+}
+function randomDir(sp){var an=rnd(0,6.283);return [Math.cos(an)*sp,Math.sin(an)*sp]}
+function placeInBox(p){
+  var yt=geo.yT;
+  p.x=rnd(BX0+R+2,BX1-R-2);p.y=rnd(yt+R+2,YB-R-2);
+}
+function onStateChange(from,to){
+  trail.length=0;
+  var i,p,v;
+  if(to==='fest'){
+    assignSites();freezeT=0;
+    for(i=0;i<N;i++){P[i].act=true}
+  }else{
+    var sp=vT();
+    for(i=0;i<N;i++){
+      p=P[i];
+      if(to==='gas')p.act=i<NG; else p.act=true;
+      v=randomDir(sp*rnd(.6,1.3));p.vx=v[0];p.vy=v[1];
+    }
+    if(from==='fest'){
+      for(i=0;i<N;i++){p=P[i];p.x=clamp(p.x,BX0+R,BX1-R);p.y=clamp(p.y,YB-boxH()+R,YB-R)}
+    }else{
+      for(i=0;i<N;i++){p=P[i]; if(p.a<0.3)placeInBox(p)}
+    }
+      }
+}
+
+/* ---------- Physik ---------- */
+function collide(a,b){
+  var dx=b.x-a.x,dy=b.y-a.y,rr=a.r+b.r,d2=dx*dx+dy*dy;
+  if(d2>=rr*rr||d2<1e-9)return;
+  var d=Math.sqrt(d2),nx=dx/d,ny=dy/d,ov=rr-d,tm=a.m+b.m;
+  a.x-=nx*ov*b.m/tm;a.y-=ny*ov*b.m/tm;b.x+=nx*ov*a.m/tm;b.y+=ny*ov*a.m/tm;
+  var vn=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;
+  if(vn<0){var j=-2*vn/(1/a.m+1/b.m);a.vx-=j*nx/a.m;a.vy-=j*ny/a.m;b.vx+=j*nx/b.m;b.vy+=j*ny/b.m}
+}
+function stepFluid(dt){
+  var n=Math.max(1,Math.ceil(dt/0.008)),h=dt/n,i,j,p,list=[];
+  for(i=0;i<N;i++){p=P[i];if(p.act){p.r=RP;p.m=1;list.push(p)}}
+  var nS=list.length;
+  var x0=BX0,x1=BX1,y1=YB;
+  for(var s=0;s<n;s++){
+    var y0=geo.yT;
+    for(i=0;i<list.length;i++){
+      p=list[i];p.x+=p.vx*h;p.y+=p.vy*h;
+      if(p.x<x0+p.r){p.x=x0+p.r;p.vx=Math.abs(p.vx)}
+      if(p.x>x1-p.r){p.x=x1-p.r;p.vx=-Math.abs(p.vx)}
+      if(p.y<y0+p.r){p.y=y0+p.r;p.vy=Math.abs(p.vy)}
+      if(p.y>y1-p.r){p.y=y1-p.r;p.vy=-Math.abs(p.vy)}
+    }
+    for(var it=0;it<2;it++){
+      for(i=0;i<list.length;i++)for(j=i+1;j<list.length;j++)collide(list[i],list[j]);
+    }
+  }
+  // Thermostat (nur kleine Teilchen)
+  var vt=vT(),sum=0;
+  for(i=0;i<nS;i++){sum+=list[i].vx*list[i].vx+list[i].vy*list[i].vy}
+  var vr=Math.sqrt(sum/Math.max(1,nS));
+  if(vt<0.5){for(i=0;i<nS;i++){list[i].vx*=0.5;list[i].vy*=0.5}}
+  else if(vr<1){for(i=0;i<nS;i++){var d=randomDir(vt);list[i].vx=d[0];list[i].vy=d[1]}}
+  else{
+    var f=clamp(1+clamp(dt*10,0,0.5)*(vt/vr-1),0.6,1.6);
+    for(i=0;i<nS;i++){list[i].vx*=f;list[i].vy*=f}
+  }
+}
+function siteVib(p,i,A){
+  var t=simT;
+  return [A*0.5*(Math.cos(p.w[0]*t+p.ph[0])+Math.cos(p.w[1]*t+p.ph[1])),
+          A*0.5*(Math.cos(p.w[2]*t+p.ph[2])+Math.cos(p.w[3]*t+p.ph[3]))];
+}
+function vibAmp(){ // Schwingungsweite in px (maximal)
+  var TK=Math.max(0,cur.T+K0),TmK=cur.s.tm+K0;
+  return 0.20*D0*Math.sqrt(TK/TmK);
+}
+function stepSolid(dt){
+  freezeT+=dt;
+  var ease=clamp(freezeT/1.4,0,1);
+  var rate=lerp(3,90,ease*ease);
+  var k=1-Math.exp(-rate*dt);
+  var A=vibAmp()*(geo.sLin>0?1:1);
+  for(var i=0;i<N;i++){
+    var p=P[i],st=sites[p.site!=null?p.site:i],v=siteVib(p,i,A);
+    var tx=CX+st.x*geo.sLin+v[0],ty=CY+st.y*geo.sLin+v[1];
+    p.x+=(tx-p.x)*k;p.y+=(ty-p.y)*k;
+  }
+}
+
+/* ---------- Sichtbare Skalen ---------- */
+function targetVis(){
+  var s=cur.s,k=curK(),T=cur.T,st=cur.st;
+  if(st==='fest')return {sLin:clamp(1+k*eLin(s,T),0.78,1.42)};
+  var a=1+k*xVol(s,st,T);
+  return {a:st==='gas'?clamp(a,0.6,1.6):clamp(a,0.9,1.6)};
+}
+
+/* ---------- Farben ---------- */
+var TH={};
+function readTheme(){
+  var cs=getComputedStyle(document.documentElement);
+  ['ink','muted','canvas','cline','hot','c-fest','c-fl','c-gas','vis','panel','line'].forEach(function(n){TH[n]=cs.getPropertyValue('--'+n).trim()});
+}
+function hex(h){h=h.replace('#','');return [parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)]}
+function mix(a,b,t){var A=hex(a),B=hex(b);return 'rgb('+Math.round(lerp(A[0],B[0],t))+','+Math.round(lerp(A[1],B[1],t))+','+Math.round(lerp(A[2],B[2],t))+')'}
+function heat(t,base){
+  t=clamp(t,0,1);
+  if(t<0.25)return mix('#3B7DD8',base,t/0.25);
+  if(t<0.6)return mix(base,'#E8742A',(t-0.25)/0.35);
+  return mix('#E8742A','#FFD98A',(t-0.6)/0.4);
+}
+function tNorm(){
+  var s=cur.s,st=cur.st,T=cur.T;
+  if(st==='fest')return (T+K0)/(s.tm+K0);
+  if(st==='fluessig')return (T-s.tm)/(s.tb-s.tm);
+  return (T-s.tb)/(s.tmax-s.tb);
+}
+function stateCol(st){return st==='fest'?TH['c-fest']:st==='fluessig'?TH['c-fl']:TH['c-gas']}
+
+/* ---------- Zeichnen ---------- */
+var cv1=$('cv1'),cv2=$('cv2'),cv3=$('cv3');
+var g1=cv1.getContext('2d'),g2=cv2.getContext('2d'),g3=cv3.getContext('2d');
+function fit(cv,lw){var r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;var w=Math.max(10,Math.round(r.width*d)),h=Math.max(10,Math.round(r.height*d));if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h}return cv.width/lw}
+function txt(g,t,x,y,size,col,align,weight){g.font=(weight||400)+' '+size+'px '+FONT;g.fillStyle=col;g.textAlign=align||'left';g.textBaseline='alphabetic';g.fillText(t,x,y)}
+function dashLine(g,x0,y0,x1,y1,col){g.save();g.setLineDash([6,5]);g.strokeStyle=col;g.lineWidth=1.5;g.beginPath();g.moveTo(x0,y0);g.lineTo(x1,y1);g.stroke();g.restore()}
+function rrect(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()}
+
+function drawTrail(g){
+  if(!showTrail||trail.length<2)return;
+  g.save();g.lineCap='round';g.lineJoin='round';
+  var n=trail.length,step=8;
+  for(var i=0;i<n-1;i+=step){
+    var e=Math.min(n-1,i+step);
+    g.beginPath();g.moveTo(trail[i][0],trail[i][1]);
+    for(var j=i+1;j<=e;j++)g.lineTo(trail[j][0],trail[j][1]);
+    g.globalAlpha=0.12+0.78*(e/n);g.strokeStyle=cur.st==='fest'?TH.hot:TH.vis;g.lineWidth=2.2;g.stroke();
+  }
+  g.restore();
+}
+function drawParticle(g,p,col,a){
+  g.globalAlpha=a;g.fillStyle=col;g.beginPath();g.arc(p.x,p.y,RP,0,6.2832);g.fill();
+  g.lineWidth=1.2;g.strokeStyle='rgba(10,20,30,.45)';g.stroke();
+  g.fillStyle='rgba(255,255,255,.28)';g.beginPath();g.arc(p.x-RP*.32,p.y-RP*.34,RP*.3,0,6.2832);g.fill();
+  g.globalAlpha=1;
+}
+
+function drawParticleView(){
+  var sc=fit(cv1,520),g=g1;
+  g.setTransform(sc,0,0,sc,0,0);
+  g.fillStyle=TH.canvas;g.fillRect(0,0,520,440);
+  var s=cur.s,st=cur.st,col=s.col;
+  var boxA=geo.boxA,latA=geo.latA,i,p;
+  // Fest: Gitter
+  if(latA>0.02){
+    g.save();g.globalAlpha=latA;
+    var hw=(4.75*D0+R)*geo.sLin,hh=(3.5*D0*0.866+R)*geo.sLin;
+    var hw0=(4.75*D0+R),hh0=(3.5*D0*0.866+R);
+    g.setLineDash([6,5]);g.strokeStyle=TH.muted;g.lineWidth=1.4;
+    rrect(g,CX-hw0-6,CY-hh0-6,2*hw0+12,2*hh0+12,10);g.stroke();g.setLineDash([]);
+    g.strokeStyle=stateCol('fest');g.lineWidth=2.2;
+    rrect(g,CX-hw-6,CY-hh-6,2*hw+12,2*hh+12,10);g.stroke();
+    g.strokeStyle=TH.cline;g.lineWidth=2;
+    for(i=0;i<nbr.length;i++){var a=P[s2p[nbr[i][0]]],b=P[s2p[nbr[i][1]]];g.beginPath();g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);g.stroke()}
+    g.restore();
+  }
+  // Fluid: Behaelter
+  if(boxA>0.02){
+    g.save();g.globalAlpha=boxA;
+    var yT=geo.yT,ref=YB-boxH();
+    g.fillStyle=TH.panel;g.globalAlpha=boxA*0.55;g.fillRect(BX0,yT,BX1-BX0,YB-yT);g.globalAlpha=boxA;
+    dashLine(g,BX0-14,ref,BX1+14,ref,TH.muted);
+    txt(g,'Kolbenstand',BX1+18,ref+16,12.5,TH.muted,'left');txt(g,'bei '+fmt(cur.s.typ[st],0)+' °C',BX1+18,ref+32,12.5,TH.muted,'left');
+    g.strokeStyle=TH.ink;g.lineWidth=4;g.lineJoin='round';
+    g.beginPath();g.moveTo(BX0,yT);g.lineTo(BX0,YB);g.lineTo(BX1,YB);g.lineTo(BX1,yT);g.stroke();
+    g.fillStyle=TH.muted;g.fillRect(BX0-8,yT-11,BX1-BX0+16,11);
+    if(yT-11>64)g.fillRect((BX0+BX1)/2-5,64,10,yT-75);
+    txt(g,st==='gas'?'Kolben (Normaldruck 1 bar)':'beweglicher Deckel',(BX0+BX1)/2+12,yT-17,12.5,TH.muted,'left');
+    g.restore();
+  }
+  // Teilchen
+  var solid=st==='fest';
+  for(i=0;i<N;i++){
+    p=P[i];
+    if(p.a>0.02)drawParticle(g,p,col,p.a);
+  }
+  drawTrail(g);
+  var tp=P[TRACK];
+  if(showTrail&&tp.a>0.02){ // markiertes Teilchen: gleiche Groesse wie alle anderen
+    g.globalAlpha=tp.a;
+    g.fillStyle=TH.vis;g.beginPath();g.arc(tp.x,tp.y,RP,0,6.2832);g.fill();
+    g.lineWidth=1.2;g.strokeStyle='rgba(10,20,30,.55)';g.stroke();
+    g.strokeStyle=TH.hot;g.lineWidth=3;g.beginPath();g.arc(tp.x,tp.y,RP+2.5,0,6.2832);g.stroke();
+    g.globalAlpha=1;
+  }
+  if(!solid&&boxA>0.3)txt(g,'orange: markiertes Teilchen mit Spur',BX0+2,YB+16,12.5,TH.vis,'left',700);
+  if(solid){
+    txt(g,'Teilchen schwingen um feste Plätze',CX,CY+hhLabel(),13.5,TH.ink,'center');
+    txt(g,'gestrichelt: Größe bei '+fmt(cur.s.typ.fest,0)+' °C',CX,CY+hhLabel()+20,12.5,TH.muted,'center');
+  }
+  // Legende oben links
+  var legend=solid?'Gitterschwingung':'ungeordnete Bewegung';
+  g.fillStyle=stateCol(st);g.beginPath();g.arc(20,24,6,0,6.2832);g.fill();
+  txt(g,SNAME[st]+': '+legend,32,29,14,TH.ink,'left',700);
+  txt(g,'Ausdehnung '+(curK()>1?curK()+'-fach übertrieben':'im echten Maßstab'),20,48,12.5,TH.muted,'left');
+}
+function hhLabel(){return (3.5*D0*0.866+R)*geo.sLin+34}
+
+function drawMacro(){
+  var sc=fit(cv2,400),g=g2;
+  g.setTransform(sc,0,0,sc,0,0);
+  g.fillStyle=TH.canvas;g.fillRect(0,0,400,440);
+  var s=cur.s,st=cur.st,tn=tNorm();
+  if(st==='fest'){
+    var Lb=230,x0=60,yc=200,h=56,L=Lb*geo.sLin;
+    // Halterung
+    g.fillStyle=TH.muted;g.fillRect(18,yc-46,x0-18,92);
+    g.strokeStyle=TH.canvas;g.lineWidth=2;
+    for(var k=0;k<7;k++){g.beginPath();g.moveTo(18,yc-40+k*13);g.lineTo(x0-4,yc-46+k*13-10);g.stroke()}
+    // Referenz
+    dashLine(g,x0+Lb,yc-h/2-34,x0+Lb,yc+h/2+34,TH.muted);
+    txt(g,'Länge bei '+fmt(s.typ.fest,0)+' °C',x0+Lb,yc-h/2-42,12.5,TH.muted,'center');
+    // Stab
+    var base=s.id==='wasser'?'#BFE3F7':s.col;
+    var c0=heat(tn,base);
+    g.fillStyle=c0;rrect(g,x0,yc-h/2,L,h,6);g.fill();
+    g.strokeStyle='rgba(10,20,30,.55)';g.lineWidth=2;g.stroke();
+    // Gitterpunkte im Stab
+    var cols=14,rows=3;
+    g.fillStyle='rgba(255,255,255,.55)';
+    for(var r=0;r<rows;r++)for(var c=0;c<cols;c++){
+      g.beginPath();g.arc(x0+10+c*((L-20)/(cols-1)),yc-h/2+11+r*((h-22)/(rows-1)),3.2,0,6.2832);g.fill();
+    }
+    // Klammer fuer Delta l
+    var dl=L-Lb;
+    if(Math.abs(dl)>3){
+      var ya=yc+h/2+22,xa=x0+Lb,xb=x0+L;
+      g.strokeStyle=TH.hot;g.lineWidth=2.4;g.beginPath();g.moveTo(xa,ya);g.lineTo(xb,ya);g.moveTo(xa,ya-6);g.lineTo(xa,ya+6);g.moveTo(xb,ya-6);g.lineTo(xb,ya+6);g.stroke();
+      txt(g,(dl>0?'Δl größer':'Δl kleiner'),(xa+xb)/2,ya+22,13.5,TH.hot,'center',700);
+    }
+    txt(g,'Metallstab, fest eingespannt',x0,yc+h/2+80,12.5,TH.muted,'left');
+    txt(g,'Verlängerung '+(curK()>1?curK()+'-fach übertrieben.':'im echten Maßstab.'),x0,yc+h/2+100,12.5,TH.muted,'left');
+  }else if(st==='fluessig'){
+    var bcx=175,bcy=345,br=62,tx0=165,tw=20,ttop=28,yRef=170;
+    var yl=yRef-(geo.a-1)*200;
+    // Glas (Umriss) und Fluessigkeit
+    var liq=s.id==='wasser'?'#2F8FDB':(s.id==='quecksilber'?'#9AA7B5':(s.id==='ethanol'?'#8B6CD6':s.col));
+    g.save();
+    g.beginPath();g.arc(bcx,bcy,br,0,6.2832);g.rect(tx0,ttop,tw,bcy-ttop);
+    g.clip();
+    g.fillStyle=TH.panel;g.globalAlpha=.5;g.fillRect(0,0,400,440);g.globalAlpha=1;
+    g.fillStyle=liq;g.fillRect(0,yl,400,440-yl);
+    g.restore();
+    g.lineWidth=3.5;g.strokeStyle=TH.ink;g.lineJoin='round';
+    g.beginPath();
+    var ang=Math.asin((tw/2)/br);
+    g.moveTo(tx0,ttop);g.lineTo(tx0,bcy-br*Math.cos(ang));
+    g.arc(bcx,bcy,br,-Math.PI/2-ang,-Math.PI/2+ang,true);
+    g.lineTo(tx0+tw,ttop);g.stroke();
+    g.beginPath();g.arc(tx0+tw/2,ttop,tw/2,Math.PI,0);g.stroke();
+    // Skala
+    g.strokeStyle=TH.muted;g.lineWidth=1.5;
+    for(var t=ttop+20;t<250;t+=12){g.beginPath();g.moveTo(tx0+tw+4,t);g.lineTo(tx0+tw+((t-ttop)%60===8?16:10),t);g.stroke()}
+    // Referenz und Stand
+    dashLine(g,tx0-40,yRef,tx0+tw+14,yRef,TH.muted);
+    txt(g,'Stand bei '+fmt(s.typ.fluessig,0)+' °C',tx0-44,yRef-6,12.5,TH.muted,'right');
+    g.fillStyle=TH.hot;g.beginPath();g.moveTo(tx0+tw+6,yl);g.lineTo(tx0+tw+26,yl-8);g.lineTo(tx0+tw+26,yl+8);g.closePath();g.fill();
+    var d=yRef-yl;
+    txt(g,Math.abs(d)<3?'gleicher Stand':(d>0?'steigt':'sinkt'),tx0+tw+32,yl+4.5,13.5,TH.hot,'left',700);
+    txt(g,'Steigrohr',tx0+tw+60,ttop+14,12.5,TH.muted,'left');
+    txt(g,'Vorratsgefäß',bcx,bcy+br+22,12.5,TH.muted,'center');
+    txt(g,'wie im Flüssigkeits-',256,376,12.5,TH.muted,'left');txt(g,'thermometer',256,392,12.5,TH.muted,'left');
+    txt(g,'Anstieg '+(curK()>1?curK()+'-fach':'echt'),256,414,12.5,TH.muted,'left');txt(g,curK()>1?'übertrieben':'',256,430,12.5,TH.muted,'left');
+    // Waermeglut
+    var gl=g.createRadialGradient(bcx,bcy+br+4,4,bcx,bcy+br+4,70);
+    gl.addColorStop(0,'rgba(232,116,42,'+(0.05+0.55*clamp(tn,0,1))+')');gl.addColorStop(1,'rgba(232,116,42,0)');
+    g.fillStyle=gl;g.fillRect(bcx-80,bcy+br-20,160,110);
+  }else{
+    var cx0=56,cx1=256,yb=396,Hm=300*geo.a/1.6,yp=yb-Hm,ref=yb-300/1.6;
+    // Gas
+    g.fillStyle=heat(tn,'#E39A2D');g.globalAlpha=.22;g.fillRect(cx0,yp,cx1-cx0,yb-yp);g.globalAlpha=1;
+    dashLine(g,cx0-24,ref,cx1+24,ref,TH.muted);
+    txt(g,'Stand bei '+fmt(s.typ.gas,0)+' °C',cx1+28,ref+(yb-Hm>ref?-14:15),12.5,TH.muted,'left');
+    g.strokeStyle=TH.ink;g.lineWidth=4;g.lineJoin='round';
+    g.beginPath();g.moveTo(cx0,40);g.lineTo(cx0,yb);g.lineTo(cx1,yb);g.lineTo(cx1,40);g.stroke();
+    // Kolben + Gewicht
+    g.fillStyle=TH.muted;g.fillRect(cx0-3,yp-10,cx1-cx0+6,12);
+    g.fillStyle=TH.ink;g.globalAlpha=.85;rrect(g,(cx0+cx1)/2-56,yp-46,112,36,5);g.fill();g.globalAlpha=1;
+    txt(g,'Druck 1 bar',(cx0+cx1)/2,yp-23,13,TH.panel,'center',700);
+    var d2=ref-yp;
+    if(Math.abs(d2)>3){
+      g.fillStyle=TH.hot;g.beginPath();g.moveTo(cx1+8,yp-4);g.lineTo(cx1+26,yp-12);g.lineTo(cx1+26,yp+4);g.closePath();g.fill();
+      txt(g,d2>0?'Kolben steigt':'Kolben sinkt',cx1+32,yp+1,13.5,TH.hot,'left',700);
+    }
+    txt(g,'Zylinder mit Kolben, Druck bleibt bei 1 bar',cx0,422,12.5,TH.muted,'left');
+    var gl2=g.createRadialGradient((cx0+cx1)/2,yb+6,4,(cx0+cx1)/2,yb+6,110);
+    gl2.addColorStop(0,'rgba(232,116,42,'+(0.05+0.55*clamp(tn,0,1))+')');gl2.addColorStop(1,'rgba(232,116,42,0)');
+    g.fillStyle=gl2;g.fillRect(cx0-40,yb-10,cx1-cx0+80,60);
+  }
+}
+
+function drawChart(){
+  var d=window.devicePixelRatio||1,r=cv3.getBoundingClientRect();
+  var w=Math.max(10,Math.round(r.width*d)),h=Math.max(10,Math.round(r.height*d));
+  if(cv3.width!==w||cv3.height!==h){cv3.width=w;cv3.height=h}
+  var g=g3;g.setTransform(d,0,0,d,0,0);
+  var W=r.width,H=r.height;g.clearRect(0,0,W,H);
+  var s=cur.s,st=cur.st;
+  var lo=st==='fest'?-K0:(st==='fluessig'?s.tm:s.tb), hi=st==='fest'?s.tm:(st==='fluessig'?s.tb:s.tmax);
+  var fn=function(T){return 100*(st==='fest'?eLin(s,T):xVol(s,st,T))};
+  var pts=[],i,ymin=1e9,ymax=-1e9;
+  for(i=0;i<=120;i++){var T=lo+(hi-lo)*i/120;var y=fn(T);pts.push([T,y]);ymin=Math.min(ymin,y);ymax=Math.max(ymax,y)}
+  ymin=Math.min(ymin,0);ymax=Math.max(ymax,0);
+  var pad=(ymax-ymin)*0.12||1;ymin-=pad;ymax+=pad;
+  var L=54,Rr=14,Tp=14,B=34;
+  var X=function(T){return L+(T-lo)/(hi-lo)*(W-L-Rr)};
+  var Y=function(v){return Tp+(1-(v-ymin)/(ymax-ymin))*(H-Tp-B)};
+  var col=stateCol(st);
+  g.font='400 12px '+MONO;g.textBaseline='middle';
+  // Gitter + y-Achse
+  var yt=[ymin+pad,0,ymax-pad];
+  g.strokeStyle=TH.line;g.lineWidth=1;
+  yt.sort(function(a,b){return Math.abs(a)-Math.abs(b)});
+  var used=[];
+  yt.forEach(function(v){var py=Y(v);if(used.some(function(u){return Math.abs(u-py)<18}))return;used.push(py);g.beginPath();g.moveTo(L,py);g.lineTo(W-Rr,py);g.stroke();g.fillStyle=TH.muted;g.textAlign='right';g.fillText(fmt(v,Math.abs(v)<10?2:1).replace(/^-/,'−')+' %',L-6,py)});
+  // Nulllinie (Referenz)
+  var refT=s.typ[st];
+  dashLine(g,X(refT),Tp,X(refT),H-B,TH.muted);
+  // Flaeche + Kurve
+  g.beginPath();g.moveTo(X(pts[0][0]),Y(0));pts.forEach(function(p){g.lineTo(X(p[0]),Y(p[1]))});g.lineTo(X(pts[pts.length-1][0]),Y(0));g.closePath();
+  g.globalAlpha=.16;g.fillStyle=col;g.fill();g.globalAlpha=1;
+  g.beginPath();pts.forEach(function(p,k){k?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1]))});
+  g.strokeStyle=col;g.lineWidth=3;g.lineJoin='round';g.stroke();
+  // x-Achse
+  g.fillStyle=TH.muted;g.textBaseline='top';
+  g.textAlign='left';g.fillText(fmt(lo,0).replace(/^-/,'−')+' °C',L,H-B+8);
+  g.textAlign='right';g.fillText(fmt(hi,0)+' °C',W-Rr,H-B+8);
+  g.textAlign='center';g.fillText('Referenz '+fmt(refT,0)+' °C',clamp(X(refT),L+50,W-Rr-60),H-B+22);
+  // aktueller Punkt
+  var T0=clamp(cur.T,lo,hi),v=fn(T0);
+  g.fillStyle=TH.hot;g.strokeStyle=TH.panel;g.lineWidth=3;
+  g.beginPath();g.arc(X(T0),Y(v),7,0,6.2832);g.stroke();g.fill();
+  g.font='700 13px '+FONT;g.textAlign=X(T0)>W*0.6?'right':'left';g.textBaseline='bottom';
+  g.fillText(sgn(v,Math.abs(v)<10?2:1)+' %',X(T0)+(X(T0)>W*0.6?-12:12),Y(v)-8);
+}
+
+/* ---------- Texte + Messwerte ---------- */
+var TXT={
+ fest:['Im Festkörper sitzt jedes Teilchen auf einem festen Platz im Gitter und schwingt um diesen Platz hin und her (Gitterschwingung). Ein Teilchen ist orange markiert, seine Spur zeigt dir den Weg. Je wärmer, desto weiter schwingen die Teilchen.',
+       'Weiter schwingende Teilchen brauchen mehr Platz: Der mittlere Abstand wächst und der ganze Körper wird größer. In Wirklichkeit ist das winzig, deshalb ist die Ausdehnung hier übertrieben dargestellt.'],
+ fluessig:['In der Flüssigkeit sind die Teilchen dicht beieinander, aber nicht mehr an feste Plätze gebunden. Sie gleiten aneinander vorbei und stoßen ständig zusammen. Ein Teilchen ist orange markiert. Es wird von allen Seiten angestoßen und legt einen Zickzackweg zurück. Ähnlich zittert ein Fetttröpfchen unter dem Mikroskop, wenn die unsichtbaren Teilchen es anstoßen: Brownsche Bewegung.',
+       'Wärmer heißt: schnellere Teilchen und hef­tigere Stöße. Die Teilchen drängen weiter auseinander, die Flüssigkeit braucht mehr Raum und steigt im Steigrohr. So funktioniert ein Flüssigkeitsthermometer.'],
+ gas:['Im Gas sind die Teilchen weit voneinander entfernt und fliegen geradlinig durch den Raum, bis sie an ein anderes Teilchen oder die Wand stoßen. Das orange markierte Teilchen fliegt geradeaus, bis es stößt, und ändert dann sprunghaft die Richtung. Ähnlich ruckt ein Rauchteilchen in der Luft, wenn es von unsichtbaren Teilchen getroffen wird: Brownsche Bewegung.',
+      'Schnellere Teilchen prallen häufiger und kräftiger gegen den Kolben. Der Druck bleibt gleich (Normaldruck 1 bar, so wie ihn die Luft ausübt). Deshalb weicht der Kolben aus und das Gas nimmt mehr Raum ein. Gase dehnen sich viel stärker aus als Flüssigkeiten und Festkörper.']
+};
+var lastUI=0;
+function updateUI(){
+  var s=cur.s,st=cur.st,T=cur.T,TK=T+K0;
+  $('r1v').textContent=fmt(T,0)+' °C';
+  $('r1s').textContent=fmt(TK,0)+' K · '+s.name+', '+SNAME[st];
+  var x=xVol(s,st,T),ref=s.typ[st];
+  if(st==='fest'){
+    $('r2k').textContent='Schwingungsweite';
+    var amp=100*Math.sqrt(Math.max(0,TK)/(s.tm+K0))*0.20;
+    $('r2v').textContent='≈ '+fmt(amp,0)+' % vom Abstand';
+    $('r2s').textContent=TK<1?'Am absoluten Nullpunkt stehen die Teilchen still.':'Teilchen schwingen um feste Plätze (Modell).';
+    $('r3k').textContent='Länge (echt)';
+    var dl=eLin(s,T)*1000;
+    $('r3v').textContent=sgn(dl,Math.abs(dl)<10?2:1)+' mm pro m';
+    $('r3s').textContent='gegenüber '+fmt(ref,0)+' °C · α '+(s.aEst?'≈ ':'')+fmt(s.alpha,1)+'·10⁻⁶/K'+(s.aNote?' ('+s.aNote+')':'')+(s.aEst?' · Schätzwert':'');
+    var dd=eLin(s,T)*100;
+    $('r4v').textContent=sgn(dd,3)+' %';
+  }else{
+    var vr=Math.sqrt(3*8.314*Math.max(0,TK)/(s.M/1000));
+    $('r2k').textContent='Teilchengeschwindigkeit';
+    $('r2v').textContent='≈ '+fmt(vr,0)+' m/s';
+    $('r2s').textContent=TK<1?'Am absoluten Nullpunkt stehen die Teilchen still.':'im Mittel (Wurzel aus dem Mittel der Quadrate)';
+    if(st==='fluessig'){
+      $('r3k').textContent='Volumen (echt)';
+      $('r3v').textContent=sgn(x*1000,Math.abs(x*1000)<10?2:1)+' ml pro l';
+      $('r3s').textContent='gegenüber '+fmt(ref,0)+' °C · '+(s.water?'Tabellenwerte (Dichte)':'γ '+(s.gEst?'≈ ':'')+fmt(s.gam*1000,2)+'·10⁻³/K'+(s.gEst?' · Schätzwert':''));
+    }else{
+      $('r3k').textContent='Volumen von 1 mol (echt)';
+      $('r3v').textContent=fmt(0.083145*Math.max(0,TK),1)+' l';
+      $('r3s').textContent='bei 1 bar · '+sgn(x*100,1)+' % gegenüber '+fmt(ref,0)+' °C · Gasgesetz';
+    }
+    var dd2=(Math.pow(1+x,1/3)-1)*100;
+    $('r4v').textContent=sgn(dd2,2)+' %';
+  }
+  $('r4s').textContent='gegenüber '+fmt(ref,0)+' °C (echt)';
+  $('ex1').textContent=TXT[st][0];$('ex2').textContent=TXT[st][1];
+  var note='';
+  if(TK<1)note='Absoluter Nullpunkt: bei 0 K (−273,15 °C) bewegen sich die Teilchen praktisch nicht mehr. Kälter geht es nicht.';
+  else if(s.water&&st==='fluessig'&&T<4)note='Anomalie des Wassers: Zwischen 0 °C und 4 °C zieht sich Wasser beim Erwärmen zusammen. Bei 4 °C braucht es am wenigsten Platz. Im Diagramm siehst du die Delle.';
+  else if(s.water&&st==='fest')note='Eis nimmt beim Schmelzen etwa 8 % weniger Raum ein: Im Eisgitter stehen die Teilchen weiter auseinander als im flüssigen Wasser.';
+  $('note').hidden=!note;$('note').textContent=note;
+  $('chT').textContent=(st==='fest'?'Längenänderung':'Volumenänderung')+' von '+s.name+' ('+SNAME[st]+')';
+  $('cap2t').textContent=st==='fest'?'Was man sieht: Stab':(st==='fluessig'?'Was man sieht: Steigrohr':'Was man sieht: Kolben');
+  $('cap2').textContent=st==='fest'?'wird länger':(st==='fluessig'?'Flüssigkeit steigt':'Gas schiebt Kolben');
+  $('cap1').textContent='Ausschnitt mit '+N+' Teilchen'+(st==='gas'?' · Druck 1 bar':'');
+  var tt=$('temp');if(document.activeElement!==tt||String(tt.value)!==String(T))tt.value=T;
+  $('tC').textContent=fmt(T,0)+' °C';$('tK').textContent=fmt(TK,0)+' K';
+}
+
+/* ---------- Steuerung ---------- */
+function buildChips(){
+  var box=$('stoffe');box.innerHTML='';
+  STOFFE.forEach(function(s){
+    var b=document.createElement('button');b.type='button';b.className='chip';b.setAttribute('role','radio');b.dataset.id=s.id;
+    b.style.setProperty('--sw',s.col);
+    b.innerHTML='<i></i>'+s.name+' <small>'+s.f+'</small>';
+    b.addEventListener('click',function(){setStoff(s.id)});
+    box.appendChild(b);
+  });
+}
+function syncControls(){
+  Array.prototype.forEach.call($('stoffe').children,function(b){b.setAttribute('aria-checked',String(b.dataset.id===cur.s.id))});
+  Array.prototype.forEach.call($('zustaende').children,function(b){b.setAttribute('aria-pressed',String(b.dataset.s===cur.st))});
+  var s=cur.s,t=$('temp');
+  t.min=-273;t.max=s.tmax;
+  var span=s.tmax+273;
+  var p1=(s.tm+273)/span*100,p2=(s.tb+273)/span*100;
+  t.style.setProperty('--track','linear-gradient(to right,var(--c-fest) 0,var(--c-fest) '+p1+'%,var(--c-fl) '+p1+'%,var(--c-fl) '+p2+'%,var(--c-gas) '+p2+'%,var(--c-gas) 100%)');
+  var m=$('marks');m.innerHTML='';
+  function mk(T,label,cls){var d=document.createElement('div');d.className='mark '+(cls||'');d.style.left='calc(13px + (100% - 26px) * '+((T+273)/span)+')';d.textContent=label;m.appendChild(d);return d}
+  var m0=mk(-273,'−273 °C','m0');m0.style.transform='translateX(-13px)';m0.style.textAlign='left';
+  mk(s.tm,'schmilzt bei '+fmt(s.tm,0)+' °C');
+  mk(s.tb,'siedet bei '+fmt(s.tb,0)+' °C');
+}
+function applyT(T,silent){
+  T=Math.round(clamp(T,-273,cur.s.tmax));
+  var ns=stateOf(cur.s,T);
+  cur.T=T;
+  if(ns!==cur.st){
+    var old=cur.st;cur.st=ns;
+    kUser=null;
+    onStateChange(old,ns);syncControls();
+  }
+}
+function setStoff(id){
+  var s=STOFFE.filter(function(x){return x.id===id})[0];
+  var st=cur.st;
+  cur.s=s;kUser=null;
+  var T=s.typ[st];
+  var old=cur.st;cur.T=T;cur.st=stateOf(s,T);
+  syncControls();
+  if(cur.st!==old||true){trail.length=0}
+  if(cur.st!==old)onStateChange(old,cur.st);
+  // Teilchen neu auf Temperatur ausrichten
+  if(cur.st!=='fest'){var sp=vT();P.forEach(function(p){var d=randomDir(sp);p.vx=d[0];p.vy=d[1]})}
+}
+function setState(st){
+  var T=cur.s.typ[st];var old=cur.st;
+  cur.T=T;cur.st=st;kUser=null;syncControls();
+  if(old!==st)onStateChange(old,st);
+}
+buildChips();
+$('zustaende').addEventListener('click',function(e){var b=e.target.closest('button');if(b)setState(b.dataset.s)});
+$('temp').addEventListener('input',function(e){applyT(Number(e.target.value))});
+$('tdn').addEventListener('click',function(){applyT(cur.T-1)});
+$('tup').addEventListener('click',function(){applyT(cur.T+1)});
+$('pause').addEventListener('click',function(){paused=!paused;$('pause').textContent=paused?'Weiter':'Pause'});
+
+/* ---------- Forscheraufträge (Popup) ---------- */
+var TASKS=[
+ {t:'Eisen wird heiß',d:'Stelle <b>Eisen</b>, fest, erst auf 20 °C und dann auf 1500 °C. Wie weit schwingen die Teilchen (orange Teilchen und Spur)? Wie verändert sich der Stab? Formuliere einen Je-desto-Satz.',s:'eisen',T:20},
+ {t:'Wasser im Steigrohr',d:'Wähle <b>Wasser</b>, flüssig, und ziehe den Regler von 20 °C auf 100 °C. Lies unter „Volumen (echt)“ ab, um wie viel Milliliter ein Liter wächst. Suche dann zwischen 0 °C und 10 °C im Diagramm die Stelle, an der Wasser am wenigsten Platz braucht.',s:'wasser',T:20},
+ {t:'Flüssigkeit oder Gas?',d:'Beobachte das <b>orange Teilchen</b> in flüssigem und danach in gasförmigem Wasser (Normaldruck 1 bar). Wie oft stößt es zusammen und wie weit fliegt es zwischen zwei Stößen? Warum ist das so?',s:'wasser',T:20},
+ {t:'Ganz kalt',d:'Ziehe den Regler auf <b>−273 °C</b>. Was machen die Teilchen? Was hat das mit „0 Kelvin“ zu tun?',s:null,T:-273},
+ {t:'Aluminium gegen Blei',d:'Stelle <b>Aluminium</b> und danach <b>Blei</b> (fest) auf 300 °C. Lies „Länge (echt)“ ab: Welcher Stab wird länger und um wie viel Millimeter pro Meter?',s:'aluminium',T:300}
+];
+function findStoff(id){return STOFFE.filter(function(x){return x.id===id})[0]}
+function loadSetup(id,T){
+  var st0=findStoff(id)||cur.s,old=cur.st;
+  cur.s=st0;kUser=null;cur.T=T;cur.st=stateOf(st0,T);
+  trail.length=0;syncControls();
+  if(cur.st!==old)onStateChange(old,cur.st);
+  else if(cur.st!=='fest'){var sp=vT();P.forEach(function(p){var d=randomDir(sp);p.vx=d[0];p.vy=d[1]})}
+}
+var intro=$('intro');
+function buildTasks(){
+  var ol=$('taskList');ol.innerHTML='';
+  TASKS.forEach(function(k,i){
+    var li=document.createElement('li');
+    li.innerHTML='<span class="badge">'+(i+1)+'</span><div><h3>'+k.t+'</h3><p>'+k.d+'</p></div><button type="button" class="load">Einstellung laden</button>';
+    li.querySelector('.load').addEventListener('click',function(){loadSetup(k.s||cur.s.id,k.T);closeIntro()});
+    ol.appendChild(li);
+  });
+}
+function openIntro(){if(intro.showModal){if(!intro.open)intro.showModal()}else intro.setAttribute('open','')}
+function closeIntro(){if(intro.close)intro.close();else intro.removeAttribute('open')}
+buildTasks();
+$('openIntro').addEventListener('click',openIntro);
+$('introX').addEventListener('click',closeIntro);
+$('introGo').addEventListener('click',closeIntro);
+intro.addEventListener('click',function(e){if(e.target===intro)closeIntro()});
+var g4=$('cv4').getContext('2d');
+var IL=[];(function(){for(var r=0;r<5;r++)for(var c=0;c<7;c++)IL.push({x:(c+(r%2?0.5:0)-3.25)*32,y:(r-2)*32*0.866,ph:[rnd(0,6.3),rnd(0,6.3),rnd(0,6.3),rnd(0,6.3)],w:[rnd(3,5),rnd(4,6.5),rnd(3,5),rnd(4,6.5)]})})();
+function drawIntro(now){
+  var cv=$('cv4'),sc=fit(cv,420),g=g4,t=now/1000;
+  g.setTransform(sc,0,0,sc,0,0);g.fillStyle=TH.canvas;g.fillRect(0,0,420,340);
+  var tau=0.5-0.5*Math.cos(t*0.75); // 0 kalt ... 1 warm
+  var s=1+0.14*tau,A=1+6.5*tau,cx=210,cy=150;
+  var hw=(3.25*32+16),hh=(2*32*0.866+16);
+  g.setLineDash([6,5]);g.strokeStyle=TH.muted;g.lineWidth=1.4;rrect(g,cx-hw-4,cy-hh-4,2*hw+8,2*hh+8,10);g.stroke();g.setLineDash([]);
+  g.strokeStyle=TH.hot;g.lineWidth=2.4;rrect(g,cx-hw*s-4,cy-hh*s-4,2*hw*s+8,2*hh*s+8,10);g.stroke();
+  var col=heat(tau*0.9,'#8C99A8');
+  for(var i=0;i<IL.length;i++){
+    var p=IL[i],x=cx+p.x*s+A*0.5*(Math.cos(p.w[0]*t+p.ph[0])+Math.cos(p.w[1]*t+p.ph[1])),y=cy+p.y*s+A*0.5*(Math.cos(p.w[2]*t+p.ph[2])+Math.cos(p.w[3]*t+p.ph[3]));
+    g.fillStyle=col;g.beginPath();g.arc(x,y,11,0,6.2832);g.fill();g.lineWidth=1.2;g.strokeStyle='rgba(10,20,30,.45)';g.stroke();
+    g.fillStyle='rgba(255,255,255,.28)';g.beginPath();g.arc(x-3.5,y-3.8,3.3,0,6.2832);g.fill();
+  }
+  // Thermometer-Leiste
+  var bx=40,bw=340,by=286;
+  var gr=g.createLinearGradient(bx,0,bx+bw,0);gr.addColorStop(0,'#3B7DD8');gr.addColorStop(0.5,'#8C99A8');gr.addColorStop(1,'#E8742A');
+  g.fillStyle=gr;rrect(g,bx,by,bw,12,6);g.fill();
+  g.fillStyle=TH.panel;g.strokeStyle=TH.hot;g.lineWidth=4;g.beginPath();g.arc(bx+bw*tau,by+6,10,0,6.2832);g.fill();g.stroke();
+  txt(g,'kalt',bx,by+34,15,TH.muted,'left',700);txt(g,'warm',bx+bw,by+34,15,TH.muted,'right',700);
+  txt(g,tau<0.5?'kleine Schwingungen':'große Schwingungen',cx,28,15,TH.ink,'center',700);
+  txt(g,'gestrichelt: Größe im Kalten',cx,cy+hh+34,13,TH.muted,'center');
+}
+
+/* ---------- Hauptschleife ---------- */
+var last=performance.now(),frameN=0;
+function frame(now){
+  var rdt=Math.min(0.05,(now-last)/1000);last=now;frameN++;
+  if(frameN%90===1)readTheme();
+  var tv=targetVis(),e=1-Math.exp(-6*rdt);
+  if(cur.st==='fest'){geo.sLin+=(tv.sLin-geo.sLin)*e;geo.a=1}
+  else{geo.a+=(tv.a-geo.a)*e}
+  var hb=boxH();geo.hb+=(hb-geo.hb)*(1-Math.exp(-4*rdt));
+  geo.yT=YB-geo.hb*(cur.st==='fest'?1:geo.a);
+  if(cur.st==='fest'){geo.yT=YB-geo.hb}
+  geo.boxA+=((cur.st==='fest'?0:1)-geo.boxA)*(1-Math.exp(-7*rdt));
+  geo.latA+=((cur.st==='fest'?1:0)-geo.latA)*(1-Math.exp(-7*rdt));
+  // Alpha der Teilchen
+  var fadeK=1-Math.exp(-6*rdt),i,p;
+  for(i=0;i<N;i++){p=P[i];p.a+=((p.act?1:0)-p.a)*fadeK}
+  RP+=((cur.st==='gas'?RG:R)-RP)*(1-Math.exp(-5*rdt));
+  if(!paused){
+    var dt=rdt*timeScale;simT+=dt;
+    if(cur.st==='fest')stepSolid(dt);else stepFluid(dt);
+    // Spur
+    var tmax=cur.st==='fest'?260:(cur.st==='gas'?300:420);
+    if(showTrail&&P[TRACK].a>0.3)trail.push([P[TRACK].x,P[TRACK].y]);
+    while(trail.length>tmax)trail.shift();
+  }
+  drawParticleView();drawMacro();drawChart();
+  if(intro.open)drawIntro(now);
+  if(now-lastUI>90){lastUI=now;updateUI()}
+  requestAnimationFrame(frame);
+}
+
+/* ---------- Start ---------- */
+readTheme();
+syncControls();
+/* ---------- Hell/Dunkel ---------- */
+var rootEl=document.documentElement;
+function storeGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function storeSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function effTheme(){var t=rootEl.getAttribute('data-theme');if(t==='dark'||t==='light')return t;return (window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'}
+(function(){var sv=storeGet('tl_theme');if(sv==='dark'||sv==='light')rootEl.setAttribute('data-theme',sv)})();
+function syncThemeBtn(){$('themeBtn').setAttribute('aria-pressed',effTheme()==='dark'?'true':'false')}
+$('themeBtn').addEventListener('click',function(){var n=effTheme()==='dark'?'light':'dark';rootEl.setAttribute('data-theme',n);storeSet('tl_theme',n);syncThemeBtn();readTheme()});
+syncThemeBtn();
+
+/* ---------- Ikosaeder (Logo) ---------- */
+var SVGNS='http://www.w3.org/2000/svg';
+var PHI=(1+Math.sqrt(5))/2,NRM=Math.sqrt(1+PHI*PHI);
+var IV=[[0,1,PHI],[0,-1,PHI],[0,1,-PHI],[0,-1,-PHI],[1,PHI,0],[-1,PHI,0],[1,-PHI,0],[-1,-PHI,0],[PHI,0,1],[-PHI,0,1],[PHI,0,-1],[-PHI,0,-1]].map(function(v){return v.map(function(x){return x/NRM})});
+var IE=[];(function(){for(var a=0;a<12;a++)for(var b=a+1;b<12;b++){var d=0;for(var k=0;k<3;k++)d+=Math.pow(IV[a][k]-IV[b][k],2);if(Math.abs(d-4/(NRM*NRM))<1e-3)IE.push([a,b])}})();
+var ico={ay:.55,ax:.5,w:1.7,wb:.3,scale:29,polys:[],dots:[],svg:$('logoIco')};
+function sm01(v){return v<=0?0:v>=1?1:v*v*(3-2*v)}
+function drawIco(){
+  var o=ico,cy=Math.cos(o.ay),sy=Math.sin(o.ay),cx=Math.cos(o.ax),sx=Math.sin(o.ax);
+  var Pt=IV.map(function(v){var x=v[0],y=v[1],z=v[2];var x1=x*cy+z*sy,z1=-x*sy+z*cy;var y1=y*cx-z1*sx,z2=y*sx+z1*cx;var f=1/(1-.28*z2);var q=sm01((z2+1)/2);return [x1*f*.93,-y1*f*.93,(o.wb+(o.w-o.wb)*q)/o.scale]});
+  o.polys.forEach(function(pg,i){var A=Pt[IE[i][0]],B=Pt[IE[i][1]];var dx=B[0]-A[0],dy=B[1]-A[1],l=Math.hypot(dx,dy)||1,nx=-dy/l,ny=dx/l,wa=A[2]/2,wb=B[2]/2;
+    pg.setAttribute('points',(A[0]+nx*wa).toFixed(3)+','+(A[1]+ny*wa).toFixed(3)+' '+(B[0]+nx*wb).toFixed(3)+','+(B[1]+ny*wb).toFixed(3)+' '+(B[0]-nx*wb).toFixed(3)+','+(B[1]-ny*wb).toFixed(3)+' '+(A[0]-nx*wa).toFixed(3)+','+(A[1]-ny*wa).toFixed(3))});
+  o.dots.forEach(function(c,i){c.setAttribute('cx',Pt[i][0].toFixed(3));c.setAttribute('cy',Pt[i][1].toFixed(3));c.setAttribute('r',(Pt[i][2]/2).toFixed(3))});
+}
+(function(){
+  var o=ico,svg=o.svg;svg.setAttribute('viewBox','-1.1 -1.1 2.2 2.2');
+  IE.forEach(function(){var p=document.createElementNS(SVGNS,'polygon');p.setAttribute('fill','var(--logo)');svg.appendChild(p);o.polys.push(p)});
+  IV.forEach(function(){var c=document.createElementNS(SVGNS,'circle');c.setAttribute('fill','var(--logo)');svg.appendChild(c);o.dots.push(c)});
+  function rs(){var w=svg.getBoundingClientRect().width;if(w>0)o.scale=w/2.2}
+  rs();if(window.ResizeObserver)new ResizeObserver(rs).observe(svg);
+  drawIco();
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var t0=performance.now();
+  function loop(now){var dt=Math.min(.05,(now-t0)/1000);t0=now;o.ay+=.5*dt;o.ax=.5+.1*Math.sin(now/2600);drawIco();requestAnimationFrame(loop)}
+  if(!reduce)requestAnimationFrame(loop);
+})();
+
+// Startzustand: Wasser, fluessig, 20 Grad, Teilchen als Fluessigkeit anordnen
+(function boot(){
+  var i,p,sp=vT();
+  geo.hb=190;geo.yT=YB-190;geo.a=1;geo.boxA=1;geo.latA=0;
+  var ox=(BX0+BX1)/2,oy=YB-190/2;
+  for(i=0;i<N;i++){p=P[i];p.x=ox+sites[i].x*1.03;p.y=oy+sites[i].y*1.05;var d=randomDir(sp*rnd(.7,1.2));p.vx=d[0];p.vy=d[1];p.act=true;p.a=1}
+  // Warmlaufen, damit das Bild von Anfang an "fluessig" wirkt
+  for(i=0;i<40;i++)stepFluid(1/30);
+  if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){paused=true;$('pause').textContent='Weiter'}
+  updateUI();
+})();
+if(window.matchMedia){try{window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',readTheme)}catch(e){}}
+new MutationObserver(readTheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+requestAnimationFrame(frame);
+setTimeout(openIntro,250);
+})();
+</script>
+</body></html>

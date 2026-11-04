@@ -1,0 +1,1309 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wärmelehre-Champion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#eef3f8; --surface:#ffffff; --ink:#1c2733; --muted:#5b6b7c; --line:#d7e1ea;
+    --accent:#2f6fd1; --accent-ink:#ffffff; --accent-soft:#e4edfb;
+    --warm:#e8740c; --good:#1f8a4c; --good-bg:#e5f6ec; --bad:#c0392b; --bad-bg:#fbe6e3;
+    --star:#f4b400; --t1:#2f6fd1; --t2:#e0792c; --t3:#1f9e8e; --t4:#3a8fd6; --t5:#8a3fd1;
+    --shadow:0 10px 28px rgba(28,39,51,.10);
+    --font-display:'Fredoka',system-ui,sans-serif; --font-body:'Nunito',system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#121820; --surface:#1b232d; --ink:#edf2f7; --muted:#9fb0c2; --line:#2c3845;
+      --accent:#5e9bef; --accent-ink:#0b1420; --accent-soft:#24344a;
+      --warm:#f0934a; --good:#49c17c; --good-bg:#153225; --bad:#e8746a; --bad-bg:#3a1f1d;
+      --star:#f6c846; --t1:#5e9bef; --t2:#f0934a; --t3:#39c2ae; --t4:#6fb4ef; --t5:#b483f0;
+      --shadow:0 10px 28px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#121820; --surface:#1b232d; --ink:#edf2f7; --muted:#9fb0c2; --line:#2c3845;
+    --accent:#5e9bef; --accent-ink:#0b1420; --accent-soft:#24344a;
+    --warm:#f0934a; --good:#49c17c; --good-bg:#153225; --bad:#e8746a; --bad-bg:#3a1f1d;
+    --star:#f6c846; --t1:#5e9bef; --t2:#f0934a; --t3:#39c2ae; --t4:#6fb4ef; --t5:#b483f0;
+    --shadow:0 10px 28px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);line-height:1.45;}
+  .wrap{max-width:720px;margin:0 auto;padding:18px 18px 60px;}
+  .topbar{display:flex;justify-content:flex-end;padding:10px 0;}
+  .theme-toggle{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 14px;font:600 .85rem var(--font-body);cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+  .eyebrow{font:700 .72rem var(--font-body);letter-spacing:.08em;color:var(--accent);text-transform:uppercase;margin:0 0 4px;}
+  h1{font-family:var(--font-display);font-weight:700;font-size:1.9rem;margin:0 0 6px;}
+  .sub{color:var(--muted);margin:0 0 18px;font-size:.98rem;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:20px;margin-bottom:16px;}
+  label{display:block;font:700 .85rem var(--font-body);margin-bottom:4px;color:var(--muted);}
+  input[type="text"]{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:600 1rem var(--font-body);background:var(--bg);color:var(--ink);margin-bottom:12px;}
+  .btn{border:none;border-radius:12px;padding:12px 20px;font:700 .95rem var(--font-body);cursor:pointer;background:var(--accent);color:var(--accent-ink);box-shadow:0 4px 0 rgba(0,0,0,.12);}
+  .btn:active{transform:translateY(2px);box-shadow:none;}
+  .btn.ghost{background:transparent;border:2px solid var(--accent);color:var(--accent);box-shadow:none;}
+  .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  .best{font-size:.85rem;color:var(--muted);margin-top:-4px;margin-bottom:14px;}
+  .hidden{display:none !important;}
+
+  /* topic map */
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media (max-width:520px){.tiles{grid-template-columns:1fr;}}
+  .tile{border-radius:16px;border:1px solid var(--line);background:var(--surface);padding:16px;cursor:pointer;text-align:left;box-shadow:var(--shadow);position:relative;}
+  .tile .ic{font-size:1.8rem;}
+  .tile h3{font-family:var(--font-display);font-size:1.02rem;margin:8px 0 4px;}
+  .tile .stat{font-size:.82rem;color:var(--muted);}
+  .tile .stars{color:var(--star);letter-spacing:2px;font-size:1rem;margin-top:4px;}
+  .tile .bar{height:6px;border-radius:4px;background:var(--line);margin-top:10px;overflow:hidden;}
+  .tile .bar i{display:block;height:100%;background:var(--accent-tile,var(--accent));border-radius:4px;}
+  .totalbox{display:flex;justify-content:space-between;align-items:center;margin-top:4px;}
+  .totalbox .pts{font-family:var(--font-display);font-weight:700;font-size:1.3rem;}
+
+  /* sprinter bonus tile */
+  .sprinttile{border-radius:16px;border:2px dashed var(--line);padding:14px 16px;background:var(--surface);}
+  .sprinttile.unlocked{border-style:solid;border-color:var(--t5);}
+  .sprint-row{display:flex;align-items:center;gap:12px;width:100%;background:none;border:none;text-align:left;color:var(--ink);font:inherit;padding:0;}
+  .sprinttile.unlocked .sprint-row{cursor:pointer;}
+  .sprinttile.locked .sprint-row{opacity:.72;}
+  .sprint-row .ic{font-size:1.7rem;flex-shrink:0;}
+  .sprint-row strong{font-family:var(--font-display);color:var(--t5);}
+
+  /* question */
+  .progress-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .pill{background:var(--accent-soft);color:var(--accent);font:700 .78rem var(--font-body);border-radius:999px;padding:5px 12px;}
+  .qtext{font:700 1.08rem/1.4 var(--font-body);margin:4px 0 16px;}
+  .opt{display:block;width:100%;text-align:left;border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:12px 14px;margin-bottom:10px;font:600 .96rem var(--font-body);cursor:pointer;}
+  .opt:hover{border-color:var(--accent);}
+  .opt.selected{border-color:var(--accent);background:var(--accent-soft);}
+  .opt.correct{border-color:var(--good);background:var(--good-bg);}
+  .opt.incorrect{border-color:var(--bad);background:var(--bad-bg);}
+  .opt:disabled{cursor:default;}
+  .textrow input{width:100%;border:2px solid var(--line);border-radius:10px;padding:11px 13px;font:700 1rem var(--font-body);background:var(--bg);color:var(--ink);margin-bottom:4px;}
+  .textrow input:focus{outline:none;border-color:var(--accent);}
+  .texthint{font-size:.8rem;color:var(--muted);margin-bottom:10px;}
+  .feedback{border-radius:12px;padding:12px 14px;margin-top:4px;font-size:.92rem;}
+  .feedback.good{background:var(--good-bg);color:var(--good);}
+  .feedback.bad{background:var(--bad-bg);color:var(--bad);}
+  .feedback .expl{color:var(--ink);font-weight:500;margin-top:4px;}
+
+  /* topic result */
+  .starsbig{font-size:2.2rem;letter-spacing:6px;color:var(--star);text-align:center;margin:6px 0 10px;}
+  .center{text-align:center;}
+
+  /* applet / challenge shared */
+  .appletbox{display:flex;gap:18px;align-items:center;flex-wrap:wrap;justify-content:center;}
+  .applet-caption{font-size:.84rem;color:var(--muted);margin-top:10px;}
+  .thermo-controls{flex:1;min-width:180px;}
+  .thermo-controls input[type=range]{width:100%;}
+  .thermo-readout{font:800 1.3rem var(--font-display);margin:6px 0 4px;}
+  .thermo-ref{font-size:.88rem;color:var(--accent);font-weight:700;}
+  .timerbar-wrap{height:8px;border-radius:5px;background:var(--line);overflow:hidden;margin-bottom:12px;}
+  .timerbar{height:100%;background:var(--warm);width:100%;transition:width .1s linear;}
+  .seqlabel{font-size:.86rem;color:var(--muted);margin-bottom:8px;}
+  .thermo-grad-band{border-radius:14px;padding:14px;background:linear-gradient(180deg,#e85d4a,#f4b400 45%,#2f6fd1);}
+  :root[data-theme="dark"] .thermo-grad-band, @media (prefers-color-scheme:dark){.thermo-grad-band{filter:brightness(.85);}}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{border:2px solid rgba(255,255,255,.7);background:rgba(255,255,255,.92);color:#1c2733;border-radius:10px;padding:10px 13px;font:700 .88rem var(--font-body);cursor:pointer;}
+  .chip.picked{border-color:#1c2733;background:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.15) inset;}
+  .chip .num{display:inline-block;background:#1c2733;color:#fff;border-radius:999px;width:18px;height:18px;line-height:18px;font-size:.72rem;text-align:center;margin-right:6px;}
+
+  .ausdehn-bars{display:flex;flex-direction:column;gap:10px;margin-bottom:10px;}
+  .ab-row{display:flex;align-items:center;gap:10px;}
+  .ab-label{width:84px;font-weight:700;font-size:.9rem;flex-shrink:0;}
+  .ab-track{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:8px;height:22px;overflow:hidden;}
+  .ab-bar{height:100%;border-radius:8px 0 0 8px;transition:width .15s linear;}
+
+  .corner-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+  .corner{border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:14px;padding:18px 10px;font:800 1rem var(--font-display);cursor:pointer;text-align:center;line-height:1.5;}
+  .corner:hover{border-color:var(--accent);}
+  .corner.correct{border-color:var(--good);background:var(--good-bg);color:var(--good);}
+  .corner.incorrect{border-color:var(--bad);background:var(--bad-bg);color:var(--bad);}
+  .corner:disabled{cursor:default;}
+
+  .segrow{display:flex;gap:8px;margin-bottom:12px;}
+  .segbtn{flex:1;border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:9px 6px;font:700 .86rem var(--font-body);cursor:pointer;}
+  .segbtn.active{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);}
+  canvas{display:block;max-width:100%;border-radius:14px;background:#cfe7f7;margin:0 auto;}
+
+  .memgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+  @media (max-width:480px){.memgrid{grid-template-columns:repeat(2,1fr);}}
+  .memcard{aspect-ratio:1;border:2px solid var(--line);border-radius:12px;background:var(--surface);display:flex;align-items:center;justify-content:center;font:700 .78rem var(--font-body);text-align:center;padding:6px;cursor:pointer;color:var(--ink);}
+  .memcard.flipped{border-color:var(--accent);background:var(--accent-soft);}
+  .memcard.matched{border-color:var(--good);background:var(--good-bg);color:var(--good);cursor:default;}
+  .memcard.back{color:var(--muted);font-size:1.6rem;}
+  .memcard.memicon{font-size:2.3rem;line-height:1;}
+  @media (max-width:480px){.memcard.memicon{font-size:1.9rem;}}
+  .memcard.memterm{font-size:.85rem;}
+
+  .tray{display:flex;gap:10px;margin-bottom:12px;}
+  .tool{flex:1;border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:12px 8px;font:700 .85rem var(--font-body);cursor:pointer;text-align:center;}
+  .tool.active{border-color:var(--accent);background:var(--accent-soft);}
+  .timer-row{display:flex;justify-content:space-between;align-items:center;font-weight:700;margin:8px 0 12px;}
+  .timer-row #puddleTime{color:var(--warm);font-family:var(--font-display);}
+
+  .chresult{text-align:center;padding:6px 0;}
+  .chresult h3{font-family:var(--font-display);margin:4px 0 6px;}
+
+  /* sicherung preview */
+  .sheetprev{border:1px dashed var(--line);border-radius:14px;padding:16px;background:var(--bg);}
+  .sheetprev h2{font-family:var(--font-display);font-size:1.1rem;margin:0 0 10px;}
+  .sheetprev table{width:100%;border-collapse:collapse;font-size:.88rem;margin-bottom:10px;}
+  .sheetprev th,.sheetprev td{border:1px solid var(--line);padding:6px 8px;text-align:left;}
+  .sheetprev th{background:var(--accent-soft);}
+  .badgebox{text-align:center;padding:10px;margin:8px 0;}
+  .badgebox .emoji{font-size:2.2rem;}
+  .wronglist{font-size:.85rem;padding-left:18px;}
+  .wronglist li{margin-bottom:8px;}
+  .sprintbonus{font-size:.88rem;color:var(--t5);font-weight:700;}
+
+  footer{text-align:center;color:var(--muted);font-size:.78rem;margin-top:24px;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .spin{animation:spin 7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  @media print{
+    body *{visibility:hidden;}
+    #screen-sicherung, #screen-sicherung *{visibility:visible;}
+    #screen-sicherung{position:absolute;left:0;top:0;width:100%;margin:0;padding:0;border:none;box-shadow:none;}
+    #screen-sicherung .sheetprev{border:none;background:#fff;padding:0;}
+    #screen-sicherung .sheetprev th{background:#eee !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    #exportBtn,#sicherungBackBtn,.best,.eyebrow{display:none !important;}
+    .topbar,footer,h1,.sub{display:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <button class="theme-toggle" id="themeToggle" type="button">🌙 Dunkel</button>
+  </div>
+  <p class="eyebrow">PHYSIK · KLASSE 6 · WIEDERHOLUNG</p>
+  <h1>Wärmelehre-Champion</h1>
+  <p class="sub">Vier Themenwelten, je mit einem Mini-Experiment zum Ausprobieren, einer Challenge und Fragen. Wer schnell fertig ist, bekommt danach freiwillige Sprinter-Aufgaben. Am Ende gibt's eine Sicherung zum Ausdrucken als PDF.</p>
+
+  <!-- START -->
+  <section id="screen-start" class="card">
+    <p class="best" id="bestLine"></p>
+    <label for="nameInput">Dein Name</label>
+    <input type="text" id="nameInput" placeholder="z. B. Alex Müller">
+    <label for="klasseInput">Klasse (optional)</label>
+    <input type="text" id="klasseInput" placeholder="z. B. 6a">
+    <button class="btn" id="startBtn" type="button">▶ Los geht's</button>
+  </section>
+
+  <!-- MAP -->
+  <section id="screen-map" class="card hidden">
+    <div class="totalbox">
+      <span class="pill">Gesamtfortschritt</span>
+      <span class="pts" id="totalPts">0 / 0</span>
+    </div>
+    <div class="tiles" id="tiles" style="margin-top:14px;"></div>
+    <div class="row" style="margin-top:16px;">
+      <button class="btn" id="sicherungBtn" type="button" disabled>📄 Sicherung erzeugen</button>
+    </div>
+    <p class="best" id="mapHint">Spiele alle vier Themen durch, um die Sicherung zu erzeugen.</p>
+    <div class="sprinttile locked" id="sprintTile" style="margin-top:18px;"></div>
+  </section>
+
+  <!-- APPLET -->
+  <section id="screen-applet" class="card hidden">
+    <span class="pill" id="appletPill"></span>
+    <h2 id="appletTitle" style="font-family:var(--font-display);margin:10px 0 4px;"></h2>
+    <div id="appletBody"></div>
+    <div class="row" style="margin-top:14px;">
+      <button class="btn" id="appletNextBtn" type="button">Weiter zur Challenge →</button>
+    </div>
+  </section>
+
+  <!-- CHALLENGE -->
+  <section id="screen-challenge" class="card hidden">
+    <span class="pill" id="challengePill"></span>
+    <h2 id="challengeTitle" style="font-family:var(--font-display);margin:10px 0 4px;"></h2>
+    <div id="challengeBody"></div>
+  </section>
+
+  <!-- QUESTION -->
+  <section id="screen-question" class="card hidden">
+    <div class="progress-row">
+      <span class="pill" id="qTopicPill"></span>
+      <span class="pill" id="qProgressPill"></span>
+    </div>
+    <p class="qtext" id="qText"></p>
+    <div id="qBody"></div>
+    <div id="qFeedback"></div>
+    <div class="row" style="margin-top:14px;">
+      <button class="btn" id="answerBtn" type="button" disabled>Antworten</button>
+    </div>
+  </section>
+
+  <!-- TOPIC RESULT -->
+  <section id="screen-topicresult" class="card hidden center">
+    <p class="eyebrow" id="trTopic"></p>
+    <div class="starsbig" id="trStars"></div>
+    <h2 id="trTitle" style="font-family:var(--font-display);margin:0 0 6px;"></h2>
+    <p class="sub" id="trText"></p>
+    <button class="btn" id="trBackBtn" type="button">Zurück zur Übersicht</button>
+  </section>
+
+  <!-- SICHERUNG -->
+  <section id="screen-sicherung" class="card hidden">
+    <p class="eyebrow">SICHERUNG</p>
+    <h2 style="font-family:var(--font-display);margin:0 0 10px;">Dein Ergebnis</h2>
+    <div class="sheetprev" id="sheetPreview"></div>
+    <div class="row" style="margin-top:16px;">
+      <button class="btn" id="exportBtn" type="button">🖨️ Als PDF speichern</button>
+      <button class="btn ghost" id="sicherungBackBtn" type="button">Zurück zur Übersicht</button>
+    </div>
+    <p class="best" style="margin-top:12px;">Tipp: Im Druckfenster, das sich jetzt öffnet, als Ziel „Als PDF speichern" wählen (unter Windows z. B. „Microsoft Print to PDF"), dann speichern.</p>
+  </section>
+
+  <footer>
+    <svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1">
+      <polygon points="12,2 21,8 21,16 12,22 3,16 3,8" />
+      <polygon points="12,2 12,22" /><polygon points="3,8 21,16" /><polygon points="21,8 3,16" />
+    </svg>
+    Physik · Wärmelehre-Champion · © Holtkötter
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+/* ---------------- theme ---------------- */
+var themeToggle = document.getElementById("themeToggle");
+(function initTheme(){
+  var saved = null;
+  try { saved = localStorage.getItem("waermelehre-champion-theme"); } catch(e){}
+  if (saved) document.documentElement.setAttribute("data-theme", saved);
+  updateToggleLabel();
+})();
+function updateToggleLabel(){
+  var cur = document.documentElement.getAttribute("data-theme");
+  var dark = cur === "dark" || (!cur && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  themeToggle.textContent = dark ? "☀️ Hell" : "🌙 Dunkel";
+}
+themeToggle.addEventListener("click", function(){
+  var cur = document.documentElement.getAttribute("data-theme");
+  var dark = cur === "dark" || (!cur && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  var next = dark ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  try { localStorage.setItem("waermelehre-champion-theme", next); } catch(e){}
+  updateToggleLabel();
+});
+
+/* ---------------- DOM refs ---------------- */
+var screenStart = document.getElementById("screen-start");
+var screenMap = document.getElementById("screen-map");
+var screenApplet = document.getElementById("screen-applet");
+var screenChallenge = document.getElementById("screen-challenge");
+var screenQuestion = document.getElementById("screen-question");
+var screenTopicResult = document.getElementById("screen-topicresult");
+var screenSicherung = document.getElementById("screen-sicherung");
+
+var bestLine = document.getElementById("bestLine");
+var nameInput = document.getElementById("nameInput");
+var klasseInput = document.getElementById("klasseInput");
+var startBtn = document.getElementById("startBtn");
+
+var totalPts = document.getElementById("totalPts");
+var tilesEl = document.getElementById("tiles");
+var sicherungBtn = document.getElementById("sicherungBtn");
+var mapHint = document.getElementById("mapHint");
+var sprintTile = document.getElementById("sprintTile");
+
+var appletPill = document.getElementById("appletPill");
+var appletTitle = document.getElementById("appletTitle");
+var appletBody = document.getElementById("appletBody");
+var appletNextBtn = document.getElementById("appletNextBtn");
+
+var challengePill = document.getElementById("challengePill");
+var challengeTitle = document.getElementById("challengeTitle");
+var challengeBody = document.getElementById("challengeBody");
+
+var qTopicPill = document.getElementById("qTopicPill");
+var qProgressPill = document.getElementById("qProgressPill");
+var qText = document.getElementById("qText");
+var qBody = document.getElementById("qBody");
+var qFeedback = document.getElementById("qFeedback");
+var answerBtn = document.getElementById("answerBtn");
+
+var trTopic = document.getElementById("trTopic");
+var trStars = document.getElementById("trStars");
+var trTitle = document.getElementById("trTitle");
+var trText = document.getElementById("trText");
+var trBackBtn = document.getElementById("trBackBtn");
+
+var sheetPreview = document.getElementById("sheetPreview");
+var exportBtn = document.getElementById("exportBtn");
+var sicherungBackBtn = document.getElementById("sicherungBackBtn");
+
+var CHALLENGE_MAX = 30;
+
+/* ---------------- question data (mc / tf / text only, Kl.6-gerecht) ---------------- */
+var TOPICS = [
+  { id:"temp", title:"Temperatur, Fixpunkte & Skalen", icon:"🌡️", color:"var(--t1)",
+    appletTitle:"Thermometer-Werkstatt", challengeTitle:"Challenge: Gefühls-Thermometer",
+    questions:[
+      { type:"mc", points:10, q:"Welche zwei Punkte legt man fest, um eine Celsius-Skala zu eichen?",
+        options:["Zimmertemperatur und Körpertemperatur","Gefrierpunkt und Siedepunkt von Wasser","Kältester und wärmster Tag des Jahres","Schmelzpunkt von Eisen und Blei"], correct:1,
+        explain:"Eispunkt (0 °C, schmelzendes Eis) und Siedepunkt (100 °C, kochendes Wasser) sind die Fixpunkte der Celsius-Skala." },
+      { type:"text", points:10, q:"Bei wie viel Grad Celsius kocht Wasser (ungefähr)?", accept:["100","100c","100°c","100 grad","100 grad celsius"], hint:"Antwort als Zahl, z. B. \"100\"",
+        explain:"Wasser siedet bei 100 °C – das ist einer der Fixpunkte der Celsius-Skala." },
+      { type:"tf", points:10, q:"In Kelvin gibt es auch negative Temperaturwerte.", correct:false,
+        explain:"Der Nullpunkt der Kelvin-Skala ist der absolute Nullpunkt (−273 °C) – kälter geht es nicht. Deshalb gibt es keine negativen Kelvin-Werte." },
+      { type:"mc", points:10, q:"Ein amerikanischer Wetterbericht sagt: „Today 77 degrees.\" Wie fühlt sich das wohl an?",
+        options:["Eiskalt, Frostgefahr","Angenehm warm, T-Shirt-Wetter","Brüllend heiß, Hitzewelle","Das lässt sich nicht sagen"], correct:1,
+        explain:"77 °Fahrenheit entsprechen etwa 25 °C – also angenehmes T-Shirt-Wetter. In den USA wird meist in Fahrenheit gemessen, nicht in Celsius." },
+      { type:"mc", points:10, q:"Womit misst man am schnellsten Fieber, ohne lange warten zu müssen?",
+        options:["Flüssigkeitsthermometer","Bimetallthermometer","Infrarot-/Fieberthermometer","Außenthermometer am Fenster"], correct:2,
+        explain:"Infrarotthermometer messen die Wärmestrahlung und zeigen sofort ein Ergebnis – praktisch zum Fiebermessen." },
+      { type:"tf", points:10, q:"Beim Ablesen eines Thermometers sollte man immer auf Augenhöhe schauen, nicht von schräg oben oder unten.", correct:true,
+        explain:"Schaut man schräg auf die Skala, entsteht ein Parallaxenfehler – der abgelesene Wert stimmt dann nicht genau." },
+      { type:"mc", points:10, q:"Woraus besteht ein einfaches Flüssigkeitsthermometer hauptsächlich?",
+        options:["Skala, dünne Kapillare und Vorratsgefäß mit Flüssigkeit","Nur einer Glasröhre ohne Flüssigkeit","Einem Metallstreifen, der sich verbiegt","Einer Digitalanzeige mit Batterie"], correct:0,
+        explain:"Die Flüssigkeit im Vorratsgefäß dehnt sich bei Wärme aus und steigt in der dünnen Kapillare auf – an der Skala liest man den Wert ab." }
+    ]
+  },
+  { id:"ausdehnung", title:"Wärmeausdehnung", icon:"📏", color:"var(--t2)",
+    appletTitle:"Ausdehnungs-Simulator", challengeTitle:"Challenge: Vier-Ecken-Schätzspiel",
+    questions:[
+      { type:"mc", points:10, q:"Warum dehnt sich ein fester Körper beim Erwärmen aus?",
+        options:["Die Teilchen werden größer","Die Teilchen bewegen sich stärker und brauchen mehr Platz","Es kommen neue Teilchen hinzu","Die Teilchen verschwinden teilweise"], correct:1,
+        explain:"Die Teilchen bewegen sich bei höherer Temperatur stärker und brauchen im Mittel mehr Platz – der Körper dehnt sich aus, ohne dass neue Teilchen hinzukommen." },
+      { type:"tf", points:10, q:"Gase dehnen sich bei Erwärmung stärker aus als feste Körper.", correct:true,
+        explain:"Die Teilchen in Gasen haben viel mehr Bewegungsspielraum – deshalb ist die Wärmeausdehnung bei Gasen am stärksten, bei festen Körpern am geringsten." },
+      { type:"text", points:10, q:"Wie heißt der Streifen aus zwei verschiedenen Metallen, der sich bei Erwärmung verbiegt und z. B. im Bügeleisen als Schalter dient?", accept:["bimetallstreifen","bimetall"], hint:"Ein Fachwort, beginnt mit \"Bi...\"",
+        explain:"Bimetallstreifen: Zwei Metalle mit unterschiedlicher Ausdehnung sind fest verbunden; bei Erwärmung verbiegt sich der Streifen und kann so einen Schalter auslösen." },
+      { type:"mc", points:10, q:"Versuch „Ballon auf der Flasche\": Die Flasche wird in warmes Wasser gestellt. Was passiert mit dem Luftballon?",
+        options:["Er bleibt gleich groß","Er bläst sich auf, weil die Luft in der Flasche sich ausdehnt","Er wird in die Flasche gesaugt","Er platzt sofort"], correct:1,
+        explain:"Die Luft in der Flasche erwärmt sich, dehnt sich aus und braucht mehr Platz – ein Teil davon drückt in den Ballon und bläst ihn auf." },
+      { type:"mc", points:10, q:"Wofür braucht man Dehnungsfugen an Brücken und Gleisen?",
+        options:["Damit es hübscher aussieht","Damit sich das Material bei Hitze ausdehnen kann, ohne sich zu verbiegen","Um Material zu sparen","Damit Regenwasser abfließen kann"], correct:1,
+        explain:"Ohne diesen Spielraum könnten sich Schienen oder Brückenteile bei großer Hitze verbiegen oder verwerfen (Gleisverwerfung)." },
+      { type:"tf", points:10, q:"Je höher die Temperatur steigt, desto mehr dehnt sich ein Körper aus.", correct:true,
+        explain:"Das ist der grundlegende Je-desto-Zusammenhang der Wärmeausdehnung: mehr Erwärmung bedeutet mehr Ausdehnung." },
+      { type:"mc", points:10, q:"Welches Experiment zeigt klassisch, dass sich Metall bei Erwärmung ausdehnt?",
+        options:["Kugel-Ring-Versuch: eine erhitzte Kugel passt nicht mehr durch einen Ring, durch den sie vorher gerade passte","Ein Eiswürfel schmilzt in der Hand","Ein Luftballon wird auf eine Flasche gesetzt","Wasser kocht im Topf"], correct:0,
+        explain:"Beim Kugel-Ring-Versuch (nach Gravesande) passt die erhitzte Kugel nicht mehr durch den Ring – ein Klassiker zur Wärmeausdehnung fester Körper." }
+    ]
+  },
+  { id:"aggregat", title:"Aggregatzustände", icon:"🧊", color:"var(--t3)",
+    appletTitle:"Teilchen-Box", challengeTitle:"Challenge: Übergangs-Memory",
+    questions:[
+      { type:"mc", points:10, q:"Der weiße „Dampf\", den man über einem kochenden Topf sieht, besteht aus …",
+        options:["gasförmigem Wasser","winzigen Wassertröpfchen","Rauch","Kohlenstoffdioxid"], correct:1,
+        explain:"Wasserdampf (gasförmiges Wasser) ist unsichtbar. Was man sieht, sind winzige Tröpfchen, die entstehen, wenn der Dampf an der kühleren Luft sofort wieder kondensiert." },
+      { type:"text", points:10, q:"Wie nennt man den Übergang von fest zu flüssig?", accept:["schmelzen"], hint:"Ein Verb, z. B. bei Eis in der Sonne",
+        explain:"Schmelzen: fest wird zu flüssig – z. B. Eis wird zu Wasser." },
+      { type:"mc", points:10, q:"Ein Eiswürfel schmilzt in deiner warmen Hand. Dabei …",
+        options:["gibt das Eis Wärme an die Hand ab","nimmt das Eis Wärme aus der Hand auf","passiert kein Wärmeaustausch","wird die Hand automatisch wärmer"], correct:1,
+        explain:"Zum Schmelzen braucht Eis Energie in Form von Wärme – diese entzieht es der wärmeren Umgebung, hier deiner Hand. Deshalb fühlt sie sich kälter an." },
+      { type:"mc", points:10, q:"Woher stammt das Wasser, das sich außen an einem kalten Glas Eiswasser bildet?",
+        options:["Es sickert durch das Glas","Es kondensiert aus der Luftfeuchtigkeit","Es ist geschmolzenes Eis von innen","Es entsteht durch eine chemische Reaktion mit dem Glas"], correct:1,
+        explain:"Die Luft enthält unsichtbaren Wasserdampf. An der kalten Glasoberfläche kühlt er ab und kondensiert zu sichtbaren Tröpfchen." },
+      { type:"mc", points:10, q:"Wasser wird zu Eis und wieder zu Wasser. Was stimmt?",
+        options:["Es ist am Ende ein anderer Stoff","Es bleibt die ganze Zeit derselbe Stoff, nur der Zustand ändert sich","Ein Teil des Wassers verschwindet","Eis ist ein anderer Stoff als Wasser"], correct:1,
+        explain:"Egal ob Eis, Wasser oder Wasserdampf: Es ist immer derselbe Stoff H₂O, nur Anordnung und Bewegung der Teilchen sind unterschiedlich." },
+      { type:"text", points:10, q:"Wie nennt man es, wenn Wasserdampf aus der Luft an einer kalten Fläche wieder zu Wassertröpfchen wird?", accept:["kondensieren","kondensation"], hint:"Gegenteil von Verdunsten",
+        explain:"Kondensieren: gasförmig wird wieder flüssig – z. B. die Tröpfchen an einem kalten Glas." },
+      { type:"mc", points:10, q:"Trockeneis (gefrorenes Kohlenstoffdioxid) wird bei Zimmertemperatur direkt zu Gas, ohne vorher flüssig zu werden. Wie nennt man diesen Übergang von fest direkt zu gasförmig?",
+        options:["Schmelzen","Sublimieren","Kondensieren","Erstarren"], correct:1,
+        explain:"Sublimieren ist der seltene Übergang von fest direkt zu gasförmig, ohne flüssige Zwischenstufe – bekanntestes Beispiel: Trockeneis." }
+    ]
+  },
+  { id:"verdunsten", title:"Verdunstung & Verdunstungskälte", icon:"💧", color:"var(--t4)",
+    appletTitle:null, challengeTitle:"Challenge: Pfützen-Trockner",
+    questions:[
+      { type:"mc", points:10, q:"Welche drei Dinge beeinflussen, wie schnell Wasser verdunstet?",
+        options:["Temperatur, Wind, Größe der Wasseroberfläche","Farbe des Gefäßes, Uhrzeit, Wochentag","Luftdruck, Mondphase, Windrichtung","Nur die Temperatur"], correct:0,
+        explain:"Je wärmer, je windiger und je größer die Oberfläche, desto schneller verdunstet Wasser." },
+      { type:"tf", points:10, q:"Verdunsten passiert nur, wenn Wasser kocht.", correct:false,
+        explain:"Verdunsten geschieht an der Oberfläche bei jeder Temperatur – auch im Winter, nur langsamer. Nur Sieden ist an die Siedetemperatur gebunden." },
+      { type:"mc", points:10, q:"Warum fühlt sich nasse Haut im Wind kühl an?",
+        options:["Wind ist grundsätzlich kälter als Luft","Das verdunstende Wasser entzieht der Haut Wärme","Nasse Haut leitet Kälte besser","Der Wind kühlt die Haut durch Reibung ab"], correct:1,
+        explain:"Verdunstendes Wasser braucht Energie und entzieht sie der Haut als Wärme. Wind trägt die feuchte Luft schneller weg, sodass noch mehr Wasser nachverdunsten kann." },
+      { type:"text", points:10, q:"Wie nennt man das Abkühlen, das entsteht, wenn Wasser von der Haut verdunstet?", accept:["verdunstungskälte","verdunstungskaelte"], hint:"Ein zusammengesetztes Wort: Verdunstungs...",
+        explain:"Verdunstungskälte: Verdunstendes Wasser entzieht der Umgebung Wärme." },
+      { type:"mc", points:10, q:"Warum hecheln Hunde an heißen Tagen?",
+        options:["Weil sie überall am Körper schwitzen können","Weil Verdunstung über Zunge und Maul sie abkühlt, da sie kaum schwitzen","Um mehr Sauerstoff für die Muskeln zu bekommen","Aus reiner Aufregung"], correct:1,
+        explain:"Hunde können über die Haut kaum schwitzen. Durch schnelles Hecheln verdunstet Feuchtigkeit über Zunge und Rachen, was den Körper durch Verdunstungskälte abkühlt." },
+      { type:"mc", points:10, q:"Nasse Wäsche auf der Leine trocknet an einem windigen, sonnigen Tag am schnellsten. Warum?",
+        options:["Wind und Sonne verhindern das Verdunsten","Beides beschleunigt das Verdunsten: Wärme gibt Energie, Wind trägt die feuchte Luft weg","Nur die Sonne zählt, Wind spielt keine Rolle","Nasse Wäsche trocknet bei Wind und Sonne langsamer"], correct:1,
+        explain:"Wärme gibt den Wasserteilchen Energie zum Verdunsten, und Wind trägt die bereits feuchte Luft weg, sodass immer wieder trockene Luft nachkommt." },
+      { type:"tf", points:10, q:"Verdunsten findet nur an der Wasseroberfläche statt, Sieden dagegen im ganzen Wasser.", correct:true,
+        explain:"Beim Sieden entstehen überall im Wasser Dampfblasen, beim Verdunsten nur an der Oberfläche – deshalb geht Sieden viel schneller, braucht aber die Siedetemperatur." }
+    ]
+  },
+  { id:"sprint", title:"Sprinter-Extra", icon:"🚀", color:"var(--t5)", challengeMax:0, noChallenge:true,
+    appletTitle:null, challengeTitle:null,
+    questions:[
+      { type:"text", points:15, q:"Zimmertemperatur ist 20 °C. Rechne um: Wie viel Kelvin sind das? (Tipp: T(K) = T(°C) + 273)", accept:["293","293k","293 k","293kelvin","293 kelvin"], hint:"Rechne 20 + 273.",
+        explain:"20 °C + 273 = 293 K. Ein Kelvin ist genauso groß wie ein Grad Celsius, nur der Nullpunkt liegt beim absoluten Nullpunkt." },
+      { type:"mc", points:15, q:"Eine 10 m lange Stahlschiene wird um 30 K wärmer. Stahl dehnt sich pro Meter und Kelvin um etwa 0,012 mm aus. Um wie viel mm wird die ganze Schiene insgesamt länger?",
+        options:["0,36 mm","3,6 mm","36 mm","360 mm"], correct:1,
+        explain:"10 m × 30 K × 0,012 mm ≈ 3,6 mm. So rechnet man mit dem Ausdehnungskoeffizienten α eine genaue Längenänderung aus." },
+      { type:"text", points:15, q:"Trockeneis wird bei Zimmertemperatur direkt gasförmig (sublimieren). Wie heißt der umgekehrte Übergang, wenn ein Gas direkt zu einem Feststoff wird – ohne flüssige Zwischenstufe?", accept:["resublimieren","resublimation"], hint:"Vorsilbe „re-\" wie bei „zurück\".",
+        explain:"Resublimieren: gasförmig wird direkt wieder fest, z. B. Reif, der sich direkt aus Wasserdampf an kalten Oberflächen bildet." },
+      { type:"mc", points:15, q:"Du hast nasse Haare und stehst vor einem Ventilator. Warum kühlt das schneller ab, obwohl die Luft selbst nicht kälter ist?",
+        options:["Der Ventilator kühlt die Luft ab","Der Wind beschleunigt das Verdunsten, und das entzieht mehr Wärme","Der Wind trocknet die Haare, ohne dass Wasser verdunstet","Ventilatoren erzeugen Kälte"], correct:1,
+        explain:"Wind trägt die feuchte Luft schneller weg, wodurch mehr Wasser nachverdunsten kann. Jede Verdunstung entzieht Wärme – deshalb kühlt es stärker ab." }
+    ]
+  }
+];
+
+/* ---------------- state ---------------- */
+var state = {
+  name:"", klasse:"",
+  topics:{}, curTopicIdx:0, curQIdx:0
+};
+TOPICS.forEach(function(t){
+  var qmax = t.questions.reduce(function(s,q){ return s+q.points; }, 0);
+  var cmax = (t.challengeMax !== undefined) ? t.challengeMax : CHALLENGE_MAX;
+  state.topics[t.id] = { score:0, max: cmax + qmax, stars:0, done:false, wrong:[] };
+});
+
+var BEST_KEY = "waermelehre-champion-best";
+function loadBest(){
+  try { var v = localStorage.getItem(BEST_KEY); return v ? JSON.parse(v) : null; } catch(e){ return null; }
+}
+function saveBest(pct, badge){
+  try {
+    var cur = loadBest();
+    if (!cur || pct > cur.pct) localStorage.setItem(BEST_KEY, JSON.stringify({pct:pct, badge:badge}));
+  } catch(e){}
+}
+(function showBest(){
+  var b = loadBest();
+  bestLine.textContent = b ? ("Bisherige Bestleistung: " + Math.round(b.pct*100) + " % (" + b.badge + ")") : "Noch keine Bestleistung gespeichert – leg los!";
+})();
+
+/* ---------------- navigation ---------------- */
+var liveTimers = []; // interval/raf ids to clear on screen change
+function stopLiveTimers(){
+  liveTimers.forEach(function(id){ clearInterval(id.interval); if (id.raf) cancelAnimationFrame(id.raf); });
+  liveTimers = [];
+}
+function show(el){
+  stopLiveTimers();
+  [screenStart, screenMap, screenApplet, screenChallenge, screenQuestion, screenTopicResult, screenSicherung].forEach(function(s){ s.classList.add("hidden"); });
+  el.classList.remove("hidden");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+startBtn.addEventListener("click", function(){
+  state.name = nameInput.value.trim();
+  state.klasse = klasseInput.value.trim();
+  if (!state.name){ nameInput.style.borderColor = "var(--bad)"; nameInput.focus(); return; }
+  renderMap();
+  show(screenMap);
+});
+
+function totalScore(){
+  var s=0, m=0;
+  TOPICS.forEach(function(t){
+    if (t.id === "sprint") return;
+    s += state.topics[t.id].score; m += state.topics[t.id].max;
+  });
+  return {score:s, max:m};
+}
+
+function renderMap(){
+  var tot = totalScore();
+  totalPts.textContent = tot.score + " / " + tot.max;
+  tilesEl.innerHTML = "";
+  var mainTopics = TOPICS.filter(function(t){ return t.id !== "sprint"; });
+  mainTopics.forEach(function(t){
+    var idx = TOPICS.indexOf(t);
+    var st = state.topics[t.id];
+    var pct = st.max ? Math.round((st.score/st.max)*100) : 0;
+    var div = document.createElement("button");
+    div.type = "button";
+    div.className = "tile";
+    div.style.setProperty("--accent-tile", t.color);
+    var starsStr = st.done ? "★".repeat(st.stars) + "☆".repeat(3-st.stars) : "";
+    div.innerHTML =
+      '<div class="ic">' + t.icon + '</div>' +
+      '<h3>' + t.title + '</h3>' +
+      '<div class="stat">' + (st.done ? (st.score + " / " + st.max + " Punkte") : (t.questions.length + " Fragen + Challenge · noch nicht gespielt")) + '</div>' +
+      '<div class="stars">' + starsStr + '</div>' +
+      '<div class="bar"><i style="width:' + pct + '%"></i></div>';
+    div.addEventListener("click", function(){ startTopic(idx); });
+    tilesEl.appendChild(div);
+  });
+  var allDone = mainTopics.every(function(t){ return state.topics[t.id].done; });
+  sicherungBtn.disabled = !allDone;
+  mapHint.textContent = allDone ? "Alle Themen gespielt – du kannst jetzt deine Sicherung erzeugen." : "Spiele alle vier Themen durch, um die Sicherung zu erzeugen.";
+
+  renderSprintTile(allDone);
+}
+
+function renderSprintTile(unlocked){
+  var sprintTopic = TOPICS.filter(function(t){ return t.id === "sprint"; })[0];
+  var idx = TOPICS.indexOf(sprintTopic);
+  var st = state.topics["sprint"];
+  sprintTile.className = "sprinttile" + (unlocked ? " unlocked" : " locked");
+  if (!unlocked){
+    sprintTile.innerHTML =
+      '<div class="sprint-row"><span class="ic">🚀</span><div><strong>Sprinter-Extra</strong><br>' +
+      '<span class="best" style="margin:0;">Freiwillige Extra-Aufgaben für Schnelle – wird freigeschaltet, sobald alle vier Themen fertig sind.</span></div></div>';
+    return;
+  }
+  var doneTxt = st.done
+    ? (st.score + " / " + st.max + " Bonuspunkte · " + "★".repeat(st.stars) + "☆".repeat(3-st.stars) + " · zählt nicht zur Note, aber eine schöne Herausforderung!")
+    : "4 kniffligere Zusatzfragen – freiwillig, nicht notwendig für die Sicherung.";
+  sprintTile.innerHTML =
+    '<button type="button" class="sprint-row" id="sprintBtn"><span class="ic">🚀</span><div><strong>Sprinter-Extra ' + (st.done ? "✓" : "") + '</strong><br>' +
+    '<span class="best" style="margin:0;">' + doneTxt + '</span></div></button>';
+  document.getElementById("sprintBtn").addEventListener("click", function(){ startTopic(idx); });
+}
+
+sicherungBtn.addEventListener("click", function(){ renderSicherung(); show(screenSicherung); });
+sicherungBackBtn.addEventListener("click", function(){ renderMap(); show(screenMap); });
+trBackBtn.addEventListener("click", function(){ renderMap(); show(screenMap); });
+
+/* ---------------- topic flow: applet -> challenge -> quiz -> result ---------------- */
+function startTopic(idx){
+  state.curTopicIdx = idx;
+  var topic = TOPICS[idx];
+  state.topics[topic.id].score = 0;
+  state.topics[topic.id].wrong = [];
+  if (topic.noChallenge){
+    state.curQIdx = 0;
+    renderQuestion();
+    show(screenQuestion);
+    return;
+  }
+  if (topic.appletTitle){
+    renderApplet(topic);
+    show(screenApplet);
+  } else {
+    renderChallenge(topic);
+    show(screenChallenge);
+  }
+}
+
+function renderApplet(topic){
+  appletPill.textContent = topic.icon + " " + topic.title;
+  appletTitle.textContent = topic.appletTitle;
+  appletBody.innerHTML = "";
+  if (topic.id === "temp") initAppletTemp(appletBody);
+  else if (topic.id === "ausdehnung") initAppletAusdehnung(appletBody);
+  else if (topic.id === "aggregat") initAppletAggregat(appletBody);
+  appletNextBtn.onclick = function(){ renderChallenge(topic); show(screenChallenge); };
+}
+
+function renderChallenge(topic){
+  challengePill.textContent = topic.icon + " " + topic.title;
+  challengeTitle.textContent = topic.challengeTitle;
+  challengeBody.innerHTML = "";
+  var onDone = function(points){
+    state.topics[topic.id].score += points;
+    state.curQIdx = 0;
+    renderQuestion();
+    show(screenQuestion);
+  };
+  if (topic.id === "temp") initChallengeTemp(challengeBody, onDone);
+  else if (topic.id === "ausdehnung") initChallengeAusdehnung(challengeBody, onDone);
+  else if (topic.id === "aggregat") initChallengeAggregat(challengeBody, onDone);
+  else if (topic.id === "verdunsten") initChallengeVerdunsten(challengeBody, onDone);
+}
+
+function appendChallengeResult(container, stars, title, text, onRetry, onContinue){
+  var div = document.createElement("div");
+  div.className = "chresult";
+  div.innerHTML = '<div class="starsbig">' + "★".repeat(stars) + "☆".repeat(3-stars) + '</div>' +
+    '<h3>' + title + '</h3><p class="sub" style="text-align:center;">' + text + '</p>';
+  var row = document.createElement("div");
+  row.className = "row"; row.style.justifyContent = "center";
+  var retryBtn = document.createElement("button");
+  retryBtn.type = "button"; retryBtn.className = "btn ghost"; retryBtn.textContent = "↺ Nochmal versuchen";
+  retryBtn.addEventListener("click", onRetry);
+  var contBtn = document.createElement("button");
+  contBtn.type = "button"; contBtn.className = "btn"; contBtn.textContent = "Weiter zu den Fragen →";
+  contBtn.addEventListener("click", onContinue);
+  row.appendChild(retryBtn); row.appendChild(contBtn);
+  div.appendChild(row);
+  container.innerHTML = "";
+  container.appendChild(div);
+}
+
+/* ===================== APPLET: Thermometer-Werkstatt ===================== */
+function initAppletTemp(container){
+  container.innerHTML =
+    '<div class="appletbox">' +
+      '<svg viewBox="0 0 90 260" width="90" height="260">' +
+        '<rect x="35" y="10" width="20" height="200" rx="10" fill="none" stroke="var(--line)" stroke-width="3"/>' +
+        '<circle cx="45" cy="225" r="25" fill="none" stroke="var(--line)" stroke-width="3"/>' +
+        '<rect id="thermoLiquid" x="39" y="200" width="12" height="10" rx="6" fill="#d33"/>' +
+        '<circle cx="45" cy="225" r="19" id="thermoBulb" fill="#d33"/>' +
+      '</svg>' +
+      '<div class="thermo-controls">' +
+        '<input type="range" id="thermoSlider" min="-20" max="110" value="20">' +
+        '<div class="thermo-readout"><span id="thermoVal">20 °C</span> <span id="thermoFace">🙂</span></div>' +
+        '<div class="thermo-ref" id="thermoRef"></div>' +
+      '</div>' +
+    '</div>' +
+    '<p class="applet-caption">Schieb den Regler und beobachte, wie die Flüssigkeit im Thermometer steigt und fällt.</p>';
+
+  var REF = [ {v:-18,l:"Gefrierfach"}, {v:0,l:"Eiswasser"}, {v:20,l:"Zimmertemperatur"}, {v:37,l:"Körpertemperatur"}, {v:39,l:"Fieber"}, {v:100,l:"kochendes Wasser"} ];
+  var slider = container.querySelector("#thermoSlider");
+  var liquid = container.querySelector("#thermoLiquid");
+  var bulb = container.querySelector("#thermoBulb");
+  var val = container.querySelector("#thermoVal");
+  var face = container.querySelector("#thermoFace");
+  var ref = container.querySelector("#thermoRef");
+
+  function lerp(a,b,t){ return a+(b-a)*t; }
+  function update(v){
+    v = parseFloat(v);
+    var frac = (v - (-20)) / (110 - (-20));
+    frac = Math.max(0, Math.min(1, frac));
+    var top = 200 - frac*190;
+    liquid.setAttribute("y", top);
+    liquid.setAttribute("height", 210 - top);
+    var cold=[70,130,220], hot=[220,60,40];
+    var r=Math.round(lerp(cold[0],hot[0],frac)), g=Math.round(lerp(cold[1],hot[1],frac)), b2=Math.round(lerp(cold[2],hot[2],frac));
+    var col = "rgb(" + r + "," + g + "," + b2 + ")";
+    liquid.setAttribute("fill", col);
+    bulb.setAttribute("fill", col);
+    val.textContent = Math.round(v) + " °C";
+    face.textContent = v < 0 ? "🥶" : v < 16 ? "😐" : v < 29 ? "🙂" : v < 36 ? "😅" : "🥵";
+    var nearest = REF[0], best = Infinity;
+    REF.forEach(function(r2){ var d = Math.abs(r2.v - v); if (d < best){ best = d; nearest = r2; } });
+    ref.textContent = "Das fühlt sich an wie: " + nearest.l + " (" + nearest.v + " °C)";
+  }
+  slider.addEventListener("input", function(){ update(slider.value); });
+  update(20);
+}
+
+/* ===================== CHALLENGE: Gefühls-Thermometer (Sortierspiel, Zeitdruck) ===================== */
+function initChallengeTemp(container, onDone){
+  var ITEMS = [ {l:"🧊 Gefrierfach", v:-18}, {l:"❄️ Eiswasser", v:0}, {l:"🏠 Zimmer", v:20}, {l:"🤒 Fieber", v:39}, {l:"🍲 kochendes Wasser", v:100} ];
+
+  function start(){
+    container.innerHTML =
+      '<div class="timerbar-wrap"><div class="timerbar" id="chTimerBar"></div></div>' +
+      '<p class="seqlabel">Ordne die Karten von kalt nach warm – nur dein Gefühl zählt, die genauen Grade siehst du nicht! Die Zeit läuft.</p>' +
+      '<div class="thermo-grad-band"><div class="chips" id="chipsArea"></div></div>' +
+      '<div id="chResultArea"></div>';
+    var chipsArea = container.querySelector("#chipsArea");
+    var timerBar = container.querySelector("#chTimerBar");
+
+    var shuffled = ITEMS.slice();
+    for (var i = shuffled.length - 1; i > 0; i--){ var j = Math.floor(Math.random()*(i+1)); var tmp=shuffled[i]; shuffled[i]=shuffled[j]; shuffled[j]=tmp; }
+    var picked = [];
+    var done = false;
+
+    shuffled.forEach(function(it){
+      var c = document.createElement("button");
+      c.type = "button"; c.className = "chip"; c.textContent = it.l;
+      c.addEventListener("click", function(){
+        if (done) return;
+        var pos = picked.indexOf(it);
+        if (pos === -1){ picked.push(it); c.classList.add("picked"); } else { picked.splice(pos,1); c.classList.remove("picked"); }
+        Array.prototype.forEach.call(chipsArea.children, function(ch){ var s = ch.querySelector(".num"); if (s) s.remove(); });
+        picked.forEach(function(p, idx){
+          var domIdx = shuffled.indexOf(p);
+          var span = document.createElement("span"); span.className="num"; span.textContent = idx+1;
+          chipsArea.children[domIdx].prepend(span);
+        });
+        if (picked.length === ITEMS.length) finish();
+      });
+      chipsArea.appendChild(c);
+    });
+
+    var timeLeft = 25;
+    var interval = setInterval(function(){
+      timeLeft -= 0.1;
+      timerBar.style.width = Math.max(0, (timeLeft/25)*100) + "%";
+      if (timeLeft <= 0){ clearInterval(interval); finish(); }
+    }, 100);
+    liveTimers.push({interval:interval});
+
+    function finish(){
+      if (done) return;
+      done = true;
+      clearInterval(interval);
+      var sortedAsc = ITEMS.slice().sort(function(a,b){ return a.value - b.value; }); // placeholder, fixed below
+      sortedAsc = ITEMS.slice().sort(function(a,b){ return a.v - b.v; });
+      var matches = 0;
+      for (var k=0;k<ITEMS.length;k++){ if (picked[k] && picked[k].v === sortedAsc[k].v) matches++; }
+      var stars = matches >= 5 ? 3 : matches >= 4 ? 2 : matches >= 2 ? 1 : 0;
+      var points = stars === 3 ? 30 : stars === 2 ? 20 : stars === 1 ? 10 : 0;
+      var resArea = container.querySelector("#chResultArea");
+      appendChallengeResult(resArea, stars,
+        stars >= 2 ? "Gutes Gefühl für Temperaturen!" : "Da war einiges durcheinander.",
+        matches + " von " + ITEMS.length + " Karten richtig einsortiert.",
+        start,
+        function(){ onDone(points); });
+    }
+  }
+  start();
+}
+
+/* ===================== APPLET: Ausdehnungs-Simulator ===================== */
+function initAppletAusdehnung(container){
+  container.innerHTML =
+    '<div class="ausdehn-bars">' +
+      '<div class="ab-row"><span class="ab-label">Stahl</span><div class="ab-track"><div class="ab-bar" id="barStahl" style="background:#8a97a6;width:40%"></div></div></div>' +
+      '<div class="ab-row"><span class="ab-label">Aluminium</span><div class="ab-track"><div class="ab-bar" id="barAlu" style="background:#b9c2cc;width:40%"></div></div></div>' +
+      '<div class="ab-row"><span class="ab-label">Glas</span><div class="ab-track"><div class="ab-bar" id="barGlas" style="background:#8fd0e0;width:40%"></div></div></div>' +
+    '</div>' +
+    '<input type="range" id="ausdehnSlider" min="0" max="100" value="0">' +
+    '<div class="thermo-readout">Temperatur: <span id="ausdehnVal">0 °C</span></div>' +
+    '<p class="applet-caption">Achtung: Die Ausdehnung ist hier stark übertrieben dargestellt, damit man sie überhaupt sehen kann – in echt sind das nur wenige Millimeter!</p>';
+  var slider = container.querySelector("#ausdehnSlider");
+  var val = container.querySelector("#ausdehnVal");
+  var barStahl = container.querySelector("#barStahl");
+  var barAlu = container.querySelector("#barAlu");
+  var barGlas = container.querySelector("#barGlas");
+  function update(t){
+    t = parseFloat(t);
+    val.textContent = Math.round(t) + " °C";
+    barStahl.style.width = (40 + t*0.30) + "%";
+    barAlu.style.width = (40 + t*0.50) + "%";
+    barGlas.style.width = (40 + t*0.20) + "%";
+  }
+  slider.addEventListener("input", function(){ update(slider.value); });
+  update(0);
+}
+
+/* ===================== CHALLENGE: Vier-Ecken-Schätzspiel ===================== */
+function initChallengeAusdehnung(container, onDone){
+  function start(){
+    container.innerHTML =
+      '<div class="timerbar-wrap"><div class="timerbar" id="chTimerBar2"></div></div>' +
+      '<p class="qtext" style="margin-top:0;">Eine 1 km lange Stahlschiene wird an einem heißen Sommertag um 40 °C wärmer. Wie viel länger wird sie wohl?</p>' +
+      '<div class="corner-grid" id="cornerGrid">' +
+        '<button class="corner" type="button" data-i="0">A<br>5&nbsp;mm</button>' +
+        '<button class="corner" type="button" data-i="1">B<br>5&nbsp;cm</button>' +
+        '<button class="corner" type="button" data-i="2">C<br>50&nbsp;cm</button>' +
+        '<button class="corner" type="button" data-i="3">D<br>5&nbsp;m</button>' +
+      '</div>' +
+      '<div id="chResultArea2"></div>';
+    var timerBar = container.querySelector("#chTimerBar2");
+    var buttons = container.querySelectorAll(".corner");
+    var done = false;
+    var correctIdx = 2;
+
+    var timeLeft = 15;
+    var interval = setInterval(function(){
+      timeLeft -= 0.1;
+      timerBar.style.width = Math.max(0, (timeLeft/15)*100) + "%";
+      if (timeLeft <= 0){ clearInterval(interval); finish(-1); }
+    }, 100);
+    liveTimers.push({interval:interval});
+
+    buttons.forEach(function(b){
+      b.addEventListener("click", function(){
+        if (done) return;
+        finish(parseInt(b.dataset.i,10));
+      });
+    });
+
+    function finish(pickedIdx){
+      if (done) return;
+      done = true;
+      clearInterval(interval);
+      buttons.forEach(function(b, i){
+        b.disabled = true;
+        if (i === correctIdx) b.classList.add("correct");
+        else if (i === pickedIdx) b.classList.add("incorrect");
+      });
+      var correct = pickedIdx === correctIdx;
+      var stars = correct ? 3 : 0;
+      var points = correct ? 30 : 0;
+      var resArea = container.querySelector("#chResultArea2");
+      appendChallengeResult(resArea, stars,
+        correct ? "Genau richtig geschätzt!" : (pickedIdx === -1 ? "Die Zeit ist um!" : "Das war nicht ganz richtig."),
+        "Tatsächlich dehnt sich die Schiene um etwa 48 cm aus – fast einen halben Meter! Deshalb gibt es an Gleisen und Brücken Dehnungsfugen, die diesen Platz freilassen.",
+        start,
+        function(){ onDone(points); });
+    }
+  }
+  start();
+}
+
+/* ===================== APPLET: Teilchen-Box ===================== */
+function initAppletAggregat(container){
+  container.innerHTML =
+    '<div class="segrow" id="aggTabs">' +
+      '<button class="segbtn active" type="button" data-m="fest">fest</button>' +
+      '<button class="segbtn" type="button" data-m="fluessig">flüssig</button>' +
+      '<button class="segbtn" type="button" data-m="gas">gasförmig</button>' +
+    '</div>' +
+    '<canvas id="aggCanvas" width="280" height="170"></canvas>' +
+    '<p class="applet-caption" id="aggCaption"></p>';
+  var canvas = container.querySelector("#aggCanvas");
+  var ctx = canvas.getContext("2d");
+  var caption = container.querySelector("#aggCaption");
+  var tabs = container.querySelectorAll(".segbtn");
+  var W = 280, H = 170;
+  var mode = "fest";
+  var particles = [];
+
+  var CAPTIONS = {
+    fest: "Die Teilchen sitzen fest an ihrem Platz und zittern nur ein kleines bisschen.",
+    fluessig: "Die Teilchen können aneinander vorbeigleiten und halten nur locker zusammen.",
+    gas: "Die Teilchen fliegen frei durch den ganzen Raum und stoßen überall an die Wände."
+  };
+
+  function makeParticles(m){
+    var arr = [];
+    if (m === "fest"){
+      var cols=7, rows=4;
+      for (var r=0;r<rows;r++) for (var c=0;c<cols;c++){
+        arr.push({bx: 24 + c*(232/(cols-1)), by: 28 + r*(114/(rows-1)), phase: Math.random()*6.28});
+      }
+    } else if (m === "fluessig"){
+      for (var i=0;i<22;i++){
+        arr.push({x: 20+Math.random()*240, y: 60+Math.random()*90, vx:(Math.random()-0.5)*0.6, vy:(Math.random()-0.5)*0.6});
+      }
+    } else {
+      for (var j=0;j<16;j++){
+        arr.push({x: 20+Math.random()*240, y: 15+Math.random()*140, vx:(Math.random()-0.5)*2.4, vy:(Math.random()-0.5)*2.4});
+      }
+    }
+    return arr;
+  }
+  particles = makeParticles(mode);
+  caption.textContent = CAPTIONS[mode];
+
+  tabs.forEach(function(tb){
+    tb.addEventListener("click", function(){
+      tabs.forEach(function(x){ x.classList.remove("active"); });
+      tb.classList.add("active");
+      mode = tb.dataset.m;
+      particles = makeParticles(mode);
+      caption.textContent = CAPTIONS[mode];
+    });
+  });
+
+  var t0 = performance.now();
+  function frame(now){
+    var t = (now - t0)/1000;
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#2f6fd1";
+    if (mode === "fest"){
+      particles.forEach(function(p){
+        var x = p.bx + Math.sin(t*2.2+p.phase)*1.6;
+        var y = p.by + Math.cos(t*2.5+p.phase)*1.6;
+        ctx.beginPath(); ctx.arc(x,y,5,0,6.3); ctx.fill();
+      });
+    } else {
+      var bound = mode === "fluessig" ? {minY:40, maxY:160} : {minY:10, maxY:160};
+      particles.forEach(function(p){
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 12 || p.x > W-12) p.vx *= -1;
+        if (p.y < bound.minY || p.y > bound.maxY) p.vy *= -1;
+        p.x = Math.max(12, Math.min(W-12, p.x));
+        p.y = Math.max(bound.minY, Math.min(bound.maxY, p.y));
+        ctx.beginPath(); ctx.arc(p.x,p.y,5,0,6.3); ctx.fill();
+      });
+    }
+    var raf = requestAnimationFrame(frame);
+    liveTimers.push({interval:null, raf:raf});
+  }
+  var rafId = requestAnimationFrame(frame);
+  liveTimers.push({interval:null, raf:rafId});
+}
+
+/* ===================== CHALLENGE: Übergangs-Memory ===================== */
+function initChallengeAggregat(container, onDone){
+  var PAIRS = [
+    {id:"schmelzen", icon:"🧊→💧", term:"Schmelzen"},
+    {id:"erstarren", icon:"💧→🧊", term:"Erstarren"},
+    {id:"verdunsten", icon:"💧→💨", term:"Verdunsten"},
+    {id:"kondensieren", icon:"💨→💧", term:"Kondensieren"}
+  ];
+
+  function start(){
+    container.innerHTML = '<p class="seqlabel">Finde die passenden Paare: Übergang und Fachbegriff.</p><div class="memgrid" id="memGrid"></div><div id="chResultArea3"></div>';
+    var grid = container.querySelector("#memGrid");
+
+    var cards = [];
+    PAIRS.forEach(function(p){
+      cards.push({pairId:p.id, content:p.icon, kind:"icon"});
+      cards.push({pairId:p.id, content:p.term, kind:"term"});
+    });
+    for (var i = cards.length - 1; i > 0; i--){ var j = Math.floor(Math.random()*(i+1)); var tmp=cards[i]; cards[i]=cards[j]; cards[j]=tmp; }
+
+    var flipped = [];
+    var matchedCount = 0;
+    var moves = 0;
+    var busy = false;
+    var done = false;
+
+    cards.forEach(function(card, idx){
+      var btn = document.createElement("button");
+      btn.type = "button"; btn.className = "memcard back"; btn.textContent = "❓";
+      btn.addEventListener("click", function(){
+        if (busy || done || btn.classList.contains("matched") || btn.classList.contains("flipped")) return;
+        btn.classList.remove("back"); btn.classList.add("flipped");
+        btn.classList.add(card.kind === "icon" ? "memicon" : "memterm");
+        btn.textContent = card.content;
+        flipped.push({idx:idx, btn:btn, card:card});
+        if (flipped.length === 2){
+          moves++;
+          busy = true;
+          var a = flipped[0], b = flipped[1];
+          if (a.card.pairId === b.card.pairId){
+            a.btn.classList.add("matched"); a.btn.classList.remove("flipped");
+            b.btn.classList.add("matched"); b.btn.classList.remove("flipped");
+            matchedCount++;
+            flipped = []; busy = false;
+            if (matchedCount === PAIRS.length) finish();
+          } else {
+            setTimeout(function(){
+              a.btn.classList.remove("flipped","memicon","memterm"); a.btn.classList.add("back"); a.btn.textContent = "❓";
+              b.btn.classList.remove("flipped","memicon","memterm"); b.btn.classList.add("back"); b.btn.textContent = "❓";
+              flipped = []; busy = false;
+            }, 700);
+          }
+        }
+      });
+      grid.appendChild(btn);
+    });
+
+    function finish(){
+      done = true;
+      var stars = moves <= 6 ? 3 : moves <= 9 ? 2 : moves <= 13 ? 1 : 0;
+      var points = stars === 3 ? 30 : stars === 2 ? 20 : stars === 1 ? 10 : 0;
+      var resArea = container.querySelector("#chResultArea3");
+      appendChallengeResult(resArea, stars,
+        stars >= 2 ? "Super gemerkt!" : "Geschafft!",
+        "Alle 4 Paare gefunden – mit " + moves + " Versuchen.",
+        start,
+        function(){ onDone(points); });
+    }
+  }
+  start();
+}
+
+/* ===================== CHALLENGE: Pfützen-Trockner (Verdunstung) ===================== */
+function initChallengeVerdunsten(container, onDone){
+  function start(){
+    container.innerHTML =
+      '<p class="qtext" style="margin-top:0;">Trockne die Pfütze so schnell wie möglich! Wähle deine Werkzeuge und drücke Start. Achte auf das ❄-Zeichen – das zeigt die Verdunstungskälte.</p>' +
+      '<canvas id="puddleCanvas" width="300" height="190"></canvas>' +
+      '<div class="timer-row"><span id="puddleStatus">nass</span><span id="puddleTime">0.0 s</span></div>' +
+      '<div class="tray" id="puddleTray">' +
+        '<button class="tool" type="button" data-t="sonne">☀️<br>Sonne</button>' +
+        '<button class="tool" type="button" data-t="wind">💨<br>Wind</button>' +
+      '</div>' +
+      '<div class="row"><button class="btn" id="puddleStart" type="button">▶ Start</button></div>' +
+      '<div id="chResultArea4"></div>';
+
+    var canvas = container.querySelector("#puddleCanvas");
+    var ctx = canvas.getContext("2d");
+    var W = 300, H = 190;
+    var statusEl = container.querySelector("#puddleStatus");
+    var timeEl = container.querySelector("#puddleTime");
+    var tools = container.querySelectorAll(".tool");
+    var startBtn2 = container.querySelector("#puddleStart");
+    var equipped = {};
+    var running = false;
+    var elapsed = 0;
+    var duration = 10;
+    var particles = [];
+    var t0 = null;
+    var done = false;
+
+    tools.forEach(function(tb){
+      tb.addEventListener("click", function(){
+        if (running) return;
+        var k = tb.dataset.t;
+        equipped[k] = !equipped[k];
+        tb.classList.toggle("active", !!equipped[k]);
+      });
+    });
+
+    function draw(progress, ts){
+      ctx.clearRect(0,0,W,H);
+      var sky = ctx.createLinearGradient(0,0,0,H*0.7);
+      sky.addColorStop(0, "#bfe3fb"); sky.addColorStop(1, "#e7f5fd");
+      ctx.fillStyle = sky; ctx.fillRect(0,0,W,H*0.75);
+      ctx.fillStyle = "#8fd17a"; ctx.fillRect(0,H*0.72,W,H*0.28);
+      ctx.beginPath(); ctx.fillStyle="#fbd34d"; ctx.arc(W-40,34,16,0,6.3); ctx.fill();
+      ctx.beginPath(); ctx.fillStyle="rgba(255,255,255,.85)"; ctx.ellipse(55,30,20,10,0,0,6.3); ctx.fill();
+
+      var rx = 72*(1-progress), ry = 16*(1-progress);
+      if (rx > 1){
+        ctx.beginPath(); ctx.fillStyle = "#3a7fc9"; ctx.ellipse(W/2, H*0.82, rx, ry, 0, 0, 6.3); ctx.fill();
+      }
+      particles.forEach(function(p){
+        ctx.beginPath(); ctx.fillStyle = "rgba(58,127,201," + Math.max(0,p.a) + ")";
+        ctx.arc(p.x, p.y, 3, 0, 6.3); ctx.fill();
+      });
+      if (running && progress > 0.1 && progress < 0.7){
+        ctx.font = "20px system-ui"; ctx.fillText("❄", W/2-28, H*0.6);
+        ctx.font = "12px system-ui"; ctx.fillStyle="#1c2733"; ctx.fillText("kühlt ab!", W/2-10, H*0.6);
+      }
+    }
+    draw(0);
+
+    startBtn2.addEventListener("click", function(){
+      if (running) return;
+      running = true; done = false; elapsed = 0; particles = [];
+      startBtn2.disabled = true;
+      tools.forEach(function(tb){ tb.disabled = true; });
+      var ft = equipped.sonne ? 1.8 : 1, fw = equipped.wind ? 1.6 : 1;
+      duration = 10 / (ft*fw);
+      duration = Math.max(2, duration);
+      t0 = performance.now();
+
+      function frame(now){
+        var dt = (now - t0)/1000 - elapsed;
+        elapsed = (now - t0)/1000;
+        var progress = Math.min(1, elapsed/duration);
+        statusEl.textContent = progress >= 1 ? "trocken" : "trocknet …";
+        timeEl.textContent = elapsed.toFixed(1) + " s";
+
+        if (Math.random() < 0.35 && progress < 1){
+          particles.push({x: W/2 + (Math.random()-0.5)*100*(1-progress), y: H*0.8, vy:-(0.4+Math.random()*0.6), a:1});
+        }
+        particles.forEach(function(p){ p.y += p.vy; p.a -= 0.02; });
+        particles = particles.filter(function(p){ return p.a > 0; });
+
+        draw(progress);
+        if (progress < 1){
+          var raf = requestAnimationFrame(frame);
+          liveTimers.push({interval:null, raf:raf});
+        } else {
+          finish();
+        }
+      }
+      var rafId = requestAnimationFrame(frame);
+      liveTimers.push({interval:null, raf:rafId});
+    });
+
+    function finish(){
+      if (done) return;
+      done = true;
+      var stars = duration <= 4 ? 3 : duration <= 7 ? 2 : duration <= 9.5 ? 1 : 0;
+      var points = stars === 3 ? 30 : stars === 2 ? 20 : stars === 1 ? 10 : 0;
+      var resArea = container.querySelector("#chResultArea4");
+      appendChallengeResult(resArea, stars,
+        stars >= 2 ? "Super ausgetrocknet!" : "Das ging noch langsam.",
+        "Trocken in " + duration.toFixed(1) + " s. " + (stars >= 2 ? "Gute Werkzeugwahl!" : "Tipp: Sonne UND Wind zusammen wirken am besten."),
+        start,
+        function(){ onDone(points); });
+    }
+  }
+  start();
+}
+
+/* ===================== quiz questions (mc / tf / text) ===================== */
+function normalizeText(s){
+  return (s||"").toLowerCase().trim()
+    .replace(/°/g,"").replace(/grad celsius/g,"").replace(/celsius/g,"")
+    .replace(/[.,;:!?"'„""]/g,"").replace(/\s+/g," ").trim();
+}
+function levenshtein(a,b){
+  var m=a.length, n=b.length;
+  var d = [];
+  for (var i=0;i<=m;i++) d.push([i]);
+  for (var j=0;j<=n;j++) d[0][j]=j;
+  for (i=1;i<=m;i++) for (j=1;j<=n;j++){
+    d[i][j] = Math.min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1] + (a[i-1]===b[j-1]?0:1));
+  }
+  return d[m][n];
+}
+
+var answered = false;
+
+function renderQuestion(){
+  answered = false;
+  var topic = TOPICS[state.curTopicIdx];
+  var q = topic.questions[state.curQIdx];
+  qTopicPill.textContent = topic.icon + " " + topic.title;
+  qProgressPill.textContent = "Frage " + (state.curQIdx+1) + " / " + topic.questions.length;
+  qText.textContent = q.q;
+  qFeedback.innerHTML = "";
+  answerBtn.textContent = "Antworten";
+  answerBtn.disabled = true;
+  answerBtn.onclick = gradeQuestion;
+
+  if (q.type === "mc"){
+    qBody.innerHTML = "";
+    q.options.forEach(function(opt, i){
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "opt"; b.textContent = opt;
+      b.addEventListener("click", function(){
+        if (answered) return;
+        Array.prototype.forEach.call(qBody.querySelectorAll(".opt"), function(el){ el.classList.remove("selected"); });
+        b.classList.add("selected");
+        qBody.dataset.picked = i;
+        answerBtn.disabled = false;
+      });
+      qBody.appendChild(b);
+    });
+  } else if (q.type === "tf"){
+    qBody.innerHTML = "";
+    ["Stimmt", "Stimmt nicht"].forEach(function(label, i){
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "opt"; b.textContent = label;
+      b.addEventListener("click", function(){
+        if (answered) return;
+        Array.prototype.forEach.call(qBody.querySelectorAll(".opt"), function(el){ el.classList.remove("selected"); });
+        b.classList.add("selected");
+        qBody.dataset.picked = (i === 0) ? "true" : "false";
+        answerBtn.disabled = false;
+      });
+      qBody.appendChild(b);
+    });
+  } else if (q.type === "text"){
+    qBody.innerHTML = '<div class="textrow"><input type="text" id="textField" placeholder="Deine Antwort" autocomplete="off"></div><p class="texthint">' + (q.hint||"") + '</p>';
+    var f = document.getElementById("textField");
+    f.addEventListener("input", function(){ answerBtn.disabled = f.value.trim() === ""; });
+    f.addEventListener("keydown", function(e){ if (e.key === "Enter" && !answerBtn.disabled) gradeQuestion(); });
+    setTimeout(function(){ f.focus(); }, 10);
+  }
+}
+
+function gradeQuestion(){
+  if (answered) return;
+  var topic = TOPICS[state.curTopicIdx];
+  var q = topic.questions[state.curQIdx];
+  var fraction = 0;
+  var givenText = "";
+
+  if (q.type === "mc"){
+    var picked = parseInt(qBody.dataset.picked, 10);
+    fraction = (picked === q.correct) ? 1 : 0;
+    givenText = q.options[picked];
+    Array.prototype.forEach.call(qBody.querySelectorAll(".opt"), function(el, i){
+      el.disabled = true;
+      if (i === q.correct) el.classList.add("correct");
+      else if (i === picked) el.classList.add("incorrect");
+    });
+  } else if (q.type === "tf"){
+    var pickedBool = qBody.dataset.picked === "true";
+    fraction = (pickedBool === q.correct) ? 1 : 0;
+    givenText = pickedBool ? "Stimmt" : "Stimmt nicht";
+    var correctLabel = q.correct ? "Stimmt" : "Stimmt nicht";
+    Array.prototype.forEach.call(qBody.querySelectorAll(".opt"), function(el){
+      el.disabled = true;
+      if (el.textContent === correctLabel) el.classList.add("correct");
+      else if (el.classList.contains("selected")) el.classList.add("incorrect");
+    });
+  } else if (q.type === "text"){
+    var f = document.getElementById("textField");
+    givenText = f.value;
+    var norm = normalizeText(f.value);
+    var ok = q.accept.some(function(acc){
+      if (norm === acc) return true;
+      if (acc.length >= 4 && norm.length >= 3) return levenshtein(norm, acc) <= 1;
+      return false;
+    });
+    fraction = ok ? 1 : 0;
+    f.disabled = true;
+  }
+
+  answered = true;
+  var earned = Math.round(q.points * fraction);
+  state.topics[topic.id].score += earned;
+
+  if (fraction < 1){
+    state.topics[topic.id].wrong.push({ q: q.q, given: givenText || "(keine Antwort)", explain: q.explain });
+  }
+
+  qFeedback.innerHTML = "";
+  var fb = document.createElement("div");
+  fb.className = "feedback " + (fraction === 1 ? "good" : "bad");
+  var head = fraction === 1 ? ("✓ Richtig! +" + earned + " Punkte") : ("✗ Nicht ganz (0 / " + q.points + " Punkte)");
+  fb.innerHTML = "<strong>" + head + "</strong><div class='expl'>" + q.explain + "</div>";
+  qFeedback.appendChild(fb);
+
+  answerBtn.disabled = false;
+  answerBtn.textContent = (state.curQIdx === topic.questions.length - 1) ? "Thema abschließen" : "Weiter";
+  answerBtn.onclick = nextQuestion;
+}
+
+function nextQuestion(){
+  var topic = TOPICS[state.curTopicIdx];
+  if (state.curQIdx < topic.questions.length - 1){
+    state.curQIdx++;
+    renderQuestion();
+  } else {
+    finishTopic();
+  }
+}
+
+function finishTopic(){
+  var topic = TOPICS[state.curTopicIdx];
+  var st = state.topics[topic.id];
+  st.done = true;
+  var pct = st.max ? st.score / st.max : 0;
+  st.stars = pct >= 0.9 ? 3 : pct >= 0.7 ? 2 : pct >= 0.4 ? 1 : 0;
+
+  trTopic.textContent = topic.icon + " " + topic.title;
+  trStars.textContent = "★".repeat(st.stars) + "☆".repeat(3 - st.stars);
+  trTitle.textContent = st.stars >= 2 ? "Stark gemacht!" : st.stars === 1 ? "Gut dabei!" : "Das sitzt noch nicht ganz.";
+  trText.textContent = st.score + " von " + st.max + " Punkten (" + Math.round(pct*100) + " %). " + (st.wrong.length ? "Schau dir die Erklärungen in der Sicherung später nochmal an." : "Alles richtig beantwortet – stark!");
+  show(screenTopicResult);
+}
+
+/* ---------------- sicherung ---------------- */
+function badgeFor(pct){
+  if (pct >= 0.85) return {label:"Gold-Champion", emoji:"🥇"};
+  if (pct >= 0.65) return {label:"Silber-Champion", emoji:"🥈"};
+  if (pct >= 0.4) return {label:"Bronze-Champion", emoji:"🥉"};
+  return {label:"Weiter üben", emoji:"📘"};
+}
+
+function buildSheetHTML(){
+  var tot = totalScore();
+  var pct = tot.max ? tot.score / tot.max : 0;
+  var badge = badgeFor(pct);
+  saveBest(pct, badge.label);
+  var dateStr = new Date().toLocaleDateString("de-DE", {day:"2-digit", month:"2-digit", year:"numeric"});
+
+  var rows = "";
+  TOPICS.forEach(function(t){
+    if (t.id === "sprint") return;
+    var st = state.topics[t.id];
+    rows += "<tr><td>" + t.icon + " " + t.title + "</td><td>" + st.score + " / " + st.max + "</td><td>" + "★".repeat(st.stars) + "☆".repeat(3-st.stars) + "</td></tr>";
+  });
+  var sprintSt = state.topics["sprint"];
+  var sprintHtml = sprintSt.done
+    ? "<p class='sprintbonus' style='margin-top:10px;'>🚀 <strong>Sprinter-Extra (freiwillig):</strong> " + sprintSt.score + " / " + sprintSt.max + " Bonuspunkte – zählt nicht zur Gesamtwertung.</p>"
+    : "";
+
+  var wrongHtml = "";
+  var anyWrong = TOPICS.some(function(t){ return state.topics[t.id].wrong.length > 0; });
+  if (anyWrong){
+    wrongHtml += "<h3>Das lohnt sich nochmal anzuschauen</h3><ul class='wronglist'>";
+    TOPICS.forEach(function(t){
+      state.topics[t.id].wrong.forEach(function(w){
+        wrongHtml += "<li><strong>" + w.q + "</strong><br>Deine Antwort: " + w.given + "<br><em>" + w.explain + "</em></li>";
+      });
+    });
+    wrongHtml += "</ul>";
+  } else {
+    wrongHtml = "<p>Alle Fragen richtig beantwortet – keine Wiederholung nötig. 🎉</p>";
+  }
+
+  var html =
+    "<p><strong>Name:</strong> " + (state.name || "–") + " &nbsp; <strong>Klasse:</strong> " + (state.klasse || "–") + " &nbsp; <strong>Datum:</strong> " + dateStr + "</p>" +
+    "<table><thead><tr><th>Thema</th><th>Punkte</th><th>Sterne</th></tr></thead><tbody>" + rows +
+    "<tr><th>Gesamt</th><th>" + tot.score + " / " + tot.max + " (" + Math.round(pct*100) + " %)</th><th></th></tr></tbody></table>" +
+    "<div class='badgebox'><div class='emoji'>" + badge.emoji + "</div><div><strong>" + badge.label + "</strong></div></div>" +
+    sprintHtml +
+    wrongHtml;
+  return html;
+}
+
+function renderSicherung(){
+  sheetPreview.innerHTML = buildSheetHTML();
+}
+
+exportBtn.addEventListener("click", function(){
+  window.print();
+});
+</script>
+</body>
+</html>

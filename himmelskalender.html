@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mein Himmelskalender – Linksammlung & Vorlage | Astronomie-AG</title>
+<style>
+  :root{
+    --bg:#0b1020; --bg2:#121a33; --card:#17213f; --card-h:#1d2a52;
+    --ink:#e8ecf8; --muted:#9aa6c7; --line:#2a3766;
+    --gold:#f5c96a; --blue:#7fb3ff; --violet:#b69cff; --green:#7fd8a8; --red:#ff8f8f;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    color:var(--ink); line-height:1.5;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, #24306a55, transparent 60%),
+      radial-gradient(900px 500px at -10% 30%, #3b1f5a44, transparent 60%),
+      var(--bg);
+    background-attachment:fixed;
+  }
+  /* Sterne im Hintergrund */
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:-1; opacity:.55;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 30% 80%, #fff 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 55% 35%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 75% 60%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 90% 15%, #fff 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 20% 55%, #cfe0ff 50%, transparent 51%),
+      radial-gradient(1px 1px at 65% 90%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 45% 10%, #ffe9c4 50%, transparent 51%);
+    background-size:400px 400px;
+  }
+  a{color:var(--blue)}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 20px}
+
+  header.hero{padding:48px 0 28px}
+  .eyebrow{color:var(--gold); letter-spacing:.14em; text-transform:uppercase; font-size:.8rem; font-weight:600}
+  h1{font-size:clamp(1.9rem,4vw,2.9rem); margin:.3em 0 .25em; line-height:1.15}
+  .lead{color:var(--muted); max-width:760px; font-size:1.06rem}
+
+  nav.tabs{position:sticky; top:0; z-index:10; background:#0b1020e6; backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line)}
+  nav.tabs .wrap{display:flex; gap:6px; flex-wrap:wrap; padding-top:10px; padding-bottom:10px}
+  nav.tabs a{color:var(--ink); text-decoration:none; padding:8px 14px; border-radius:999px;
+    border:1px solid var(--line); font-size:.93rem}
+  nav.tabs a:hover{background:var(--card)}
+
+  section{padding:40px 0 10px}
+  h2{font-size:1.6rem; margin:0 0 .3em}
+  h2 .num{display:inline-grid; place-items:center; width:34px; height:34px; border-radius:50%;
+    background:var(--gold); color:#1a1300; font-size:1rem; margin-right:10px; vertical-align:3px}
+  .sub{color:var(--muted); margin:0 0 22px}
+  h3.cat{margin:30px 0 12px; font-size:1.05rem; color:var(--gold); display:flex; align-items:center; gap:10px}
+  h3.cat::after{content:""; flex:1; height:1px; background:var(--line)}
+
+  /* Kacheln */
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(255px,1fr)); gap:14px}
+  .tile{
+    display:flex; flex-direction:column; gap:8px; text-decoration:none; color:var(--ink);
+    background:linear-gradient(160deg,var(--card),var(--bg2)); border:1px solid var(--line);
+    border-radius:var(--radius); padding:16px 16px 14px; transition:.18s; position:relative;
+  }
+  .tile:hover{transform:translateY(-3px); border-color:var(--blue); background:linear-gradient(160deg,var(--card-h),var(--bg2))}
+  .tile .ic{font-size:1.7rem; line-height:1}
+  .tile .t{font-weight:650; font-size:1.02rem}
+  .tile .d{color:var(--muted); font-size:.9rem; flex:1}
+  .tile .host{font-size:.78rem; color:#7f8bb0}
+  .tags{display:flex; gap:5px; flex-wrap:wrap}
+  .tag{font-size:.72rem; padding:2px 8px; border-radius:999px; border:1px solid currentColor; opacity:.9}
+  .tag.e{color:var(--green)} .tag.f{color:var(--blue)} .tag.t{color:var(--violet)} .tag.l{color:var(--gold)} .tag.en{color:var(--red)}
+  .legend{display:flex; gap:10px; flex-wrap:wrap; font-size:.85rem; color:var(--muted); margin-bottom:6px}
+
+  .note{background:#f5c96a14; border:1px solid #f5c96a55; border-radius:var(--radius); padding:14px 16px; color:#f3e3bd; font-size:.95rem}
+
+  /* Arbeitsauftrag */
+  .steps{counter-reset:s; display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px}
+  .step{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px 16px 16px 58px; position:relative}
+  .step::before{counter-increment:s; content:counter(s); position:absolute; left:16px; top:15px;
+    width:30px; height:30px; border-radius:50%; background:var(--blue); color:#071230; font-weight:700; display:grid; place-items:center}
+  .step b{display:block; margin-bottom:4px}
+  .step p{margin:0; color:var(--muted); font-size:.92rem}
+
+  /* Werkzeugleiste */
+  .toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; background:var(--card);
+    border:1px solid var(--line); border-radius:var(--radius); padding:12px 14px; margin-bottom:16px}
+  .toolbar label{font-size:.88rem; color:var(--muted)}
+  .toolbar select,.toolbar input{background:var(--bg2); color:var(--ink); border:1px solid var(--line); border-radius:8px; padding:6px 8px; font:inherit}
+  button{font:inherit; cursor:pointer; border-radius:8px; border:1px solid var(--line); background:var(--bg2); color:var(--ink); padding:7px 12px}
+  button:hover{border-color:var(--blue)}
+  button.primary{background:var(--gold); color:#1a1300; border-color:var(--gold); font-weight:600}
+  .stickers{display:flex; gap:4px; flex-wrap:wrap; align-items:center}
+  .stickers button{padding:4px 8px; font-size:1.1rem}
+  .stickers button.on{background:var(--blue); border-color:var(--blue)}
+  .hint{font-size:.82rem; color:var(--muted); width:100%}
+
+  /* ===== Vorlage (Papier) ===== */
+  .sheet{background:#fff; color:#1b2033; border-radius:10px; padding:26px 28px; box-shadow:0 20px 50px #0007; margin-bottom:22px}
+  .sheet h4{margin:0; font-size:1.55rem; letter-spacing:.02em}
+  .sheet .head{display:flex; justify-content:space-between; align-items:flex-end; gap:16px; border-bottom:3px solid #1b2033; padding-bottom:10px; margin-bottom:14px; flex-wrap:wrap}
+  .sheet .monthtitle{font-size:1.25rem; font-weight:700; color:#3a4a8a}
+  .fields{display:grid; grid-template-columns:repeat(4,1fr); gap:8px 14px; margin-bottom:16px}
+  .field{font-size:.78rem; color:#5a6280}
+  .field div{border-bottom:1px solid #9aa2bb; min-height:24px; color:#1b2033; font-size:.95rem; padding:2px 2px}
+  [contenteditable]:focus{outline:2px solid #7fb3ff; outline-offset:1px; background:#eef4ff}
+  .sheet h5{font-size:.95rem; margin:18px 0 6px; text-transform:uppercase; letter-spacing:.08em; color:#3a4a8a}
+
+  .cal{display:grid; grid-template-columns:repeat(7,1fr); border-top:1px solid #b9c0d6; border-left:1px solid #b9c0d6}
+  .cal .dow{background:#1b2033; color:#fff; text-align:center; font-size:.78rem; font-weight:600; padding:4px 0; border-right:1px solid #1b2033}
+  .cal .day{min-height:84px; border-right:1px solid #b9c0d6; border-bottom:1px solid #b9c0d6; padding:3px 5px; position:relative; cursor:pointer; font-size:.8rem}
+  .cal .day.empty{background:#f2f4f9; cursor:default}
+  .cal .day.we .n{color:#b04a4a}
+  .cal .day .n{font-weight:700; font-size:.82rem}
+  .cal .day .sym{font-size:1.05rem; line-height:1.15; margin-top:1px; word-break:break-all}
+  .cal .day .txt{font-size:.72rem; color:#33405f; line-height:1.2; min-height:1em}
+  .cal .day.today{box-shadow:inset 0 0 0 2px #f5b84a}
+
+  table.ev{width:100%; border-collapse:collapse; font-size:.86rem}
+  table.ev th{background:#e9edf7; text-align:left; padding:6px; border:1px solid #b9c0d6; font-size:.78rem}
+  table.ev td{border:1px solid #b9c0d6; padding:5px 6px; height:28px; vertical-align:top}
+  table.ev td.c{text-align:center}
+  .planets td:first-child{font-weight:600; width:16%}
+
+  .two{display:grid; grid-template-columns:1.25fr 1fr; gap:18px}
+  .eyepieces{display:flex; gap:14px; flex-wrap:wrap}
+  .eyepiece{flex:1; min-width:150px}
+  .circle{aspect-ratio:1; border:2px solid #1b2033; border-radius:50%; background:
+     radial-gradient(circle, transparent 69%, #0000 70%),
+     linear-gradient(#e7ebf5 1px, transparent 1px) 0 0/100% 50%,
+     linear-gradient(90deg,#e7ebf5 1px, transparent 1px) 0 0/50% 100%}
+  .eyepiece .lines{font-size:.75rem; color:#5a6280; margin-top:6px}
+  .eyepiece .lines div{border-bottom:1px solid #b9c0d6; min-height:20px; color:#1b2033}
+  .legendbox{font-size:.8rem; display:grid; grid-template-columns:repeat(3,1fr); gap:3px 10px; background:#f5f7fc; border:1px solid #d6dbea; border-radius:8px; padding:8px 10px}
+  .check{display:flex; gap:8px; flex-wrap:wrap; font-size:.82rem}
+  .check span{border:1px solid #b9c0d6; border-radius:6px; padding:3px 8px}
+  .foot{font-size:.72rem; color:#6a7290; margin-top:12px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap}
+
+  footer{color:var(--muted); font-size:.85rem; padding:30px 0 50px; border-top:1px solid var(--line); margin-top:40px}
+
+  @media (max-width:760px){
+    .fields{grid-template-columns:1fr 1fr}
+    .two{grid-template-columns:1fr}
+    .cal .day{min-height:64px}
+  }
+
+  /* ===== Druck: nur die Vorlage ===== */
+  @media print{
+    @page{size:A4; margin:10mm}
+    body{background:#fff; color:#000}
+    body::before, header.hero, nav.tabs, #links, #auftrag, .toolbar, footer, .noprint, .sectionhead{display:none !important}
+    section{padding:0}
+    .wrap{max-width:none; padding:0}
+    .sheet{box-shadow:none; border-radius:0; padding:0; margin:0}
+    .sheet + .sheet{break-before:page}
+    .sheet h5{margin:10px 0 4px}
+    table.ev{font-size:.7rem; line-height:1.25}
+    table.ev td{height:20px; padding:2px 4px}
+    .sheet .head{margin-bottom:8px; padding-bottom:6px}
+    .sheet h4{font-size:1.3rem}
+    table.ev th{padding:4px 5px}
+    .fields{margin-bottom:8px}
+    body.blank table.ev td{height:25px}
+    body.blank .fields div{min-height:30px}
+    [contenteditable]:focus{outline:none; background:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Astronomie-AG · Teleskopieren</div>
+    <h1>Mein Himmelskalender</h1>
+    <p class="lead">Deutschsprachige Quellen für aktuelle Himmelsereignisse – und eine Vorlage, mit der ihr euren eigenen Himmelskalender für zwei Monate erstellt.</p>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="wrap">
+    <a href="#links">🔭 Linksammlung</a>
+    <a href="#auftrag">📝 Arbeitsauftrag</a>
+    <a href="#vorlage">🗓️ Vorlage Himmelskalender</a>
+  </div>
+</nav>
+
+<!-- ================= LINKSAMMLUNG ================= -->
+<section id="links">
+  <div class="wrap">
+    <h2><span class="num">1</span>Linksammlung</h2>
+    <p class="sub">Alle Quellen sind deutschsprachig (Ausnahmen sind markiert). Tipp: Vergleicht immer mindestens zwei Quellen – Datum und Uhrzeit weichen manchmal voneinander ab!</p>
+    <div class="legend">
+      <span class="tag e">Einsteiger</span>
+      <span class="tag f">Fernglas/Teleskop</span>
+      <span class="tag t">Tool/interaktiv</span>
+      <span class="tag l">für Lehrkräfte</span>
+      <span class="tag en">teilw. englisch</span>
+    </div>
+
+    <h3 class="cat">🌙 Der Himmel im aktuellen Monat</h3>
+    <div class="grid">
+      <a class="tile" href="https://www.sterngucker.de/?p=9776" target="_blank" rel="noopener">
+        <span class="ic">⭐</span><span class="t">Sterngucker.de – Sternenhimmel des Monats</span>
+        <span class="d">Monatsübersicht mit Highlight-Tabelle, Mondphasen mit Uhrzeit, Planeten und Aufsuchkarten – gerechnet für Deutschland (MEZ). Ideal als Hauptquelle.</span>
+        <span class="tags"><span class="tag e">Einsteiger</span><span class="tag f">Teleskop</span></span>
+        <span class="host">sterngucker.de</span>
+      </a>
+      <a class="tile" href="https://astronomie.at/?p=29016" target="_blank" rel="noopener">
+        <span class="ic">🏔️</span><span class="t">astronomie.at – Der Sternenhimmel im Monat</span>
+        <span class="d">Monatlicher Bericht des Astronomischen Arbeitskreises Salzkammergut: Planeten, Mond, Sternbilder und Termine.</span>
+        <span class="tags"><span class="tag e">Einsteiger</span></span>
+        <span class="host">astronomie.at</span>
+      </a>
+      <a class="tile" href="https://astronomie.at/events/kategorie/himmelsereignisse/monat/" target="_blank" rel="noopener">
+        <span class="ic">📅</span><span class="t">astronomie.at – Kalender „Himmelsereignisse“</span>
+        <span class="d">Die Himmelsereignisse als echte Monats-Kalenderansicht – gut als Vorbild für euren eigenen Kalender.</span>
+        <span class="tags"><span class="tag t">Kalender</span></span>
+        <span class="host">astronomie.at</span>
+      </a>
+      <a class="tile" href="https://www.spektrum.de/news/planetenlauf-august-2026/2320266" target="_blank" rel="noopener">
+        <span class="ic">🪐</span><span class="t">Spektrum.de – „Planetenlauf“</span>
+        <span class="d">Monatliche Rubrik: wann welcher Planet wie hoch und wie hell steht, mit Teleskop-Hinweisen. (Beispielausgabe – über die Suche „Planetenlauf“ den aktuellen Monat öffnen.)</span>
+        <span class="tags"><span class="tag f">Teleskop</span></span>
+        <span class="host">spektrum.de</span>
+      </a>
+      <a class="tile" href="https://planetarium-jena.de/" target="_blank" rel="noopener">
+        <span class="ic">🏛️</span><span class="t">Zeiss-Planetarium Jena – Sternhimmel des Monats</span>
+        <span class="d">Kurzer, gut lesbarer Monatsüberblick mit Planeten und Sternschnuppen. Viele Planetarien (Hamburg, Berlin, Bochum …) bieten Ähnliches.</span>
+        <span class="tags"><span class="tag e">Einsteiger</span></span>
+        <span class="host">planetarium-jena.de</span>
+      </a>
+      <a class="tile" href="https://starwalk.space/de/news" target="_blank" rel="noopener">
+        <span class="ic">✨</span><span class="t">Star Walk – Astronomische Neuigkeiten</span>
+        <span class="d">Monatsartikel mit Ereignistabellen und Sichtbarkeits-Einstufung (bloßes Auge / Fernglas / Teleskop). Achtung: wirbt stark für die eigene App.</span>
+        <span class="tags"><span class="tag e">Einsteiger</span></span>
+        <span class="host">starwalk.space/de</span>
+      </a>
+    </div>
+
+    <h3 class="cat">📆 Jahresübersichten</h3>
+    <div class="grid">
+      <a class="tile" href="https://starwalk.space/de/news/astronomy-calendar-2026" target="_blank" rel="noopener">
+        <span class="ic">🗓️</span><span class="t">Astronomischer Kalender 2026</span>
+        <span class="d">Monat für Monat alle Begegnungen von Mond und Planeten, Finsternisse und Meteorströme – mit Abständen und Helligkeiten.</span>
+        <span class="tags"><span class="tag e">Einsteiger</span><span class="tag f">Fernglas</span></span>
+        <span class="host">starwalk.space/de</span>
+      </a>
+      <a class="tile" href="https://www.spektrum.de/news/himmlische-highlights-des-jahres-2026/2282616" target="_blank" rel="noopener">
+        <span class="ic">🌗</span><span class="t">Sterne und Weltraum – Himmelsereignisse 2026</span>
+        <span class="d">Jahresüberblick der Fachzeitschrift: Finsternisse, Oppositionen, Meteorströme – was, wann, wo und wie.</span>
+        <span class="tags"><span class="tag f">Teleskop</span></span>
+        <span class="host">spektrum.de</span>
+      </a>
+      <a class="tile" href="https://sternfreunde.de/wp-content/uploads/2025/12/VdS-Sternenhimmel_2026.docx" target="_blank" rel="noopener">
+        <span class="ic">📄</span><span class="t">VdS – Sternenhimmel 2026 (Word-Datei)</span>
+        <span class="d">Die Vereinigung der Sternfreunde beschreibt Planeten und Sternbilder für jeden Monat des Jahres – kostenlos zum Download.</span>
+        <span class="tags"><span class="tag e">Einsteiger</span><span class="tag l">Material</span></span>
+        <span class="host">sternfreunde.de</span>
+      </a>
+      <a class="tile" href="https://www.timeanddate.de/astronomie/" target="_blank" rel="noopener">
+        <span class="ic">🌑</span><span class="t">timeanddate.de – Astronomie</span>
+        <span class="d">Mondphasen, Sonnen- und Mondauf-/-untergang für euren Ort sowie Sonnen- und Mondfinsternisse mit Animation.</span>
+        <span class="tags"><span class="tag t">Tool</span></span>
+        <span class="host">timeanddate.de</span>
+      </a>
+    </div>
+
+    <h3 class="cat">🌠 Sternschnuppen &amp; Meteorströme</h3>
+    <div class="grid">
+      <a class="tile" href="https://www.imo.net/files/meteor-shower/cal2026de.pdf" target="_blank" rel="noopener">
+        <span class="ic">☄️</span><span class="t">IMO – Meteorstrom-Kalender 2026 (deutsch)</span>
+        <span class="d">Die „Profi-Quelle“: deutsche Ausgabe des Kalenders der International Meteor Organization mit Maxima, Raten und Mondeinfluss.</span>
+        <span class="tags"><span class="tag f">Fortgeschritten</span></span>
+        <span class="host">imo.net (PDF)</span>
+      </a>
+      <a class="tile" href="https://www.meteoros.de/" target="_blank" rel="noopener">
+        <span class="ic">🌌</span><span class="t">Arbeitskreis Meteore e.V.</span>
+        <span class="d">Deutscher Verein für Meteore, Halos, Polarlichter und leuchtende Nachtwolken – mit Beobachtungshinweisen.</span>
+        <span class="tags"><span class="tag f">Fortgeschritten</span></span>
+        <span class="host">meteoros.de</span>
+      </a>
+      <a class="tile" href="https://starwalk.space/de/news/meteor-shower-calendar" target="_blank" rel="noopener">
+        <span class="ic">🌠</span><span class="t">Sternschnuppen-Kalender 2026</span>
+        <span class="d">Einfache Liste der großen Ströme mit Meteoren pro Stunde, Radiant und Mondbeleuchtung.</span>
+        <span class="tags"><span class="tag e">Einsteiger</span></span>
+        <span class="host">starwalk.space/de</span>
+      </a>
+    </div>
+
+    <h3 class="cat">🛰️ ISS &amp; Satelliten</h3>
+    <div class="grid">
+      <a class="tile" href="https://www.heavens-above.com/" target="_blank" rel="noopener">
+        <span class="ic">🛰️</span><span class="t">Heavens-Above</span>
+        <span class="d">Überflugzeiten von ISS, Starlink &amp; Co. für euren Standort, dazu eine Live-Himmelskarte. Sprache auf Deutsch umstellbar; zuerst den Ort eingeben!</span>
+        <span class="tags"><span class="tag t">Tool</span><span class="tag e">bloßes Auge</span></span>
+        <span class="host">heavens-above.com</span>
+      </a>
+      <a class="tile" href="https://www.sterngucker.de/?p=20144" target="_blank" rel="noopener">
+        <span class="ic">🚀</span><span class="t">ISS heute sichtbar?</span>
+        <span class="d">Überflüge der nächsten 7 Nächte – nur die wirklich sichtbaren – plus Erklärung, warum die ISS nicht jeden Abend zu sehen ist.</span>
+        <span class="tags"><span class="tag e">Einsteiger</span></span>
+        <span class="host">sterngucker.de</span>
+      </a>
+      <a class="tile" href="https://www.dlr.de/de/next/raumfahrt/bemannte-raumfahrt/live-die-iss-sehen" target="_blank" rel="noopener">
+        <span class="ic">🇩🇪</span><span class="t">DLR_next – Live die ISS sehen</span>
+        <span class="d">Kinder- und jugendgerechte Seite des Deutschen Zentrums für Luft- und Raumfahrt, mit Hinweis auf die App DLR_next.</span>
+        <span class="tags"><span class="tag e">Einsteiger</span></span>
+        <span class="host">dlr.de</span>
+      </a>
+    </div>
+
+    <h3 class="cat">🧭 Himmelskarten &amp; Beobachtungsbedingungen</h3>
+    <div class="grid">
+      <a class="tile" href="https://stellarium-web.org/" target="_blank" rel="noopener">
+        <span class="ic">🗺️</span><span class="t">Stellarium Web</span>
+        <span class="d">Kostenloses Planetarium im Browser: Ort und Uhrzeit einstellen und prüfen, wo ein Objekt steht. Oberfläche auf Deutsch verfügbar.</span>
+        <span class="tags"><span class="tag t">Tool</span><span class="tag f">Aufsuchen</span></span>
+        <span class="host">stellarium-web.org</span>
+      </a>
+      <a class="tile" href="https://www.meteoblue.com/de/wetter/outdoorsports/seeing" target="_blank" rel="noopener">
+        <span class="ic">☁️</span><span class="t">meteoblue – Astronomisches Seeing</span>
+        <span class="d">7-Tage-Vorhersage für Bewölkung in drei Höhen, Luftunruhe (Seeing) und Jetstream – entscheidet, ob ihr das Teleskop aufbaut.</span>
+        <span class="tags"><span class="tag t">Tool</span><span class="tag f">Teleskop</span></span>
+        <span class="host">meteoblue.com</span>
+      </a>
+      <a class="tile" href="https://www.lightpollutionmap.info/" target="_blank" rel="noopener">
+        <span class="ic">💡</span><span class="t">Lichtverschmutzungskarte</span>
+        <span class="d">Wo ist es in eurer Umgebung wirklich dunkel? Hilft bei der Wahl des Beobachtungsplatzes für Galaxien und Nebel.</span>
+        <span class="tags"><span class="tag t">Tool</span><span class="tag en">englisch</span></span>
+        <span class="host">lightpollutionmap.info</span>
+      </a>
+    </div>
+
+    <h3 class="cat">👩‍🏫 Für Lehrkräfte</h3>
+    <div class="grid">
+      <a class="tile" href="https://www.spektrum.de/sixcms/media.php/1308/WIS-2025-12GS-AstronomieAG.pdf" target="_blank" rel="noopener">
+        <span class="ic">🎓</span><span class="t">WIS – Astronomie-AG gestalten</span>
+        <span class="d">„Wissenschaft in die Schulen“-Material zur Planung einer Astronomie-AG – inkl. Tipp, Luft für aktuelle Himmelsereignisse einzuplanen.</span>
+        <span class="tags"><span class="tag l">Lehrkräfte</span></span>
+        <span class="host">spektrum.de (PDF)</span>
+      </a>
+      <a class="tile" href="https://wissenschaft.de/shop/kosmos-himmelsjahr-2026" target="_blank" rel="noopener">
+        <span class="ic">📘</span><span class="t">Kosmos Himmelsjahr (Buch)</span>
+        <span class="d">Das klassische Jahrbuch: Planetenlauf, Sternkarten und Fernrohrtipps für jeden Monat – gut als Klassensatz oder AG-Exemplar.</span>
+        <span class="tags"><span class="tag l">Print</span><span class="tag f">Teleskop</span></span>
+        <span class="host">wissenschaft.de</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ARBEITSAUFTRAG ================= -->
+<section id="auftrag">
+  <div class="wrap">
+    <h2><span class="num">2</span>Arbeitsauftrag: Dein Himmelskalender</h2>
+    <p class="sub">Erstelle für zwei Monate deinen persönlichen Himmelskalender.</p>
+    <div class="steps">
+      <div class="step"><b>Ort festlegen</b><p>Trage deinen Beobachtungsort ein (z.&nbsp;B. Schulhof). Alle Uhrzeiten gelten für Deutschland in MEZ/MESZ.</p></div>
+      <div class="step"><b>Mondphasen eintragen</b><p>Neumond, Erstes Viertel, Vollmond, Letztes Viertel – mit Datum und Uhrzeit. Die Nächte um Neumond sind die dunkelsten.</p></div>
+      <div class="step"><b>Planeten recherchieren</b><p>Welche Planeten sind abends, welche morgens sichtbar? In welchem Sternbild? Fülle die Planeten-Tabelle aus.</p></div>
+      <div class="step"><b>Ereignisse sammeln</b><p>Mindestens 6 Ereignisse aus mindestens 2 Quellen: Begegnungen, Meteorströme, Oppositionen, ISS-Überflüge …</p></div>
+      <div class="step"><b>Quellen vergleichen</b><p>Stimmen Datum und Uhrzeit überein? Wenn nicht: notiere beide Angaben und prüfe mit Stellarium Web.</p></div>
+      <div class="step"><b>Top-5 auswählen</b><p>Wähle die 5 spannendsten Ziele fürs Teleskop aus und begründe kurz deine Wahl.</p></div>
+    </div>
+    <p class="note" style="margin-top:16px">⚠️ <b>Sicherheit:</b> Niemals mit Teleskop oder Fernglas in die Sonne schauen – auch nicht kurz! Sonnenbeobachtung nur mit geprüftem Objektiv-Sonnenfilter und Aufsicht.</p>
+  </div>
+</section>
+
+<!-- ================= VORLAGE ================= -->
+<section id="vorlage">
+  <div class="wrap">
+    <div class="sectionhead">
+      <h2><span class="num">3</span>Vorlage Himmelskalender</h2>
+      <p class="sub">Direkt im Browser ausfüllen oder leer ausdrucken – eine A4-Seite für zwei Monate.</p>
+    </div>
+
+    <div class="toolbar">
+      <label>Startmonat <select id="m"></select></label>
+      <label>Jahr <input id="y" type="number" min="2000" max="2100" style="width:84px"></label>
+      <button id="btnEx" title="Füllt die Vorlage mit Beispieldaten für November/Dezember 2026">✨ Beispiel Nov./Dez. 2026</button>
+      <button id="btnClear">🧹 Leeren</button>
+      <button class="primary" onclick="window.print()">🖨️ Drucken / PDF</button>
+      <span class="hint">In jedes Feld klicken und schreiben. Eingaben bleiben in diesem Browser gespeichert. Gedruckt wird nur die Kalenderseite.</span>
+    </div>
+
+    <div class="sheet" id="sheet">
+      <div class="head">
+        <h4>🔭 Mein Himmelskalender</h4>
+        <div class="monthtitle" id="monthTitle">November / Dezember 2026</div>
+      </div>
+      <div class="fields">
+        <div class="field">Name<div contenteditable data-k="name"></div></div>
+        <div class="field">Klasse / AG<div contenteditable data-k="klasse"></div></div>
+        <div class="field">Beobachtungsort<div contenteditable data-k="ort"></div></div>
+        <div class="field">Zeitraum<div contenteditable data-k="zeit"></div></div>
+      </div>
+
+      <h5>Mondphasen</h5>
+      <table class="ev" id="moonTbl">
+        <tr><th style="width:16%">Monat</th><th>🌑 Neumond</th><th>🌓 Erstes Viertel</th><th>🌕 Vollmond</th><th>🌗 Letztes Viertel</th></tr>
+        <tr><td class="mn1" style="font-weight:600"></td><td contenteditable data-k="a1"></td><td contenteditable data-k="a2"></td><td contenteditable data-k="a3"></td><td contenteditable data-k="a4"></td></tr>
+        <tr><td class="mn2" style="font-weight:600"></td><td contenteditable data-k="b1"></td><td contenteditable data-k="b2"></td><td contenteditable data-k="b3"></td><td contenteditable data-k="b4"></td></tr>
+      </table>
+
+      <h5>Ereignisliste</h5>
+      <table class="ev" id="evTbl">
+        <thead><tr>
+          <th style="width:9%">Datum</th><th style="width:9%">Uhrzeit</th><th>Ereignis</th>
+          <th style="width:15%">Richtung / Höhe</th><th style="width:11%">Sternbild</th>
+          <th style="width:9%">👁️ / 🔭</th><th style="width:12%">Quelle</th><th style="width:5%">✔</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="two" style="margin-top:6px">
+        <div>
+          <h5>Planeten – wann sichtbar?</h5>
+          <table class="ev planets" id="plTbl">
+            <tr><th>Planet</th><th class="mn1"></th><th class="mn2"></th><th>Sternbild</th></tr>
+          </table>
+        </div>
+        <div>
+          <h5>Meine Top-5 fürs Teleskop</h5>
+          <table class="ev">
+            <tr><th style="width:12%">#</th><th>Objekt &amp; Termin</th></tr>
+            <tr><td class="c">1</td><td contenteditable data-k="top1"></td></tr>
+            <tr><td class="c">2</td><td contenteditable data-k="top2"></td></tr>
+            <tr><td class="c">3</td><td contenteditable data-k="top3"></td></tr>
+            <tr><td class="c">4</td><td contenteditable data-k="top4"></td></tr>
+            <tr><td class="c">5</td><td contenteditable data-k="top5"></td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="foot"><span>Astronomie-AG · Zeiten in MEZ / MESZ</span><span>⚠️ Nie ohne Sonnenfilter in die Sonne schauen!</span></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Erstellt für die Astronomie-AG · Stand: November 2026 · Beispieldaten nach sterngucker.de, astronomie.at, Star Walk und Merian (Termine der Leoniden und Geminiden weichen zwischen den Quellen ab – gute Übung zum Quellenvergleich!).
+  </div>
+</footer>
+
+<script>
+(function(){
+  const MONTHS=["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+  const EV_ROWS=16;
+  const PLANETS=["Merkur","Venus","Mars","Jupiter","Saturn","Uranus","Neptun"];
+  const KEY="himmelskalender-v3";
+  let state={m:10,y:2026,fields:{},ev:[],pl:{}};
+
+  function save(){ try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){} }
+  function load(){ try{const s=JSON.parse(localStorage.getItem(KEY)); if(s) state=Object.assign(state,s);}catch(e){} }
+
+  const mSel=document.getElementById("m"), yIn=document.getElementById("y");
+  MONTHS.forEach((n,i)=>{const o=document.createElement("option");o.value=i;o.textContent=n;mSel.appendChild(o);});
+
+  function title(){
+    const m2=(state.m+1)%12, y2=state.m===11?state.y+1:state.y;
+    const n1=MONTHS[state.m], n2=MONTHS[m2];
+    document.getElementById("monthTitle").textContent = y2===state.y ? n1+" / "+n2+" "+state.y : n1+" "+state.y+" / "+n2+" "+y2;
+    document.querySelectorAll(".mn1").forEach(e=>e.textContent=n1);
+    document.querySelectorAll(".mn2").forEach(e=>e.textContent=n2);
+  }
+  function buildEv(){
+    const tb=document.querySelector("#evTbl tbody"); tb.innerHTML="";
+    for(let r=0;r<EV_ROWS;r++){
+      const tr=document.createElement("tr");
+      for(let c=0;c<8;c++){
+        const td=document.createElement("td"); td.contentEditable=true; if(c>=5) td.className="c";
+        td.textContent=(state.ev[r]&&state.ev[r][c])||"";
+        td.addEventListener("input",()=>{state.ev[r]=state.ev[r]||Array(8).fill("");state.ev[r][c]=td.textContent;save();});
+        tr.appendChild(td);
+      }
+      tb.appendChild(tr);
+    }
+  }
+  function buildPl(){
+    const tb=document.getElementById("plTbl");
+    while(tb.rows.length>1) tb.deleteRow(1);
+    PLANETS.forEach(p=>{
+      const tr=tb.insertRow(); tr.insertCell().textContent=p;
+      for(let c=0;c<3;c++){
+        const td=tr.insertCell(); td.contentEditable=true;
+        td.textContent=(state.pl[p]&&state.pl[p][c])||"";
+        td.addEventListener("input",()=>{state.pl[p]=state.pl[p]||["","",""];state.pl[p][c]=td.textContent;save();});
+      }
+    });
+  }
+  function bindFields(){
+    document.querySelectorAll("[data-k]").forEach(el=>{
+      el.textContent=state.fields[el.dataset.k]||"";
+      el.oninput=()=>{state.fields[el.dataset.k]=el.textContent;save();};
+    });
+  }
+  function render(){ mSel.value=state.m; yIn.value=state.y; title(); buildEv(); buildPl(); bindFields(); }
+
+  mSel.onchange=()=>{state.m=+mSel.value;save();title();};
+  yIn.onchange=()=>{state.y=+yIn.value||state.y;save();title();};
+
+  document.getElementById("btnClear").onclick=()=>{
+    if(!confirm("Alle Eintragungen löschen?")) return;
+    state={m:state.m,y:state.y,fields:{},ev:[],pl:{}}; save(); render();
+  };
+
+  // Beispiel November/Dezember 2026 (aus den recherchierten Quellen)
+  window.loadExample=()=>{
+    state={m:10,y:2026,
+      fields:{ort:"Schulhof (Beispiel)",zeit:"1.11.–31.12.2026",
+        a1:"9.11. · 08:02",a2:"17.11. · 12:47",a3:"24.11. · 15:53",a4:"1.11. · 21:28",
+        b1:"9.12. · 01:51",b2:"17.12. · 06:42",b3:"24.12. · 02:28",b4:"1.12. · 07:08 / 30.12. · 19:59",
+        top1:"Uranus in Opposition – 25./26.11., Stier",
+        top2:"Geminiden – Nacht 13./14.12.",
+        top3:"Andromeda-Galaxie – Nächte um den Neumond (9.11. / 9.12.)",
+        top4:"Saturn hoch im Süden – Dezemberabende",
+        top5:"Mars neben Regulus – 26.11. ab 03:00"},
+      ev:[
+        ["7.11.","morgens","Schmale Mondsichel bei Venus","SO, tief","—","👁️","leinetal24",""],
+        ["17./18.11.","nach Mondunterg. (ca. 23:30)","Leoniden-Maximum (ca. 10–15 Meteore/h)","Radiant im Löwen","Löwe","👁️","Merian / sterngucker (abweichend!)",""],
+        ["21.11.","vor Sonnenaufg.","Merkur: größte westliche Elongation (19,6°)","SO, tief","","👁️ / Fernglas","sterngucker.de",""],
+        ["24.11.","abends","Vollmond dicht bei den Plejaden","O","Stier","👁️ / Fernglas","sterngucker.de",""],
+        ["25./26.11.","ganze Nacht","Uranus in Opposition","S um Mitternacht","Stier","🔭","echo24 / astronomie.at",""],
+        ["26.11.","ab 03:00","Mars 1,7° neben Regulus","O / SO","Löwe","👁️ / 🔭","sterngucker.de",""],
+        ["30.11.","morgens","Viergestirn: Mond, Jupiter, Mars, Regulus","S / SO","Löwe","👁️","Star Walk / astronomie.at",""],
+        ["5.12.","ca. 06:30","Schmale Mondsichel ca. 7° neben Venus","SO","","👁️","sterngucker.de",""],
+        ["13./14.12.","ganze Nacht","Geminiden-Maximum (bis zu 150 Meteore/h)","Radiant in den Zwillingen","Zwillinge","👁️","sterngucker / Star Walk (Merian: 16.12.!)",""],
+        ["17.12.","ca. 21:00","Mond ca. 8° neben Saturn","S","","👁️ / 🔭","sterngucker.de",""],
+        ["21.12.","ca. 21:50","Wintersonnenwende – längste Nacht","—","—","—","sterngucker.de",""],
+        ["22./23.12.","nachts","Ursiden-Maximum (ca. 10 Meteore/h)","Radiant im Kleinen Bären","Kl. Bär","👁️","sterngucker.de",""],
+        ["24.12.","02:28","Vollmond – hellster des Jahres (Supermond)","—","","👁️","sterngucker / Star Walk",""],
+        ["27.12.","ca. 06:30","Mond ca. 7° neben Jupiter","SW","Löwe","👁️","sterngucker.de",""],
+        ["28.12.","morgens","Mond ca. 7° neben Mars","S","","👁️","sterngucker.de",""]
+      ],
+      pl:{
+        "Merkur":["Morgen (2. Hälfte)","","" ],
+        "Venus":["Morgen","Morgen",""],
+        "Mars":["2. Nachthälfte","Morgen","Löwe"],
+        "Jupiter":["2. Nachthälfte","ab ca. 22 bzw. 20 Uhr","Löwe"],
+        "Saturn":["Abend","Abend, hoch im S",""],
+        "Uranus":["ganze Nacht","ganze Nacht","Stier"],
+        "Neptun":["Abend","Abend (bis ca. 24 Uhr)",""]}};
+    save(); render();
+  };
+  document.getElementById("btnEx").onclick=()=>{
+    if(state.ev.length && !confirm("Beispiel laden? Deine Eintragungen werden überschrieben.")) return;
+    loadExample();
+  };
+
+  load(); render();
+})();
+</script>
+</body>
+</html>

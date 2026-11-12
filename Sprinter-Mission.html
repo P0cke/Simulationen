@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Mission Komma – Die Dezimalzahlen-Expedition</title>
+<meta name="author" content="Stephan Holtkötter">
+<!-- © 2026 Stephan Holtkötter. Alle Rechte vorbehalten. -->
+<style>
+:root{--bg:#0b1030;--card:rgba(24,32,84,.92);--card2:#222c6e;--ink:#eef1ff;--muted:#a9b1e6;--accent:#ffd34d;--good:#3ddc97;--bad:#ff5d73;--blue:#5ac8fa;--violet:#9a7bff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:#05071a;color:var(--ink);font-family:"Avenir Next","Avenir","Nunito","Segoe UI",system-ui,sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none;overflow-x:hidden}
+input{-webkit-user-select:text;user-select:text}
+#sky{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;background:radial-gradient(ellipse at 50% -10%,#28308a 0%,#121848 45%,#05071a 100%)}
+#sky i{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;animation:tw 3s infinite ease-in-out}
+@keyframes tw{0%,100%{opacity:.25}50%{opacity:1}}
+#app{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 16px 160px}
+button{font:inherit;color:inherit;border:none;cursor:pointer;touch-action:manipulation}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:16px 26px;border-radius:18px;font-size:21px;font-weight:800;background:var(--card2);box-shadow:0 5px 0 rgba(0,0,0,.35);transition:transform .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.btn.go{background:linear-gradient(180deg,#ffe07a,#ffb52e);color:#2a1a00}
+.btn.ghost{background:rgba(255,255,255,.08);box-shadow:none;font-size:17px;padding:12px 18px}
+.btn small{font-weight:600;opacity:.75;font-size:14px}
+.btn[disabled]{opacity:.4}
+h1,h2,h3{margin:.2em 0}
+.center{text-align:center}
+.muted{color:var(--muted)}
+/* Start */
+.hero{text-align:center;padding-top:20px}
+.hero h1{font-size:clamp(40px,7vw,68px);letter-spacing:1px;background:linear-gradient(90deg,#ffe07a,#ff8f6b,#c48bff);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1.05}
+.hero .rocket{width:120px;animation:hover 2.4s ease-in-out infinite}
+@keyframes hover{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-12px) rotate(4deg)}}
+.story{background:var(--card);border-radius:24px;padding:22px 26px;max-width:720px;margin:18px auto;font-size:19px;line-height:1.5;text-align:left;border:2px solid rgba(255,255,255,.07)}
+.story b{color:var(--accent)}
+.namebox{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:18px 0}
+.namebox input{font:inherit;font-size:22px;padding:14px 18px;border-radius:16px;border:3px solid #3a4596;background:#10164a;color:#fff;width:300px;outline:none}
+.namebox input:focus{border-color:var(--accent)}
+details.teacher{max-width:720px;margin:26px auto 0;background:rgba(255,255,255,.05);border-radius:16px;padding:12px 18px;font-size:15px;color:var(--muted);line-height:1.5}
+details.teacher summary{cursor:pointer;font-weight:700;color:var(--ink)}
+/* Map */
+.maphead{display:flex;align-items:center;gap:16px;background:var(--card);border-radius:22px;padding:14px 18px;border:2px solid rgba(255,255,255,.07)}
+.maphead .rk{flex:1}
+.maphead .rk .nm{font-size:22px;font-weight:800}
+.xpbar{height:14px;background:#0d1240;border-radius:10px;overflow:hidden;margin-top:6px}
+.xpbar>div{height:100%;background:linear-gradient(90deg,#ffb52e,#ffe07a);border-radius:10px;transition:width .6s}
+.planets{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-top:18px}
+.pcard{background:var(--card);border-radius:24px;padding:14px 10px 16px;text-align:center;border:2px solid rgba(255,255,255,.07);position:relative;box-shadow:0 6px 0 rgba(0,0,0,.3)}
+.pcard:active{transform:translateY(3px)}
+.pcard .planet{animation:float 4s ease-in-out infinite}
+.pcard:nth-child(2) .planet{animation-delay:-1s}.pcard:nth-child(3) .planet{animation-delay:-2s}.pcard:nth-child(4) .planet{animation-delay:-3s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.pcard .pn{font-size:22px;font-weight:800}
+.pcard .ps{font-size:14px;color:var(--muted);min-height:2.4em}
+.stars{font-size:26px;letter-spacing:2px;color:#4b5396}
+.stars .on{color:var(--accent);text-shadow:0 0 10px rgba(255,211,77,.6)}
+.pcard.boss{background:linear-gradient(160deg,#3a1a6b,#1a1040);border-color:#9a7bff}
+.pcard.locked{filter:grayscale(.85);opacity:.6}
+.lockinfo{font-size:14px;color:#d8c9ff}
+.badges{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.badge{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);border-radius:14px;padding:8px 12px;font-size:15px}
+.badge .bi{font-size:24px}
+.badge.off{opacity:.35;filter:grayscale(1)}
+.section{background:var(--card);border-radius:22px;padding:16px 18px;margin-top:18px;border:2px solid rgba(255,255,255,.07)}
+.row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:18px}
+/* Task */
+.topbar{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.topbar .ttl{flex:1;font-weight:800;font-size:19px}
+.chip{background:rgba(255,255,255,.09);border-radius:30px;padding:8px 14px;font-size:18px;font-weight:700;white-space:nowrap}
+.chip.hot{background:linear-gradient(90deg,#ff6b3d,#ffb52e);color:#2a1000;animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.07)}}
+.dots{display:flex;gap:8px;justify-content:center;margin:2px 0 12px}
+.dots i{width:30px;height:9px;border-radius:5px;background:#2a3373}
+.dots i.cur{background:#fff}.dots i.ok{background:var(--good)}.dots i.no{background:var(--bad)}.dots i.rid{outline:2px solid #c48bff;outline-offset:2px}
+.stage{display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:900px) and (orientation:landscape){.stage{grid-template-columns:1.4fr 1fr;align-items:start}}
+.card{background:var(--card);border-radius:24px;padding:20px 22px;border:2px solid rgba(255,255,255,.07)}
+.card.riddle{border-color:#c48bff;box-shadow:0 0 30px rgba(196,139,255,.25)}
+.rtag{display:inline-block;background:linear-gradient(90deg,#9a3dff,#ff8fd1);color:#fff;font-weight:800;border-radius:12px;padding:5px 12px;font-size:15px;margin-bottom:10px}
+.tag{display:inline-block;background:#ff6b3d;color:#fff;border-radius:8px;padding:2px 8px;font-size:14px;vertical-align:middle}
+.prompt{font-size:22px;line-height:1.45}
+.bignum{font-size:clamp(44px,7vw,64px);font-weight:800;text-align:center;margin:14px 0 4px;letter-spacing:1px}
+.bignum .hl{color:var(--accent);text-decoration:underline;text-decoration-thickness:4px;text-underline-offset:8px}
+.bigtxt{font-size:28px;font-weight:800;text-align:center;margin:14px 0 4px;line-height:1.4}
+.visual{margin-top:14px;text-align:center}
+.visual svg{max-width:100%;height:auto}
+.emoji{font-size:30px;vertical-align:middle}
+.hintbox{margin-top:14px;background:rgba(90,200,250,.12);border-left:5px solid var(--blue);border-radius:12px;padding:10px 14px;font-size:18px;line-height:1.4}
+.hidden{display:none}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 .12em;line-height:1.08;font-weight:800}
+.frac>span:first-child{border-bottom:3px solid currentColor;padding:0 .18em}
+.mixed{display:inline-flex;align-items:center;gap:2px}
+/* place value table */
+table.pt{border-collapse:separate;border-spacing:0;margin:6px auto;font-size:30px;font-weight:800;border-radius:14px;overflow:hidden}
+table.pt th{background:#2f3a8c;padding:8px 18px;font-size:22px}
+table.pt th.dec{background:#5a3a9c}
+table.pt td{background:#141b55;padding:12px 18px;min-width:62px;text-align:center;border-top:2px solid #3a4596}
+table.pt td+td,table.pt th+th{border-left:2px solid #3a4596}
+table.pt .cm{border-left:5px solid var(--bad)!important}
+/* answer area */
+.answer{display:flex;flex-direction:column;gap:14px}
+.display{display:flex;align-items:center;justify-content:center;gap:10px;background:#0d1240;border:3px solid #3a4596;border-radius:18px;height:78px;font-size:42px;font-weight:800}
+.display .ph{opacity:.35}
+.display.shake,.shake{animation:shake .35s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.display .unit{color:var(--muted);font-size:30px}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.key{height:66px;border-radius:16px;font-size:30px;font-weight:800;background:#283380;box-shadow:0 4px 0 rgba(0,0,0,.35)}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.35);background:#3a47a8}
+.key.comma{background:#5a3a9c;font-size:38px;line-height:.6}
+.key.del{background:#4a2a50}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.choices.three{grid-template-columns:1fr 1fr 1fr}
+.choice{min-height:84px;border-radius:18px;background:#283380;font-size:30px;font-weight:800;box-shadow:0 5px 0 rgba(0,0,0,.35);padding:8px}
+.choice:active{transform:translateY(3px)}
+.choice.right{background:var(--good);color:#063020}
+.choice.wrong{background:var(--bad)}
+.actions{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.actions .go{flex:1;min-width:160px}
+/* sort */
+.slots{display:flex;flex-wrap:wrap;gap:10px;min-height:76px;background:#0d1240;border:3px dashed #3a4596;border-radius:18px;padding:10px;align-items:center}
+.slots .ph{color:var(--muted);font-size:17px;padding:0 8px}
+.pool{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.tile{min-width:96px;height:62px;border-radius:14px;background:#283380;font-size:26px;font-weight:800;padding:0 14px;box-shadow:0 4px 0 rgba(0,0,0,.35)}
+.tile.used{visibility:hidden}
+.slots .tile{background:#5a3a9c}
+.sortlbl{font-size:17px;color:var(--muted);display:flex;justify-content:space-between}
+/* number line */
+svg.nl{width:100%;height:auto;touch-action:none}
+.nltxt{font-size:24px;font-weight:800;fill:#eef1ff}
+/* feedback sheet */
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;animation:up .25s ease-out;pointer-events:none}
+@keyframes up{from{transform:translateY(100%)}}
+.sheet-in{pointer-events:auto;width:min(760px,100%);background:#141a4d;border-radius:26px 26px 0 0;padding:18px 22px max(20px,env(safe-area-inset-bottom));border-top:6px solid var(--good);box-shadow:0 -10px 40px rgba(0,0,0,.5);max-height:60vh;overflow:auto}
+.sheet.bad .sheet-in{border-top-color:var(--bad)}
+.fbtitle{font-size:26px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+.sheet.ok .fbtitle{color:var(--good)}.sheet.bad .fbtitle{color:var(--bad)}
+.fbtitle .xp{color:var(--accent);font-size:22px}
+.sol{font-size:21px;margin-top:6px}
+.expl{font-size:18px;line-height:1.5;margin:8px 0 14px;color:#dfe3ff}
+.sheet .btn{width:100%}
+/* toast */
+.toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:80;background:linear-gradient(90deg,#9a3dff,#ff6b9d);padding:14px 22px;border-radius:18px;font-size:19px;font-weight:800;box-shadow:0 8px 30px rgba(0,0,0,.4);animation:toast 3.2s forwards;white-space:nowrap}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-30px)}10%,85%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-20px)}}
+.conf{position:fixed;top:-20px;width:10px;height:16px;z-index:90;border-radius:2px;animation:fall linear forwards;pointer-events:none}
+@keyframes fall{to{transform:translateY(112vh) rotate(800deg)}}
+/* boss */
+.arena{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.arena svg.bossfig{width:120px;flex:none}
+.arena svg.bossfig.hit{animation:hit .5s}
+@keyframes hit{0%{filter:brightness(3)}30%{transform:translateX(-10px) rotate(-8deg)}60%{transform:translateX(10px) rotate(6deg)}100%{filter:none}}
+.bubble{background:#fff;color:#1a1440;border-radius:16px;padding:10px 14px;font-size:16px;font-weight:700;position:relative}
+.bubble:before{content:"";position:absolute;left:-10px;top:18px;border:6px solid transparent;border-right:10px solid #fff}
+.hp{height:18px;background:#2a1440;border-radius:10px;overflow:hidden;margin-top:8px;border:2px solid #9a7bff}
+.hp>div{height:100%;background:linear-gradient(90deg,#ff5d73,#ff9f43);transition:width .5s}
+.lives{font-size:24px;margin-top:6px}
+.timer{height:8px;background:#0d1240;border-radius:6px;overflow:hidden;margin-top:8px}
+.timer>div{height:100%;background:var(--blue);width:100%;transition:width .1s linear}
+/* results */
+.result{text-align:center;padding-top:20px}
+.bigstars{font-size:76px;letter-spacing:8px}
+.bigstars span{display:inline-block;color:#3a4280;animation:pop .5s backwards}
+.bigstars span.on{color:var(--accent);text-shadow:0 0 24px rgba(255,211,77,.7)}
+.bigstars span:nth-child(2){animation-delay:.25s}.bigstars span:nth-child(3){animation-delay:.5s}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.3)}100%{transform:scale(1)}}
+/* certificate */
+.cert{background:linear-gradient(160deg,#fffaf0,#ffeec7);color:#2a2140;border-radius:24px;padding:30px;max-width:720px;margin:20px auto;border:8px double #c99a2e;text-align:center}
+.cert h1{color:#7a4a00;font-size:40px}
+.cert table{margin:14px auto;border-collapse:collapse;font-size:19px}
+.cert td{padding:6px 14px;border-bottom:1px solid #e3cf9a;text-align:left}
+.cert .code{font-family:Menlo,monospace;font-size:22px;letter-spacing:3px;background:#2a2140;color:#ffe07a;display:inline-block;padding:6px 16px;border-radius:10px;margin-top:8px}
+.foot{display:flex;align-items:center;justify-content:center;gap:10px;margin:34px auto 0;color:var(--muted);font-size:14px;text-align:center}
+.foot svg.iko{width:34px;height:34px;flex:none}
+.hero svg.iko{width:56px;position:absolute;right:6px;top:10px;animation:spin 18s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cert .foot{color:#6a5a40;margin-top:16px}
+.mute{position:fixed;right:14px;bottom:14px;z-index:40;width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.1);font-size:24px}
+</style>
+</head>
+<body>
+<div id="sky"></div>
+<div id="app"></div>
+<button class="mute" id="muteBtn" aria-label="Ton an/aus">🔊</button>
+<script>
+"use strict";
+/* ================= Grundlagen ================= */
+const KEY='missionKomma_v1';
+const $=s=>document.querySelector(s);
+const app=$('#app');
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+// Alle Zahlen intern als ganze Zahlen in Tausendsteln (keine Rundungsfehler!)
+function fmt(m){const i=Math.floor(m/1000);const f=String(m%1000).padStart(3,'0').replace(/0+$/,'');return f?i+','+f:String(i);}
+function fmtF(m,d){const i=Math.floor(m/1000);return d===0?String(i):i+','+String(m%1000).padStart(3,'0').slice(0,d);}
+function parseNum(s){s=String(s).trim().replace('.',',');if(!/^\d+(,\d{0,3})?$/.test(s))return NaN;const [a,b='']=s.split(',');return parseInt(a,10)*1000+parseInt((b+'000').slice(0,3),10);}
+const frac=(a,b)=>`<span class="frac"><span>${a}</span><span>${b}</span></span>`;
+const PL=[{n:'Einer',v:1000},{n:'Zehntel',v:100},{n:'Hundertstel',v:10},{n:'Tausendstel',v:1}];
+function toDec(a,b){const T=[10,100,1000].find(T=>T%b===0);const k=T/b;return {T,k,val:a*k*(1000/T)};}
+
+let S=load()||fresh();
+function fresh(){return {name:'',xp:0,stars:{},badges:[],riddles:0,bossWon:false,bestCombo:0};}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));return d&&typeof d==='object'?Object.assign(fresh(),d):null;}catch(e){return null;}}
+
+/* ================= Ton ================= */
+let AC=null,muted=false;
+function beep(fs,dur,type,vol){if(muted)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();const t=AC.currentTime;fs.forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;const s=t+i*dur;g.gain.setValueAtTime(0.0001,s);g.gain.exponentialRampToValueAtTime(vol||0.16,s+0.015);g.gain.exponentialRampToValueAtTime(0.0001,s+dur);o.connect(g);g.connect(AC.destination);o.start(s);o.stop(s+dur+0.03);});}catch(e){}}
+const sfx={ok:()=>beep([660,880,1320],.09),bad:()=>beep([240,170],.17,'square',.06),tap:()=>beep([560],.035,'sine',.08),win:()=>beep([523,659,784,1046,1318],.12),hit:()=>beep([900,420,200],.07,'sawtooth',.07)};
+$('#muteBtn').addEventListener('click',()=>{muted=!muted;$('#muteBtn').textContent=muted?'🔇':'🔊';});
+
+/* ================= Sternenhimmel ================= */
+(function(){const sky=$('#sky');let h='';for(let i=0;i<130;i++){const s=Math.random()<.15?3:2;h+=`<i style="left:${Math.random()*100}%;top:${Math.random()*100}%;width:${s}px;height:${s}px;animation-delay:${(Math.random()*3).toFixed(2)}s;animation-duration:${(2+Math.random()*3).toFixed(2)}s"></i>`;}sky.innerHTML=h;})();
+
+/* ================= Grafiken ================= */
+const IKO=`<svg viewBox="12 12 76 76" class="iko" aria-label="Ikosaeder"><polygon points="71.4,40.8 63.5,85.9 94.9,58.2" fill="#7590ec" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="71.4,40.8 63.5,85.9 26.7,58.2" fill="#8cd1f9" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="71.4,40.8 77.4,13.5 35.3,13.5" fill="#6767e4" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="71.4,40.8 77.4,13.5 94.9,58.2" fill="#6767e4" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="71.4,40.8 35.3,13.5 26.7,58.2" fill="#7ea9f1" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="63.5,85.9 64.7,86.5 22.6,86.5" fill="#83b7f4" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="63.5,85.9 64.7,86.5 94.9,58.2" fill="#7080e9" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="63.5,85.9 22.6,86.5 26.7,58.2" fill="#95e9fe" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="35.3,13.5 26.7,58.2 5.1,41.8" fill="#7ea8f1" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="22.6,86.5 26.7,58.2 5.1,41.8" fill="#8bcef9" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/></svg>`;
+const YEAR=new Date().getFullYear()>2026?'2026–'+new Date().getFullYear():'2026';
+const FOOT=`<div class="foot">${IKO}<span>© ${YEAR} Stephan Holtkötter · Mission Komma · Alle Rechte vorbehalten</span></div>`;
+
+const ROCKET=`<svg viewBox="0 0 64 80" class="rocket"><path d="M32 4c11 9 15 22 15 34l-6 9H23l-6-9C17 26 21 13 32 4z" fill="#eef1ff"/><path d="M32 4c11 9 15 22 15 34l-6 9h-9z" fill="#c9cff5"/><circle cx="32" cy="28" r="7" fill="#5ac8fa" stroke="#1a1f4d" stroke-width="3"/><path d="M17 36L7 50l12-3zM47 36l10 14-12-3z" fill="#ff5d73"/><path d="M25 47h14l-7 20z" fill="#ffb347"><animate attributeName="d" values="M25 47h14l-7 20z;M25 47h14l-7 26z;M25 47h14l-7 20z" dur=".35s" repeatCount="indefinite"/></path><path d="M28 47h8l-4 10z" fill="#fff3a0"/></svg>`;
+function planetSVG(P,size){const id='g'+P.id+Math.random().toString(36).slice(2,7);return `<svg viewBox="0 0 120 120" width="${size}" height="${size}" class="planet"><defs><radialGradient id="${id}" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="${P.c[0]}"/><stop offset="1" stop-color="${P.c[1]}"/></radialGradient></defs>${P.ring?`<ellipse cx="60" cy="62" rx="56" ry="14" fill="none" stroke="${P.c[0]}" stroke-opacity=".45" stroke-width="5" transform="rotate(-18 60 62)"/>`:''}<circle cx="60" cy="60" r="38" fill="url(#${id})"/><circle cx="46" cy="46" r="7" fill="#fff" opacity=".2"/><circle cx="74" cy="72" r="8" fill="#000" opacity=".12"/><circle cx="52" cy="80" r="4" fill="#000" opacity=".12"/>${P.ring?`<path d="M4 62 A56 14 0 0 0 116 62" fill="none" stroke="${P.c[0]}" stroke-width="5" transform="rotate(-18 60 62)"/>`:''}<text x="60" y="69" text-anchor="middle" font-size="25" font-weight="800" fill="#fff" opacity=".95" style="font-family:inherit">${P.glyph}</text></svg>`;}
+function bossSVG(extra){return `<svg viewBox="0 0 200 210" class="bossfig ${extra||''}"><ellipse cx="100" cy="200" rx="58" ry="8" fill="rgba(0,0,0,.35)"/><path d="M122 128 Q150 132 142 160 Q130 190 82 200 Q118 176 112 140 Z" fill="#6a48e8"/><circle cx="100" cy="88" r="58" fill="#7b5cff"/><circle cx="82" cy="66" r="14" fill="#fff" opacity=".18"/><rect x="44" y="70" width="112" height="28" rx="14" fill="#1a1440"/><path d="M44 84 l-18 -8 M44 86 l-18 8" stroke="#1a1440" stroke-width="6" stroke-linecap="round"/><ellipse cx="78" cy="84" rx="10" ry="8" fill="#fff"/><ellipse cx="122" cy="84" rx="10" ry="8" fill="#fff"/><circle cx="81" cy="86" r="4.5" fill="#111"/><circle cx="125" cy="86" r="4.5" fill="#111"/><path d="M76 118 Q100 134 124 118" stroke="#1a1440" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M92 124 l4 7 l4 -6 z" fill="#fff"/><g transform="translate(150 120)"><path d="M-6 0 Q-14 40 22 44 Q56 40 46 0 Q30 -10 20 -6 Q8 -12 -6 0z" fill="#b07a45"/><path d="M8 -4 Q20 -14 32 -4" stroke="#7a4a20" stroke-width="5" fill="none"/><text x="8" y="28" font-size="26" font-weight="900" fill="#ffe07a">,</text><text x="22" y="34" font-size="26" font-weight="900" fill="#ffe07a">,</text><text x="30" y="20" font-size="22" font-weight="900" fill="#ffe07a">,</text></g></svg>`;}
+function placeTable(cols,vals,decStart){return `<table class="pt"><tr>${cols.map((c,i)=>`<th class="${i>=decStart?'dec':''} ${i===decStart?'cm':''}">${c}</th>`).join('')}</tr><tr>${vals.map((v,i)=>`<td class="${i===decStart?'cm':''}">${v}</td>`).join('')}</tr></table>`;}
+const NL={W:760,H:150,x0:55,x1:705,y:86};
+function numberLine(o){const {W,H,x0,x1,y}=NL;const X=i=>(x0+(x1-x0)*i/o.n).toFixed(1);let s=`<svg viewBox="0 0 ${W} ${H}" class="nl" ${o.id?`id="${o.id}"`:''}><rect x="0" y="0" width="${W}" height="${H}" fill="transparent"/><line x1="${x0-28}" y1="${y}" x2="${x1+30}" y2="${y}" stroke="#cfd6ff" stroke-width="4" stroke-linecap="round"/><path d="M${x1+28} ${y-10} L${x1+46} ${y} L${x1+28} ${y+10}Z" fill="#cfd6ff"/>`;
+ for(let i=0;i<=o.n;i++){const lab=o.labels.includes(i);const mid=o.n%2===0&&i===o.n/2;const h=lab?18:(mid?13:8);s+=`<line x1="${X(i)}" y1="${y-h}" x2="${X(i)}" y2="${y+h}" stroke="#cfd6ff" stroke-width="${lab?4:2.5}"/>`;if(lab)s+=`<text x="${X(i)}" y="${y+50}" text-anchor="middle" class="nltxt">${fmt(o.start+o.step*i)}</text>`;}
+ if(o.arrowAt!=null){const x=X(o.arrowAt);s+=`<path d="M${x} ${y-14} L${x-11} ${y-36} L${+x+11} ${y-36}Z" fill="#ffd34d"/><circle cx="${x}" cy="${y-52}" r="20" fill="#ffd34d"/><text x="${x}" y="${y-44}" text-anchor="middle" font-size="24" font-weight="800" fill="#1a1f4d">?</text>`;}
+ return s+`<g id="nlmark"></g></svg>`;}
+function flag(idx,n,color,label){const x=NL.x0+(NL.x1-NL.x0)*idx/n,y=NL.y;return `<g><line x1="${x}" y1="${y-56}" x2="${x}" y2="${y}" stroke="${color}" stroke-width="4"/><path d="M${x} ${y-56} l30 10 l-30 10z" fill="${color}"/><circle cx="${x}" cy="${y}" r="7" fill="${color}"/>${label?`<text x="${x+34}" y="${y-38}" font-size="20" font-weight="800" fill="${color}">${label}</text>`:''}</g>`;}
+const COIN={1:{r:21,t:'cu',l:'1 ct'},2:{r:24,t:'cu',l:'2 ct'},5:{r:27,t:'cu',l:'5 ct'},10:{r:25,t:'au',l:'10 ct'},20:{r:28,t:'au',l:'20 ct'},50:{r:31,t:'au',l:'50 ct'},100:{r:30,t:'e1',l:'1 €'},200:{r:33,t:'e2',l:'2 €'}};
+function moneySVG(items){// items: Werte in Cent; 500/1000 = Scheine
+ let x=8,y=0,rowH=78,W=700,parts=[],maxX=0;
+ items.forEach(v=>{let w=v>=500?132:COIN[v].r*2+12;if(x+w>W){x=8;y+=rowH;}parts.push({v,x,y});x+=w;maxX=Math.max(maxX,x);});
+ let s=`<svg viewBox="0 0 ${maxX+8} ${y+rowH}" style="width:min(100%,${(maxX+8)*1.05}px)">`;
+ parts.forEach(p=>{const cy=p.y+rowH/2;if(p.v>=500){const col=p.v===500?'#9fb6a8':'#e7a59b';s+=`<rect x="${p.x}" y="${cy-30}" width="122" height="60" rx="6" fill="${col}" stroke="#fff" stroke-opacity=".5" stroke-width="2"/><circle cx="${p.x+92}" cy="${cy}" r="18" fill="#fff" opacity=".35"/><text x="${p.x+40}" y="${cy+10}" text-anchor="middle" font-size="28" font-weight="900" fill="#2a2140">${p.v/100} €</text>`;return;}
+  const c=COIN[p.v],cx=p.x+c.r+2;
+  if(c.t==='e1'||c.t==='e2'){const outer=c.t==='e1'?'#e6c35a':'#d7dbe2',inner=c.t==='e1'?'#d7dbe2':'#e6c35a';s+=`<circle cx="${cx}" cy="${cy}" r="${c.r}" fill="${outer}" stroke="#8a7a40" stroke-width="2"/><circle cx="${cx}" cy="${cy}" r="${c.r*0.68}" fill="${inner}"/>`;}
+  else{const f=c.t==='cu'?'#c8794a':'#e8c255',st=c.t==='cu'?'#8a4a26':'#a8862a';s+=`<circle cx="${cx}" cy="${cy}" r="${c.r}" fill="${f}" stroke="${st}" stroke-width="2.5"/><circle cx="${cx}" cy="${cy}" r="${c.r-5}" fill="none" stroke="${st}" stroke-opacity=".4" stroke-width="1.5"/>`;}
+  s+=`<text x="${cx}" y="${cy+6}" text-anchor="middle" font-size="${c.r>26?17:14}" font-weight="900" fill="#2a2140">${c.l}</text>`;});
+ return s+'</svg>';}
+function barSVG(n,c){const W=620,H=70,w=W/n;let s=`<svg viewBox="-4 -4 ${W+8} ${H+8}" style="width:min(100%,640px)">`;for(let i=0;i<n;i++)s+=`<rect x="${(i*w).toFixed(2)}" y="0" width="${w.toFixed(2)}" height="${H}" fill="${i<c?'#ff8fd1':'#232c6b'}" stroke="#eef1ff" stroke-width="2"/>`;return s+`<rect x="0" y="0" width="${W}" height="${H}" fill="none" stroke="#eef1ff" stroke-width="4" rx="3"/></svg>`;}
+
+/* ================= Aufgaben-Generatoren ================= */
+const G={
+/* ---- Planet Ziffra: Stellenwerte ---- */
+grid(){const full=ri(0,2),k=ri(3,97),ans=full*1000+k*10;const cs=13,gs=130,gap=24,tot=full+1,W=tot*gs+(tot-1)*gap;
+ let s=`<svg viewBox="-3 -3 ${W+6} ${gs+6}" style="width:min(100%,${tot*200}px)">`;
+ for(let g=0;g<tot;g++){const ox=g*(gs+gap),cnt=g<full?100:k;for(let c=0;c<100;c++){s+=`<rect x="${ox+(c%10)*cs}" y="${Math.floor(c/10)*cs}" width="${cs}" height="${cs}" fill="${c<cnt?'#ffb347':'#232c6b'}" stroke="#0b1030" stroke-width="1.2"/>`;}s+=`<rect x="${ox}" y="0" width="${gs}" height="${gs}" fill="none" stroke="#cfd6ff" stroke-width="2.5"/>`;}
+ s+='</svg>';const z=Math.floor(k/10),h=k%10;
+ return {type:'input',prompt:'Jedes große Quadrat ist <b>1 Ganzes</b>. Welche Dezimalzahl ist orange gefärbt?',visual:s,answer:ans,
+ hint:'Ein kleines Kästchen ist 1 Hundertstel (0,01). Eine ganze Zeile ist 1 Zehntel (0,1).',
+ explain:`${full} ${full===1?'Ganzes':'Ganze'}, ${z} volle ${z===1?'Zeile':'Zeilen'} = ${z} Zehntel und ${h} einzelne Kästchen = ${h} Hundertstel.<br>Also: <b>${fmt(ans)}</b>`};},
+table(){if(Math.random()<.6){const Z=Math.random()<.5?ri(1,9):0,E=ri(0,9),d=[ri(0,9),ri(0,9),ri(1,9)];if(Math.random()<.5)d[ri(0,1)]=0;const ans=Z*10000+E*1000+d[0]*100+d[1]*10+d[2];
+  return {type:'input',prompt:'Welche Dezimalzahl steht in der Stellenwerttafel?',visual:placeTable(['Z','E','z','h','t'],[Z||'',E,...d],2),answer:ans,
+  hint:'Das Komma gehört zwischen die Einer (E) und die Zehntel (z) – dort, wo die rote Linie ist.',explain:`Vor dem Komma: ${Z?Z:''}${E}, nach dem Komma: ${d.join('')} → <b>${fmt(ans)}</b>`};}
+ const vals=[ri(0,5),ri(0,9),ri(0,9),ri(1,9)],pos=ri(1,3);vals[pos]=ri(11,19);const ans=vals[0]*1000+vals[1]*100+vals[2]*10+vals[3];
+ return {type:'input',prompt:'Welche Zahl ist dargestellt? <span class="tag">Profi</span>',visual:placeTable(['E','z','h','t'],vals,1),answer:ans,
+ hint:`In einem Feld stehen ${vals[pos]} ${PL[pos].n} – da musst du bündeln: 10 ${PL[pos].n} = 1 ${PL[pos-1].n}.`,
+ explain:vals.map((v,i)=>`${v} ${PL[i].n} = ${fmt(v*PL[i].v)}`).join('<br>')+`<br>Zusammen: <b>${fmt(ans)}</b>`};},
+digit(){const ds=shuffle([1,2,3,4,5,6,7,8,9]).slice(0,4),v=ds[0]*1000+ds[1]*100+ds[2]*10+ds[3],p=pick([0,1,2,2,3,3]);
+ return {type:'choice',prompt:`Welche Ziffer steht an der <b>${PL[p].n}stelle</b>?`,big:fmt(v),choices:shuffle(ds).map(d=>({label:String(d),ok:d===ds[p]})),
+ hint:'Nach dem Komma kommen der Reihe nach: Zehntel, Hundertstel, Tausendstel.',
+ explain:`${fmt(v)}: ${ds[0]} Einer, ${ds[1]} Zehntel, ${ds[2]} Hundertstel, ${ds[3]} Tausendstel → <b>${ds[p]}</b>`};},
+value(){const ds=shuffle([1,2,3,4,5,6,7,8,9]).slice(0,4),v=ds[0]*1000+ds[1]*100+ds[2]*10+ds[3],p=ri(0,3),d=ds[p];const str=fmt(v).split('');const si=p===0?0:p+1;str[si]=`<span class="hl">${str[si]}</span>`;
+ return {type:'choice',prompt:`Welchen <b>Wert</b> hat die markierte Ziffer ${d}?`,big:str.join(''),choices:[1000,100,10,1].map((u,i)=>({label:fmt(d*u),ok:i===p})),
+ hint:'Die erste Stelle nach dem Komma sind die Zehntel (0,1), dann Hundertstel (0,01), dann Tausendstel (0,001).',
+ explain:`Die ${d} steht an der ${PL[p].n}stelle. ${d} ${PL[p].n} = <b>${fmt(d*PL[p].v)}</b>`};},
+compose(){const va=ri(0,2);let parts;
+ if(va===0){parts=shuffle([0,1,2,3]).slice(0,2).sort().map(i=>({i,c:ri(1,9)}));}
+ else if(va===1){const i=pick([1,2,2,3,3]);parts=[{i,c:i===1?ri(11,39):i===2?ri(11,99):ri(11,999)}];if(parts[0].c%10===0)parts[0].c++;}
+ else{parts=[{i:0,c:ri(1,9)},{i:pick([1,2]),c:ri(11,19)},{i:3,c:ri(1,9)}];}
+ const ans=parts.reduce((s,p)=>s+p.c*PL[p.i].v,0);
+ return {type:'input',prompt:`Schreibe als Dezimalzahl:<div class="bigtxt">${parts.map(p=>`${p.c} ${PL[p.i].n}`).join(' + ')}</div>`,answer:ans,
+ hint:'Schreibe jeden Teil einzeln als Dezimalzahl (z. B. 3 Hundertstel = 0,03; 27 Hundertstel = 0,27) und setze dann zusammen.',
+ explain:parts.map(p=>`${p.c} ${PL[p.i].n} = ${fmt(p.c*PL[p.i].v)}`).join('<br>')+`<br>Zusammen: <b>${fmt(ans)}</b>`};},
+/* ---- Planet Linea: Zahlenstrahl ---- */
+read(){const v=pick([{st:100,s:()=>ri(0,8)*1000},{st:10,s:()=>ri(0,9)*1000+ri(0,9)*100},{st:200,s:()=>ri(0,4)*1000},{st:50,s:()=>ri(0,5)*1000},{st:20,s:()=>ri(0,9)*1000},{st:5,s:()=>ri(0,4)*1000+ri(0,9)*100}]);
+ const start=v.s(),n=10,i=ri(1,9),ans=start+v.st*i;const seq=[];for(let k=0;k<=i;k++)seq.push(fmt(start+v.st*k));
+ return {type:'input',prompt:'Welche Zahl zeigt der Pfeil?'+(v.st!==100&&v.st!==10?' <span class="tag">Profi</span>':''),visual:numberLine({start,step:v.st,n,labels:[0,n],arrowAt:i}),answer:ans,
+ hint:`Wie groß ist <b>ein</b> Teilstück? Von ${fmt(start)} bis ${fmt(start+v.st*n)} sind es ${n} gleich große Teilstücke.`,
+ explain:`Ein Teilstück ist ${fmt(v.st)} groß. Zähle in Schritten: ${seq.join(' – ')}<br>Der Pfeil zeigt auf <b>${fmt(ans)}</b>.`};},
+tap(){const v=pick([{st:100,n:10,s:()=>ri(0,7)*1000,lab:[0,10]},{st:10,n:10,s:()=>ri(0,9)*1000+ri(0,9)*100,lab:[0,10]},{st:50,n:20,s:()=>ri(0,4)*1000,lab:[0,10,20]},{st:20,n:10,s:()=>ri(1,6)*1000,lab:[0,10]}]);
+ const start=v.s();let t=ri(1,v.n-1);while(v.lab.includes(t))t=ri(1,v.n-1);const target=start+v.st*t;
+ return {type:'tap',prompt:`Tippe auf die Stelle, an der <b style="color:var(--accent);font-size:30px">${fmt(target)}</b> liegt.`+(v.st===50||v.st===20?' <span class="tag">Profi</span>':''),visual:numberLine({start,step:v.st,n:v.n,labels:v.lab,id:'tapline'}),nl:{n:v.n,target:t,start,step:v.st},solution:fmt(target),
+ hint:`Ein Teilstück ist hier ${fmt(v.st)} groß.`,explain:`Ein Teilstück = ${fmt(v.st)}. ${fmt(target)} liegt ${t} Teilstücke rechts von ${fmt(start)}.`};},
+mid(){const v=ri(0,2);let a,gap;if(v===0){a=ri(1,48)*100;gap=100;}else if(v===1){a=ri(101,899)*10;if(a%100===0)a+=10;gap=10;}else{a=ri(1,40)*100;gap=300;}
+ const b=a+gap,ans=a+gap/2;
+ return {type:'input',prompt:`Welche Zahl liegt auf dem Zahlenstrahl <b>genau in der Mitte</b> zwischen<div class="bigtxt">${fmt(a)} und ${fmt(b)}?</div>`,answer:ans,
+ hint:'Hänge eine Null an, dann siehst du die Zwischenschritte besser: z. B. 0,4 = 0,40 und 0,5 = 0,50.',
+ explain:`Abstand: ${fmt(gap)}. Die Hälfte davon ist ${fmt(gap/2)}.<br>${fmt(a)} + ${fmt(gap/2)} = <b>${fmt(ans)}</b>`};},
+/* ---- Planet Fractalis: Brüche ---- */
+tenfrac(){const den=pick([10,100,100,1000,1000]);let num=den===10?ri(1,9):den===100?pick([ri(1,9),ri(11,99)]):pick([ri(1,9),ri(11,99),ri(101,999)]);if(num%10===0)num++;const ans=num*1000/den;
+ return {type:'input',prompt:`Schreibe als Dezimalzahl:<div class="bigtxt">${frac(num,den)}</div>`,answer:ans,
+ hint:'Der Nenner verrät die letzte Stelle: Zehntel → 1 Nachkommastelle, Hundertstel → 2, Tausendstel → 3.',
+ explain:`${frac(num,den)} sind ${num} ${den===10?'Zehntel':den===100?'Hundertstel':'Tausendstel'}. Die letzte Ziffer muss an der ${den===10?'Zehntel':den===100?'Hundertstel':'Tausendstel'}stelle stehen → <b>${fmt(ans)}</b>`};},
+dec2frac(){let d,p;if(Math.random()<.5){d=ri(1,9);p=ri(1,3);}else{d=ri(11,99);if(d%10===0)d++;p=ri(2,3);}const val=d*1000/Math.pow(10,p);
+ let opts=[{a:d,b:10},{a:d,b:100},{a:d,b:1000}];let dis=d<10?{a:1,b:d}:{a:Math.floor(d/10),b:d%10};if(d===1||dis.a*1000/dis.b===val)dis={a:d,b:1};opts.push(dis);
+ return {type:'choice',prompt:'Welcher Bruch hat denselben Wert?',big:fmt(val),choices:shuffle(opts).map(o=>({label:frac(o.a,o.b),ok:o.b===Math.pow(10,p)&&o.a===d})),
+ hint:'Zähle die Nachkommastellen: 1 Stelle → Zehntel, 2 Stellen → Hundertstel, 3 Stellen → Tausendstel.',
+ explain:`${fmt(val)} hat ${p} Nachkommastelle${p>1?'n':''} → ${['','Zehntel','Hundertstel','Tausendstel'][p]}: <b>${frac(d,Math.pow(10,p))}</b>`};},
+expand(){const [a,b]=pick([[1,2],[1,4],[3,4],[1,5],[2,5],[3,5],[4,5],[1,20],[3,20],[7,20],[1,25],[6,25],[1,50],[9,50],[1,8],[3,8],[5,8],[1,40],[3,250]]);const t=toDec(a,b);
+ return {type:'input',prompt:`Schreibe als Dezimalzahl:<div class="bigtxt">${frac(a,b)}</div>`+(b===8||b===40||b===250?'<span class="tag">Profi</span>':''),answer:t.val,
+ hint:'Erweitere den Bruch so, dass im Nenner 10, 100 oder 1000 steht.',
+ explain:`Erweitern mit ${t.k}: ${frac(a,b)} = ${frac(a*t.k,t.T)} = <b>${fmt(t.val)}</b>`};},
+bar(){const n=pick([2,4,5,5,10,20,20,25,8]);const c=ri(1,n-1);const t=toDec(c,n);
+ return {type:'input',prompt:'Welcher Anteil des Streifens ist pink gefärbt? Gib ihn als <b>Dezimalzahl</b> an.',visual:barSVG(n,c),answer:t.val,
+ hint:'Zähle die Teile insgesamt und die gefärbten Teile. Dann erweitere den Bruch auf 10, 100 oder 1000.',
+ explain:`${c} von ${n} Teilen: ${frac(c,n)}${t.k>1?` = ${frac(c*t.k,t.T)}`:''} = <b>${fmt(t.val)}</b>`};},
+mixed(){const w=ri(1,5);const [a,b]=pick([[1,2],[1,4],[3,4],[1,5],[3,5],[7,10],[3,20],[9,25],[1,8],[7,50]]);const t=toDec(a,b),ans=w*1000+t.val;
+ return {type:'input',prompt:`Schreibe als Dezimalzahl:<div class="bigtxt"><span class="mixed">${w}${frac(a,b)}</span></div>`,answer:ans,
+ hint:`Die ${w} Ganzen stehen vor dem Komma. Wandle nur den Bruch um.`,
+ explain:`${w} Ganze und ${frac(a,b)}${t.k>1?` = ${frac(a*t.k,t.T)}`:''} = ${fmt(t.val)} → <b>${fmt(ans)}</b>`};},
+/* ---- Planet Ordo: Vergleichen & Ordnen ---- */
+compare(){const i=ri(0,9),v=ri(0,4);let A,B,as,bs;
+ if(v===0){const y=ri(2,9),z=ri(1,9);A=i*1000+y*100;B=i*1000+(y-1)*100+ri(1,9)*10;}
+ else if(v===1){const y=ri(1,9);A=i*1000+y*10;B=i*1000+y*100;}
+ else if(v===2){A=B=i*1000+ri(1,9)*100+pick([0,ri(1,9)*10]);}
+ else if(v===3){const y=ri(0,8);A=i*1000+y*100+99;B=i*1000+(y+1)*100;}
+ else{A=i*1000+ri(1,999);B=i*1000+ri(1,999);if(A===B)B=A+1;}
+ as=fmt(A);bs=fmt(B);if(v===2)bs+=pick(['0','00']).slice(0,3-(bs.split(',')[1]||'').length)||'0';
+ if(Math.random()<.5){[A,B]=[B,A];[as,bs]=[bs,as];}
+ const sym=A<B?'<':A>B?'>':'=';
+ return {type:'choice',cls:'three',prompt:'Setze das richtige Zeichen ein!',big:`${as} <span style="color:var(--accent)">?</span> ${bs}`,choices:['<','=','>'].map(s=>({label:s,ok:s===sym})),
+ hint:'Fülle mit Nullen auf, bis beide Zahlen gleich viele Nachkommastellen haben. Dann vergleiche Stelle für Stelle von links.',
+ explain:`Mit Nullen aufgefüllt: ${fmtF(A,3)} und ${fmtF(B,3)}.<br>Also: <b>${as} ${sym} ${bs}</b>${v===0?'<br>Achtung: Mehr Ziffern heißt nicht größer!':''}`};},
+sort(){const i=ri(0,5);const vals=new Set();while(vals.size<5){const f=pick([()=>ri(1,9)*100,()=>ri(1,99)*10,()=>ri(1,999),()=>ri(1,9)*10,()=>ri(1,9)]);vals.add(i*1000+f());}
+ const items=shuffle([...vals]).map(v=>({v,s:fmt(v)}));const asc=Math.random()<.6;const order=[...vals].sort((a,b)=>asc?a-b:b-a);
+ return {type:'sort',asc,items,order,prompt:`Ordne die Zahlen – beginne mit der <b>${asc?'kleinsten':'größten'}</b>!`,solution:order.map(fmt).join(asc?' < ':' > '),
+ hint:'Schreibe in Gedanken alle Zahlen mit drei Nachkommastellen (z. B. 0,4 = 0,400).',
+ explain:`Mit Nullen aufgefüllt: ${order.map(v=>fmtF(v,3)).join(asc?' < ':' > ')}`};},
+between(){const v=Math.random()<.35?0:1;let a,b;if(v===0){a=ri(0,9)*1000+ri(1,8)*100;b=a+100;}else{a=ri(0,9)*1000+ri(1,98)*10;if(a%100===90)a-=10;b=a+10;}
+ const ex=v===0?[a+10,a+50,a+90]:[a+1,a+5,a+9];
+ return {type:'input',prompt:`Finde eine Zahl, die <b>zwischen</b> den beiden Zahlen liegt:<div class="bigtxt">${fmt(a)} &nbsp;&lt;&nbsp; ? &nbsp;&lt;&nbsp; ${fmt(b)}</div>`+(v===1?'<span class="tag">Profi</span>':''),
+ check:x=>x>a&&x<b,solution:`z. B. ${ex.map(fmt).join(' oder ')}`,
+ hint:'Hänge an beide Zahlen eine Null an. Dann passt etwas dazwischen!',
+ explain:`${fmt(a)} = ${fmtF(a,v===0?2:3)} und ${fmt(b)} = ${fmtF(b,v===0?2:3)}. Dazwischen liegen z. B. ${ex.map(fmt).join(', ')} … Es gibt viele richtige Lösungen!`};},
+extreme(){const i=ri(0,4);const vals=new Set();while(vals.size<4){vals.add(i*1000+pick([()=>ri(1,9)*100,()=>ri(1,99)*10,()=>ri(1,999),()=>ri(1,9)*10])());}const arr=[...vals];const big=Math.random()<.5;const tgt=big?Math.max(...arr):Math.min(...arr);
+ return {type:'choice',prompt:`Welche Zahl ist am <b>${big?'größten':'kleinsten'}</b>?`,choices:shuffle(arr).map(v=>({label:fmt(v),ok:v===tgt})),
+ hint:'Gleiche Einer? Dann entscheiden die Zehntel, dann die Hundertstel …',
+ explain:`Aufgefüllt: ${arr.slice().sort((a,b)=>a-b).map(v=>fmtF(v,3)).join(' < ')}<br>${big?'Größte':'Kleinste'} Zahl: <b>${fmt(tgt)}</b>`};},
+/* ---- Planet Mensura: Geld, Größen, Runden ---- */
+money(){let items=[];if(Math.random()<.3)items.push(pick([500,1000]));for(let k=ri(0,2);k>0;k--)items.push(200);for(let k=ri(0,2);k>0;k--)items.push(100);
+ const cents=[];const cnt=ri(2,5);for(let k=0;k<cnt;k++)cents.push(pick([50,20,10,5,2,1,1,2,5]));cents.sort((a,b)=>b-a);items=items.concat(cents);
+ const ct=cents.reduce((s,c)=>s+c,0),eur=items.filter(v=>v>=100).reduce((s,v)=>s+v,0)/100,total=eur*1000+ct*10;
+ return {type:'input',unit:'€',prompt:'<span class="emoji">💰</span> Wie viel Geld ist das? Schreibe in <b>Euro</b>.',visual:moneySVG(items),answer:total,solution:fmtF(total,2)+' €',
+ hint:'1 Cent = 0,01 €. 10 Cent = 0,10 €. Zähle Euro und Cent getrennt.',
+ explain:`${eur} € und ${ct} ct. Da 1 ct = 0,01 € ist, sind ${ct} ct = ${fmtF(ct*10,2)} €.<br>Zusammen: <b>${fmtF(total,2)} €</b>`};},
+length(){const v=ri(0,8);const L=(q,unit,ans,ex,ic)=>({type:'input',unit,prompt:`<span class="emoji">${ic}</span> Rechne um:<div class="bigtxt">${q} = ? ${unit}</div>`,answer:ans,hint:'1 m = 100 cm · 1 km = 1000 m · 1 kg = 1000 g · 1 € = 100 ct',explain:ex+`<br>Ergebnis: <b>${fmt(ans)} ${unit}</b>`});
+ switch(v){
+ case 0:{const a=ri(1,9),b=pick([ri(1,9),ri(11,99)]);return L(`${a} m ${b} cm`,'m',a*1000+b*10,`1 cm = 0,01 m, also sind ${b} cm = ${fmt(b*10)} m.`,'📏');}
+ case 1:{const a=ri(1,9),b=pick([ri(1,9),ri(11,99),ri(101,999)]);return L(`${a} km ${b} m`,'km',a*1000+b,`1 m = 0,001 km, also sind ${b} m = ${fmt(b)} km.`,'🛣️');}
+ case 2:{const a=ri(1,9),b=pick([ri(1,9),ri(11,99),ri(101,999)]);return L(`${a} kg ${b} g`,'kg',a*1000+b,`1 g = 0,001 kg, also sind ${b} g = ${fmt(b)} kg.`,'⚖️');}
+ case 3:{const b=ri(1,99);return L(`${b} cm`,'m',b*10,`100 cm = 1 m, also sind ${b} cm = ${b} Hundertstel Meter.`,'📏');}
+ case 4:{const b=pick([ri(5,99),ri(101,999)]);return L(`${b} m`,'km',b,`1000 m = 1 km, also sind ${b} m = ${b} Tausendstel Kilometer.`,'🛣️');}
+ case 5:{const d=ri(1,9)*1000+ri(1,99)*10;return L(`${fmt(d)} m`,'cm',d/10*1000,`1 m = 100 cm. Das Komma rutscht 2 Stellen nach rechts.`,'📏');}
+ case 6:{let d=ri(0,4)*1000+pick([ri(1,9)*100,ri(1,99)*10,ri(1,999)]);return L(`${fmt(d)} kg`,'g',d*1000,`1 kg = 1000 g. Das Komma rutscht 3 Stellen nach rechts.`,'⚖️');}
+ case 7:{let d=ri(0,4)*1000+pick([ri(1,9)*100,ri(1,99)*10,ri(1,999)]);return L(`${fmt(d)} km`,'m',d*1000,`1 km = 1000 m. Das Komma rutscht 3 Stellen nach rechts.`,'🛣️');}
+ default:{const d=ri(0,9)*1000+ri(1,99)*10;return L(`${fmtF(d,2)} €`,'ct',d/10*1000,`1 € = 100 ct. Das Komma rutscht 2 Stellen nach rechts.`,'💶');}}},
+round(){const tgt=ri(0,2),u=[1000,100,10][tgt];let v=ri(0,9)*1000+ri(0,999);if(v%10===0)v+=ri(1,9);
+ if(Math.random()<.4){const I=Math.floor(v/1000)*1000;if(tgt===1)v=I+900+ri(5,9)*10+ri(1,9);else if(tgt===2)v=I+ri(0,9)*100+90+ri(5,9);else{v=I+ri(4,5)*100+ri(1,99);}}
+ const r=Math.round(v/u)*u,nd=Math.floor((v%u)/(u/10)),names=['Ganze','Zehntel','Hundertstel'];
+ return {type:'input',prompt:`Runde auf <b>${names[tgt]}</b>:<div class="bigtxt">${fmt(v)}</div>`,answer:r,solution:fmtF(r,tgt),
+ hint:'Schau auf die Ziffer rechts neben der Rundungsstelle: 0–4 → abrunden, 5–9 → aufrunden.',
+ explain:`Die Ziffer rechts der Rundungsstelle ist <b>${nd}</b> → ${nd>=5?'aufrunden':'abrunden'}.<br>${fmt(v)} ≈ <b>${fmtF(r,tgt)}</b>${tgt>0&&r%(u*10)===0?`<br>(Die Null am Ende schreibt man mit – sie zeigt, dass auf ${names[tgt]} gerundet wurde.)`:''}`};},
+change(){const IT=[['🍦','Astronauten-Eis'],['🚀','Raketen-Sticker'],['🗺️','Sternenkarte'],['🪨','Mondgestein'],['🧃','Weltraumsaft'],['🔭','Mini-Fernrohr']];const it=shuffle(IT).slice(0,2);const p=[ri(45,349)*10,ri(45,349)*10];const tot=p[0]+p[1],pay=tot<5000?5000:10000,ans=pay-tot;
+ return {type:'input',unit:'€',prompt:`🛒 Im Raumstations-Shop kaufst du ${it[0][0]} ${it[0][1]} für <b>${fmtF(p[0],2)} €</b> und ${it[1][0]} ${it[1][1]} für <b>${fmtF(p[1],2)} €</b>. Du zahlst mit einem <b>${pay/1000}-€-Schein</b>. Wie viel Rückgeld bekommst du? <span class="tag">Profi</span>`,answer:ans,solution:fmtF(ans,2)+' €',
+ hint:'Rechne in Cent! Zum Beispiel 1,35 € = 135 ct.',
+ explain:`Zusammen: ${fmtF(p[0],2)} € + ${fmtF(p[1],2)} € = ${fmtF(tot,2)} €<br>Rückgeld: ${pay/1000},00 € − ${fmtF(tot,2)} € = <b>${fmtF(ans,2)} €</b>`};}
+};
+/* ---- Knobelkristalle ---- */
+const RIDDLES=[
+ {q:'Ich liege zwischen 2 und 3. Meine Zehntelziffer ist 4, meine Hundertstelziffer ist doppelt so groß. Mehr Nachkommastellen habe ich nicht.',a:2480,h:'Doppelt so groß wie 4 ist …',e:'2 vor dem Komma, 4 Zehntel, 8 Hundertstel → 2,48'},
+ {q:'Ich bin die kleinste Zahl mit genau drei Nachkommastellen, die größer als 0,9 ist.',a:901,h:'0,9 = 0,900. Was kommt direkt danach?',e:'0,9 = 0,900 → der nächste Tausendstel-Schritt ist 0,901'},
+ {q:'Ich bin die größte Zahl mit genau zwei Nachkommastellen, die kleiner als 5 ist.',a:4990,h:'5 = 5,00. Geh einen Hundertstel-Schritt zurück.',e:'5,00 − 0,01 = 4,99'},
+ {q:'Addiere 1 Zehntel zu 0,95.',a:1050,h:'1 Zehntel = 0,10.',e:'0,95 + 0,10 = 1,05'},
+ {q:'Ich habe 0 Einer, 7 Zehntel, keine Hundertstel und 5 Tausendstel.',a:705,h:'Die Null an der Hundertstelstelle darf nicht fehlen!',e:'0,705'},
+ {q:'Ich bin halb so groß wie 1,4.',a:700,h:'1,4 = 14 Zehntel. Die Hälfte davon?',e:'14 Zehntel : 2 = 7 Zehntel = 0,7'},
+ {q:'Ich habe genau zwei Nachkommastellen. Auf Zehntel gerundet ergebe ich 3,0. Ich bin die kleinste Zahl, auf die das zutrifft.',a:2950,h:'Welche Zahlen mit zwei Nachkommastellen werden auf 3,0 aufgerundet?',e:'Ab 2,95 wird auf 3,0 aufgerundet → 2,95'},
+ {q:'Ich bin 10-mal so groß wie 0,035.',a:350,h:'Mal 10: Jede Ziffer rückt eine Stelle nach links.',e:'0,035 · 10 = 0,35'},
+ {q:'Ich bin genau 1 Tausendstel kleiner als 2.',a:1999,h:'2 = 2,000',e:'2,000 − 0,001 = 1,999'},
+ {q:'Welche Zahl musst du zu 0,48 addieren, um genau 1 zu erhalten?',a:520,h:'Rechne in Hundertsteln: 48 + ? = 100',e:'48 Hundertstel + 52 Hundertstel = 100 Hundertstel = 1 → 0,52'},
+ {q:'Ich bin ein Bruch mit dem Nenner 4 und liege zwischen 0,6 und 0,8. Schreibe mich als Dezimalzahl!',a:750,h:'1/4 = 0,25. Welches Vielfache passt?',e:'3/4 = 75/100 = 0,75'},
+ {q:'Lege mit den Ziffernkarten 4, 0 und 8 und einer Kommakarte die kleinste Zahl, die größer als 1 ist. Alle Karten müssen benutzt werden.',a:4080,h:'Vor dem Komma darf nicht nur eine 0 stehen, sonst ist die Zahl kleiner als 1.',e:'Vor das Komma kommt die 4, dahinter so klein wie möglich: 4,08'},
+ {q:'Ich liege auf dem Zahlenstrahl genau in der Mitte zwischen 0,7 und 0,8.',a:750,h:'0,7 = 0,70 und 0,8 = 0,80',e:'Zwischen 0,70 und 0,80 liegt in der Mitte 0,75'}
+];
+let riddlePool=[];
+function riddleTask(){if(!riddlePool.length)riddlePool=shuffle(RIDDLES);const r=riddlePool.pop();return {type:'input',riddle:true,prompt:r.q,answer:r.a,hint:r.h,explain:r.e+` → <b>${fmt(r.a)}</b>`};}
+
+/* ================= Planeten ================= */
+const PLANETS=[
+ {id:'ziffra',name:'Ziffra',sub:'Stellenwerte & Hundertertafel',c:['#ffd08a','#ff6b3d'],ring:true,glyph:'0,1',gens:['grid','table','digit','value','compose']},
+ {id:'linea',name:'Linea',sub:'Der Zahlenstrahl',c:['#9ff3ff','#2a6fff'],glyph:'↔',gens:['read','read','tap','tap','mid']},
+ {id:'fractalis',name:'Fractalis',sub:'Brüche ↔ Dezimalzahlen',c:['#ffb0e0','#9a3dff'],ring:true,glyph:'½',gens:['tenfrac','dec2frac','expand','bar','mixed']},
+ {id:'ordo',name:'Ordo',sub:'Vergleichen & Ordnen',c:['#c2ff9e','#1f9e5c'],glyph:'&lt;',gens:['compare','compare','sort','between','extreme']},
+ {id:'mensura',name:'Mensura',sub:'Geld, Größen & Runden',c:['#fff0a0','#e09a00'],glyph:'€',gens:['money','length','round','round','change']}
+];
+const BADGES={first:['🚀','Abflug','Ersten Planeten erkundet'],combo5:['🔥','Feuerschweif','5 richtige am Stück'],combo10:['☄️','Komet','10 richtige am Stück'],perfect:['💎','Perfekte Landung','Alle Aufgaben eines Planeten richtig'],nohint:['🧠','Ohne Navi','3 Sterne ohne Tipp'],riddle3:['🔮','Rätselmeister:in','3 Knobelkristalle geknackt'],allstars:['🌟','Sternensammler:in','Überall 3 Sterne'],boss:['🏆','Kommadieb gefasst','Den Endgegner besiegt']};
+const RANKS=[[0,'Kadett:in'],[80,'Pilot:in'],[200,'Navigator:in'],[350,'Kapitän:in'],[550,'Kommandant:in'],[800,'Admiral:in der Kommaflotte']];
+function rankOf(xp){let i=0;RANKS.forEach((r,k)=>{if(xp>=r[0])i=k;});return {i,name:RANKS[i][1],next:RANKS[i+1]?RANKS[i+1][0]:null,base:RANKS[i][0]};}
+const planetById=id=>PLANETS.find(p=>p.id===id);
+const bossUnlocked=()=>PLANETS.filter(p=>(S.stars[p.id]||0)>=1).length>=4;
+function award(k){if(S.badges.includes(k))return;S.badges.push(k);save();const b=BADGES[k];const t=document.createElement('div');t.className='toast';t.textContent=`🏅 Abzeichen: ${b[0]} ${b[1]}`;document.body.appendChild(t);setTimeout(()=>t.remove(),3300);}
+function confetti(n){const cols=['#ffd34d','#ff5d73','#5ac8fa','#3ddc97','#c48bff','#fff'];for(let i=0;i<n;i++){const d=document.createElement('i');d.className='conf';d.style.left=Math.random()*100+'vw';d.style.background=pick(cols);d.style.animationDuration=(1.8+Math.random()*1.8)+'s';d.style.animationDelay=Math.random()*.5+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),4500);}}
+
+/* ================= Bildschirme ================= */
+let run=null,cur=null,timerId=null;
+function stopTimer(){if(timerId){clearInterval(timerId);timerId=null;}}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+function renderStart(){stopTimer();run=null;
+ app.innerHTML=`<div class="hero" style="position:relative">${IKO}${ROCKET}<h1>Mission Komma</h1><div class="muted" style="font-size:20px">Die Dezimalzahlen-Expedition</div></div>
+ <div class="story">🚨 <b>Alarm in der Zahlengalaxie!</b> Der fiese <b>Kommadieb</b> hat alle Kommas gestohlen. Jetzt herrscht Chaos: Im Raumstations-Shop kostet ein Eis plötzlich <b>305 €</b> statt 3,05 €! 😱<br><br>
+ Fliege mit deiner Rakete zu <b>fünf Planeten</b>, löse ihre Aufgaben und sammle <b>Sterne ⭐</b>. Knacke die lila <b>Knobelkristalle 🔮</b> für doppelte Punkte. Wenn du vier Planeten erkundet hast, kannst du den Kommadieb stellen!</div>
+ <div class="namebox">${S.name?`<button class="btn go" data-a="map">Weiter als ${esc(S.name)} 🚀</button><button class="btn ghost" data-a="reset">Neue:r Pilot:in</button>`:`<input id="nm" maxlength="20" placeholder="Dein Pilotenname" autocomplete="off"><button class="btn go" data-a="go">Los geht's 🚀</button>`}</div>
+ <details class="teacher"><summary>ℹ️ Für Lehrkräfte</summary>
+ Gamifizierte Übung für schnelle Schüler:innen zum <b>Einstieg in die Dezimalzahlen</b> (Kl. 6, KLP GY NRW, Inhaltsfeld Arithmetik/Algebra): Stellenwerte, Darstellung am Zahlenstrahl und in der Hundertertafel, Umwandlung Bruch ↔ Dezimalzahl (Zehnerbrüche, Erweitern), Vergleichen/Ordnen (typische Fehlvorstellung „mehr Ziffern = größer“), Größen in Kommaschreibweise, Runden.<br>
+ Pro Planet 7 zufällig erzeugte Aufgaben + 1 Knobelkristall (bei jedem Neustart neue Zahlen). ⭐⭐⭐ ab 7/8, ⭐⭐ ab 5/8, ⭐ ab 3/8. Aufgaben mit „Profi“ sind Sprinter-Niveau. Der Fortschritt wird auf dem iPad im Browser gespeichert. Am Ende gibt es ein Zertifikat mit Code zum Vorzeigen.</details>${FOOT}`;
+ const nm=$('#nm');if(nm){nm.addEventListener('keydown',e=>{if(e.key==='Enter')act('go');});}}
+
+function renderMap(){stopTimer();run=null;const rk=rankOf(S.xp);const pct=rk.next?Math.round((S.xp-rk.base)/(rk.next-rk.base)*100):100;const unl=bossUnlocked();
+ let h=`<div class="maphead"><div style="width:58px">${ROCKET}</div><div class="rk"><div class="nm">${esc(S.name)} · ${rk.name}</div><div class="muted">⭐ ${S.xp} XP${rk.next?` · noch ${rk.next-S.xp} XP bis ${RANKS[rk.i+1][1]}`:' · Höchster Rang erreicht!'}</div><div class="xpbar"><div style="width:${pct}%"></div></div></div></div>
+ <h2 style="margin-top:18px">🗺️ Sternenkarte – wähle deinen Planeten</h2><div class="planets">`;
+ PLANETS.forEach(P=>{const st=S.stars[P.id]||0;h+=`<button class="pcard" data-a="planet" data-p="${P.id}">${planetSVG(P,110)}<div class="pn">${P.name}</div><div class="ps">${P.sub}</div><div class="stars">${[1,2,3].map(k=>`<span class="${k<=st?'on':''}">★</span>`).join('')}</div></button>`;});
+ h+=`<button class="pcard boss ${unl?'':'locked'}" data-a="boss">${bossSVG().replace('class="bossfig ','style="width:110px;height:110px" class="')}<div class="pn">Kommadieb</div><div class="ps">Endgegner</div>${unl?`<div class="lockinfo">${S.bossWon?'🏆 besiegt – nochmal?':'⚔️ Bereit zum Kampf!'}</div>`:`<div class="lockinfo">🔒 Erkunde erst 4 Planeten (mind. ⭐)</div>`}</button></div>
+ <div class="section"><b>🏅 Abzeichen (${S.badges.length}/${Object.keys(BADGES).length})</b><div class="badges">${Object.entries(BADGES).map(([k,b])=>`<div class="badge ${S.badges.includes(k)?'':'off'}" title="${b[2]}"><span class="bi">${b[0]}</span><span><b>${b[1]}</b><br><small class="muted">${b[2]}</small></span></div>`).join('')}</div></div>
+ <div class="row"><button class="btn go" data-a="cert">📜 Mein Zertifikat</button><button class="btn ghost" data-a="home">🏠 Start</button></div>${FOOT}`;
+ app.innerHTML=h;window.scrollTo(0,0);}
+
+function startPlanet(pid){const P=planetById(pid);const gens=shuffle(P.gens.concat(shuffle(P.gens).slice(0,2)));const tasks=gens.map(g=>G[g]());tasks.push(riddleTask());
+ run={mode:'planet',P,tasks,i:0,correct:0,streak:0,hintUsed:false,res:[],xp0:S.xp};renderTask();}
+function startBoss(){if(!bossUnlocked()){const c=$('.pcard.boss');if(c){c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake');}return;}
+ run={mode:'boss',tasks:[bossTask(0)],i:0,correct:0,streak:0,hp:10,maxhp:10,lives:3,res:[],xp0:S.xp,timeLeft:0};renderTask();}
+function bossTask(k){if(k>0&&k%4===3)return riddleTask();const P=pick(PLANETS);return G[pick(P.gens)]();}
+const TAUNTS=['Hehe! Ohne Komma kostet dein Eis jetzt 305 €!','Meine Kommas bekommst du nie zurück!','0,5 oder 0,45 – was ist größer? Hihi!','Nullen? Die klaue ich auch gleich mit!','Zehntel, Hundertstel … alles meins!','Du bist nur ein:e Kadett:in!'];
+const TAUNTS_LOW=['Grrr… du bist schneller als gedacht!','Neeein! Mein Kommasack wird leichter!','Das war Glück! Pures Glück!'];
+
+function renderTask(){stopTimer();const t=run.tasks[run.i];cur={input:'',seq:[],tap:null,answered:false};const boss=run.mode==='boss';
+ let h=`<div class="topbar"><button class="btn ghost" data-a="map" aria-label="Zur Karte">✕</button><div class="ttl">${boss?'⚔️ Endgegner: Kommadieb':`${run.P.name} · Aufgabe ${run.i+1}/${run.tasks.length}`}</div><span class="chip">⭐ <b id="xpv">${S.xp}</b></span><span class="chip ${run.streak>=3?'hot':''}" id="stk">🔥 ${run.streak}</span></div>`;
+ if(!boss)h+=`<div class="dots">${run.tasks.map((x,k)=>`<i class="${k<run.i?(run.res[k]?'ok':'no'):k===run.i?'cur':''} ${x.riddle?'rid':''}"></i>`).join('')}</div>`;
+ h+=`<div class="stage"><div>`;
+ if(boss){const tt=run.hp<=4?pick(TAUNTS_LOW):pick(TAUNTS);h+=`<div class="card" style="margin-bottom:14px"><div class="arena">${bossSVG()}<div style="flex:1"><div class="bubble">${tt}</div><div class="hp"><div id="hpbar" style="width:${run.hp/run.maxhp*100}%"></div></div><div style="display:flex;justify-content:space-between"><span class="lives" id="lives">${'❤️'.repeat(run.lives)}${'🖤'.repeat(3-run.lives)}</span><small class="muted" style="margin-top:10px">⚡ Schnell = +5 Bonus · 🔥3 = doppelter Schaden</small></div><div class="timer"><div id="tbar"></div></div></div></div></div>`;}
+ h+=`<div class="card ${t.riddle?'riddle':''}">${t.riddle?'<div class="rtag">🔮 Knobelkristall · doppelte XP</div>':''}<div class="prompt">${t.prompt}</div>${t.big?`<div class="bignum">${t.big}</div>`:''}${t.visual?`<div class="visual">${t.visual}</div>`:''}${t.type==='tap'?'<div class="muted center" style="margin-top:6px">Tippe auf den Zahlenstrahl – du kannst so oft verschieben, wie du willst.</div>':''}<div id="hintbox" class="hintbox hidden">💡 ${t.hint||''}</div></div></div>`;
+ h+=`<div class="answer">${answerUI(t)}<div class="actions">${t.hint?'<button class="btn ghost" data-a="hint" id="hintBtn">💡 Tipp <small>−5 XP</small></button>':''}${t.type!=='choice'?'<button class="btn go" data-a="check">Prüfen ✓</button>':''}</div></div></div>`;
+ app.innerHTML=h;window.scrollTo(0,0);
+ if(t.type==='sort')drawSort();
+ if(t.type==='tap')bindTap(t);
+ if(boss){run.timeLeft=30;const tb=$('#tbar');timerId=setInterval(()=>{run.timeLeft=Math.max(0,run.timeLeft-0.1);if(tb){tb.style.width=(run.timeLeft/30*100)+'%';if(run.timeLeft<8)tb.style.background='var(--bad)';}if(run.timeLeft<=0)stopTimer();},100);}}
+
+function answerUI(t){
+ if(t.type==='input')return `<div class="display" id="disp"><span class="ph">?</span>${t.unit?`<span class="unit">${t.unit}</span>`:''}</div><div class="keypad">${['7','8','9','4','5','6','1','2','3',',','0','⌫'].map(k=>`<button class="key ${k===','?'comma':''} ${k==='⌫'?'del':''}" data-k="${k}">${k}</button>`).join('')}</div>`;
+ if(t.type==='choice')return `<div class="choices ${t.cls||''}">${t.choices.map((c,i)=>`<button class="choice" data-c="${i}">${c.label}</button>`).join('')}</div>`;
+ if(t.type==='sort')return `<div class="sortlbl"><span>${t.asc?'kleinste':'größte'} ➜</span><span>➜ ${t.asc?'größte':'kleinste'}</span></div><div class="slots" id="slots"></div><div class="pool" id="pool"></div><div class="muted center" style="font-size:15px">Tippe die Zahlen der Reihe nach an. Antippen in der Reihe nimmt sie zurück.</div>`;
+ return '';}
+function updDisp(){const d=$('#disp');if(!d)return;const t=run.tasks[run.i];d.innerHTML=(cur.input?`<span>${cur.input}</span>`:'<span class="ph">?</span>')+(t.unit?`<span class="unit">${t.unit}</span>`:'');}
+function key(k){if(cur.answered)return;let s=cur.input;if(k==='⌫')s=s.slice(0,-1);else if(k===','){if(!s.includes(','))s=(s||'0')+',';}else{if(s.replace(',','').length>=7)return;if(s.includes(',')&&s.split(',')[1].length>=3)return;s=s==='0'?k:s+k;}cur.input=s;updDisp();sfx.tap();}
+function drawSort(){const t=run.tasks[run.i];$('#slots').innerHTML=cur.seq.length?cur.seq.map((idx,k)=>`<button class="tile" data-s="${k}">${t.items[idx].s}</button>`).join(`<span style="font-size:24px;color:var(--muted)">${t.asc?'<':'>'}</span>`):'<span class="ph">Hier entsteht deine Reihe …</span>';
+ $('#pool').innerHTML=t.items.map((it,i)=>`<button class="tile ${cur.seq.includes(i)?'used':''}" data-t="${i}">${it.s}</button>`).join('');}
+function bindTap(t){const svg=document.getElementById('tapline');if(!svg)return;svg.addEventListener('pointerdown',e=>{if(cur.answered)return;e.preventDefault();const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const p=pt.matrixTransform(svg.getScreenCTM().inverse());let idx=Math.round((p.x-NL.x0)/(NL.x1-NL.x0)*t.nl.n);idx=Math.max(0,Math.min(t.nl.n,idx));cur.tap=idx;svg.querySelector('#nlmark').innerHTML=flag(idx,t.nl.n,'#5ac8fa');sfx.tap();});}
+function shakeEl(sel){const el=$(sel);if(!el)return;el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');}
+
+function check(){const t=run.tasks[run.i];if(cur.answered)return;let ok=false;
+ if(t.type==='input'){const v=parseNum(cur.input);if(!cur.input||isNaN(v)){shakeEl('#disp');return;}ok=t.check?t.check(v):v===t.answer;}
+ else if(t.type==='sort'){if(cur.seq.length<t.items.length){shakeEl('#slots');return;}ok=cur.seq.every((idx,k)=>t.items[idx].v===t.order[k]);}
+ else if(t.type==='tap'){if(cur.tap==null){shakeEl('#tapline');return;}ok=cur.tap===t.nl.target;const m=$('#nlmark');m.innerHTML=(ok?'':flag(cur.tap,t.nl.n,'#ff5d73'))+flag(t.nl.target,t.nl.n,'#3ddc97',fmt(t.nl.start+t.nl.step*t.nl.target));}
+ resolve(ok);}
+function choose(i){const t=run.tasks[run.i];if(cur.answered)return;const ok=t.choices[i].ok;document.querySelectorAll('.choice').forEach((b,k)=>{if(t.choices[k].ok)b.classList.add('right');else if(k===i)b.classList.add('wrong');});resolve(ok);}
+function resolve(ok){cur.answered=true;stopTimer();const t=run.tasks[run.i];const boss=run.mode==='boss';let gain=0,extra='';run.res[run.i]=ok;
+ if(ok){run.correct++;run.streak++;if(run.streak>S.bestCombo)S.bestCombo=run.streak;gain=(t.riddle?25:10)+Math.min(10,(run.streak-1)*2);
+  if(boss&&run.timeLeft>0){gain+=5;extra='⚡ Tempo-Bonus! ';}
+  if(t.riddle){S.riddles++;confetti(30);}
+  if(boss){const dmg=run.streak>=3?2:1;run.hp=Math.max(0,run.hp-dmg);const f=$('.arena .bossfig');if(f){f.classList.add('hit');}const hb=$('#hpbar');if(hb)hb.style.width=(run.hp/run.maxhp*100)+'%';extra+=`💥 ${dmg} Schaden!`;sfx.hit();setTimeout(sfx.ok,180);}else sfx.ok();
+ }else{run.streak=0;sfx.bad();if(boss){run.lives--;const l=$('#lives');if(l)l.innerHTML='❤️'.repeat(run.lives)+'🖤'.repeat(3-run.lives);extra='💔 Ein Herz verloren!';}}
+ S.xp+=gain;save();
+ if(run.streak===5)award('combo5');if(run.streak===10)award('combo10');if(S.riddles>=3)award('riddle3');
+ const xv=$('#xpv');if(xv)xv.textContent=S.xp;const sk=$('#stk');if(sk){sk.textContent='🔥 '+run.streak;sk.classList.toggle('hot',run.streak>=3);}
+ const praise=pick(['Richtig!','Volltreffer!','Super!','Stark!','Genau so!','Klasse!']);
+ const sol=t.solution||(t.answer!=null?fmt(t.answer)+(t.unit?' '+t.unit:''):'');
+ const el=document.createElement('div');el.className='sheet '+(ok?'ok':'bad');
+ el.innerHTML=`<div class="sheet-in"><div class="fbtitle"><span>${ok?'✅ '+praise+(run.streak>=3?` 🔥 Combo ×${run.streak}`:''):'❌ Leider nicht.'}</span>${gain?`<span class="xp">+${gain} XP</span>`:''}</div>${extra?`<div class="sol">${extra}</div>`:''}${!ok&&t.type!=='choice'&&t.type!=='tap'?`<div class="sol">Richtig wäre: <b>${sol}</b></div>`:''}<div class="expl">${t.explain}</div><button class="btn go" data-a="next">Weiter ➜</button></div>`;
+ app.appendChild(el);}
+function hint(){const t=run.tasks[run.i];const hb=$('#hintbox');if(!hb||!hb.classList.contains('hidden'))return;hb.classList.remove('hidden');run.hintUsed=true;S.xp=Math.max(0,S.xp-5);save();const xv=$('#xpv');if(xv)xv.textContent=S.xp;const b=$('#hintBtn');if(b)b.disabled=true;}
+function next(){if(run.mode==='boss'){if(run.hp<=0)return bossEnd(true);if(run.lives<=0)return bossEnd(false);run.tasks.push(bossTask(run.tasks.length));run.i++;return renderTask();}
+ run.i++;if(run.i>=run.tasks.length)planetEnd();else renderTask();}
+
+function planetEnd(){const P=run.P,c=run.correct,n=run.tasks.length;const st=c>=7?3:c>=5?2:c>=3?1:0;const wasUnl=bossUnlocked();S.stars[P.id]=Math.max(S.stars[P.id]||0,st);save();
+ award('first');if(c===n)award('perfect');if(st===3&&!run.hintUsed)award('nohint');if(PLANETS.every(p=>S.stars[p.id]===3))award('allstars');
+ const msg=st===3?'Fantastisch! Du hast den Planeten komplett erobert!':st===2?'Starke Leistung! Schaffst du beim nächsten Flug alle drei Sterne?':st===1?'Gelandet! Mit etwas Übung holst du mehr Sterne.':'Bruchlandung … Nutze die Tipps und versuch es nochmal!';
+ if(st===3){sfx.win();confetti(110);}else if(st>0)sfx.win();
+ app.innerHTML=`<div class="result">${planetSVG(P,150)}<h1>Planet ${P.name} ${st?'erkundet!':''}</h1><div class="bigstars">${[1,2,3].map(k=>`<span class="${k<=st?'on':''}">★</span>`).join('')}</div>
+ <div style="font-size:24px;margin:10px 0"><b>${c} von ${n}</b> richtig · <span style="color:var(--accent)">+${S.xp-run.xp0} XP</span></div><div class="muted" style="font-size:19px">${msg}</div>
+ ${!wasUnl&&bossUnlocked()?'<div class="story center" style="border-color:#9a7bff">⚔️ <b>Der Kommadieb wurde entdeckt!</b> Auf der Sternenkarte kannst du ihn jetzt herausfordern.</div>':''}
+ <div class="row"><button class="btn go" data-a="map">🗺️ Zur Sternenkarte</button><button class="btn" data-a="planet" data-p="${P.id}">🔁 Nochmal (neue Aufgaben)</button></div></div>`;run=null;window.scrollTo(0,0);}
+function bossEnd(win){stopTimer();const gained=S.xp-run.xp0;
+ if(win){S.xp+=50;S.bossWon=true;save();award('boss');sfx.win();confetti(160);}
+ app.innerHTML=`<div class="result">${win?`<div style="font-size:90px">🏆</div><h1>Der Kommadieb ist gefasst!</h1><div class="story">Alle Kommas sind zurück an ihrem Platz. Das Eis im Raumstations-Shop kostet wieder <b>3,05 €</b> – und die ganze Galaxie feiert dich, <b>${esc(S.name)}</b>! 🎉<br><br>Sieg-Bonus: <b>+50 XP</b> (insgesamt +${gained+50} XP in diesem Kampf)</div>`:`<div style="width:160px;margin:0 auto">${bossSVG()}</div><h1>Der Kommadieb ist entkommen …</h1><div class="story">„Hehe, bis zum nächsten Mal!“ – Lass dich nicht ärgern! Übe noch einmal auf einem Planeten oder fordere ihn direkt erneut heraus. (+${gained} XP gesammelt)</div>`}
+ <div class="row">${win?'<button class="btn go" data-a="cert">📜 Zertifikat ansehen</button>':'<button class="btn go" data-a="boss">⚔️ Revanche!</button>'}<button class="btn" data-a="map">🗺️ Sternenkarte</button></div></div>`;run=null;window.scrollTo(0,0);}
+
+function renderCert(){const rk=rankOf(S.xp);const totalStars=PLANETS.reduce((s,p)=>s+(S.stars[p.id]||0),0);
+ let hsh=7;const str=S.name+'|'+S.xp+'|'+totalStars+'|'+S.badges.length+'|'+(S.bossWon?1:0);for(const ch of str)hsh=(hsh*31+ch.charCodeAt(0))%1679616;const code='MK-'+hsh.toString(36).toUpperCase().padStart(4,'0');
+ app.innerHTML=`<div class="cert"><div style="font-size:50px">🚀</div><h1>Weltraum-Zertifikat</h1><div style="font-size:19px">Hiermit wird bestätigt, dass</div><div style="font-size:36px;font-weight:800;margin:6px 0">${esc(S.name)}</div><div style="font-size:19px">an der <b>Mission Komma</b> teilgenommen und den Rang</div><div style="font-size:28px;font-weight:800;color:#7a4a00;margin:6px 0">${rk.name}</div><div style="font-size:19px">erreicht hat.</div>
+ <table>${PLANETS.map(p=>`<tr><td>Planet ${p.name}</td><td>${'⭐'.repeat(S.stars[p.id]||0)||'–'}</td></tr>`).join('')}<tr><td>Kommadieb</td><td>${S.bossWon?'🏆 besiegt':'noch auf freiem Fuß'}</td></tr><tr><td>Abzeichen</td><td>${S.badges.map(b=>BADGES[b][0]).join(' ')||'–'} (${S.badges.length}/${Object.keys(BADGES).length})</td></tr><tr><td>Erfahrung</td><td><b>${S.xp} XP</b> · beste Combo: ${S.bestCombo}</td></tr></table>
+ <div>${new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div><div class="code">${code}</div><div style="font-size:14px;margin-top:6px">Zeige dieses Zertifikat deiner Lehrkraft.</div>${FOOT}</div>
+ <div class="row"><button class="btn go" data-a="map">🗺️ Zurück zur Karte</button></div>`;window.scrollTo(0,0);}
+
+/* ================= Steuerung ================= */
+function act(a,b){
+ switch(a){
+ case 'go':{const v=($('#nm')||{}).value;const name=(v||'').trim();if(!name){shakeEl('#nm');return;}S.name=name.slice(0,20);save();sfx.win();renderMap();break;}
+ case 'map':if(run&&run.mode==='planet'&&run.i>0&&!confirm('Mission abbrechen? Dieser Flug wird nicht gewertet (XP bleiben).'))return;renderMap();break;
+ case 'home':renderStart();break;
+ case 'reset':if(confirm('Wirklich neu starten? Alle Sterne, XP und Abzeichen auf diesem iPad werden gelöscht.')){S=fresh();save();renderStart();}break;
+ case 'planet':startPlanet(b.dataset.p);break;
+ case 'boss':startBoss();break;
+ case 'cert':renderCert();break;
+ case 'check':check();break;
+ case 'hint':hint();break;
+ case 'next':next();break;}}
+app.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.a)return act(b.dataset.a,b);
+ if(b.dataset.k!=null)return key(b.dataset.k);
+ if(b.dataset.c!=null)return choose(+b.dataset.c);
+ if(b.dataset.t!=null){if(cur.answered)return;const i=+b.dataset.t;if(!cur.seq.includes(i)){cur.seq.push(i);sfx.tap();drawSort();}return;}
+ if(b.dataset.s!=null){if(cur.answered)return;cur.seq.splice(+b.dataset.s,1);drawSort();return;}});
+document.addEventListener('keydown',e=>{if(!run||!cur)return;if(e.target&&e.target.tagName==='INPUT')return;const t=run.tasks[run.i];
+ if(cur.answered){if(e.key==='Enter'){e.preventDefault();next();}return;}
+ if(t.type==='input'){if(/^[0-9]$/.test(e.key))key(e.key);else if(e.key===','||e.key==='.')key(',');else if(e.key==='Backspace'){e.preventDefault();key('⌫');}else if(e.key==='Enter')check();}
+ else if(t.type==='choice'&&/^[1-4]$/.test(e.key)&&t.choices[+e.key-1])choose(+e.key-1);
+ else if(e.key==='Enter')check();});
+
+renderStart();
+</script>
+</body>
+</html>

@@ -13,8 +13,8 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;min-height:100%;background:#05071a;color:var(--ink);font-family:"Avenir Next","Avenir","Nunito","Segoe UI",system-ui,sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none;overflow-x:hidden}
 input{-webkit-user-select:text;user-select:text}
-#sky{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;background:radial-gradient(ellipse at 50% -10%,#28308a 0%,#121848 45%,#05071a 100%)}
-#sky i{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;animation:tw 3s infinite ease-in-out}
+#sky{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;overflow:hidden;background:radial-gradient(ellipse at 50% -10%,#28308a 0%,#121848 45%,#05071a 100%)}
+.tw1{animation:tw 4s infinite ease-in-out}
 @keyframes tw{0%,100%{opacity:.25}50%{opacity:1}}
 #app{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 16px 160px}
 button{font:inherit;color:inherit;border:none;cursor:pointer;touch-action:manipulation}
@@ -130,9 +130,9 @@ table.pt .cm{border-left:5px solid var(--bad)!important}
 svg.nl{width:100%;height:auto;touch-action:none}
 .nltxt{font-size:24px;font-weight:800;fill:#eef1ff}
 /* feedback sheet */
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;animation:up .25s ease-out;pointer-events:none}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;pointer-events:none;-webkit-transform:translateZ(0)}
 @keyframes up{from{transform:translateY(100%)}}
-.sheet-in{pointer-events:auto;width:min(760px,100%);background:#141a4d;border-radius:26px 26px 0 0;padding:18px 22px max(20px,env(safe-area-inset-bottom));border-top:6px solid var(--good);box-shadow:0 -10px 40px rgba(0,0,0,.5);max-height:60vh;overflow:auto}
+.sheet-in{pointer-events:auto;animation:up .25s ease-out;width:min(760px,100%);background:#141a4d;border-radius:26px 26px 0 0;padding:18px 22px max(20px,env(safe-area-inset-bottom));border-top:6px solid var(--good);box-shadow:0 -10px 40px rgba(0,0,0,.5);max-height:60vh;overflow:auto}
 .sheet.bad .sheet-in{border-top-color:var(--bad)}
 .fbtitle{font-size:26px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
 .sheet.ok .fbtitle{color:var(--good)}.sheet.bad .fbtitle{color:var(--bad)}
@@ -175,6 +175,9 @@ svg.nl{width:100%;height:auto;touch-action:none}
 .hero svg.iko{width:56px;position:absolute;right:6px;top:10px;animation:spin 18s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .cert .foot{color:#6a5a40;margin-top:16px}
+.nudge{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:85;background:#ff9f43;color:#2a1000;font-weight:800;font-size:19px;padding:14px 22px;border-radius:18px;box-shadow:0 8px 30px rgba(0,0,0,.45);max-width:92vw;text-align:center;animation:nud .25s ease-out}
+@keyframes nud{from{opacity:0;transform:translate(-50%,20px)}}
+svg.nl#tapline{cursor:pointer}
 .mute{position:fixed;right:14px;bottom:14px;z-index:40;width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.1);font-size:24px}
 </style>
 </head>
@@ -211,7 +214,8 @@ const sfx={ok:()=>beep([660,880,1320],.09),bad:()=>beep([240,170],.17,'square',.
 $('#muteBtn').addEventListener('click',()=>{muted=!muted;$('#muteBtn').textContent=muted?'🔇':'🔊';});
 
 /* ================= Sternenhimmel ================= */
-(function(){const sky=$('#sky');let h='';for(let i=0;i<130;i++){const s=Math.random()<.15?3:2;h+=`<i style="left:${Math.random()*100}%;top:${Math.random()*100}%;width:${s}px;height:${s}px;animation-delay:${(Math.random()*3).toFixed(2)}s;animation-duration:${(2+Math.random()*3).toFixed(2)}s"></i>`;}sky.innerHTML=h;})();
+(function(){const g=[ '','',''];for(let i=0;i<140;i++){const r=Math.random()<.15?1.6:1;g[i%3]+=`<circle cx="${(Math.random()*100).toFixed(2)}%" cy="${(Math.random()*100).toFixed(2)}%" r="${r}" fill="#fff"/>`;}
+ $('#sky').innerHTML=`<svg width="100%" height="100%" style="position:absolute;top:0;left:0"><g opacity=".85">${g[0]}</g><g class="tw1">${g[1]}</g><g opacity=".45">${g[2]}</g></svg>`;})();
 
 /* ================= Grafiken ================= */
 const IKO=`<svg viewBox="12 12 76 76" class="iko" aria-label="Ikosaeder"><polygon points="71.4,40.8 63.5,85.9 94.9,58.2" fill="#7590ec" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="71.4,40.8 63.5,85.9 26.7,58.2" fill="#8cd1f9" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="71.4,40.8 77.4,13.5 35.3,13.5" fill="#6767e4" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="71.4,40.8 77.4,13.5 94.9,58.2" fill="#6767e4" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="71.4,40.8 35.3,13.5 26.7,58.2" fill="#7ea9f1" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="63.5,85.9 64.7,86.5 22.6,86.5" fill="#83b7f4" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="63.5,85.9 64.7,86.5 94.9,58.2" fill="#7080e9" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="63.5,85.9 22.6,86.5 26.7,58.2" fill="#95e9fe" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="35.3,13.5 26.7,58.2 5.1,41.8" fill="#7ea8f1" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="22.6,86.5 26.7,58.2 5.1,41.8" fill="#8bcef9" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/></svg>`;
@@ -405,11 +409,12 @@ function confetti(n){const cols=['#ffd34d','#ff5d73','#5ac8fa','#3ddc97','#c48bf
 
 /* ================= Bildschirme ================= */
 let run=null,cur=null,timerId=null;
+function prep(){document.querySelectorAll('.sheet').forEach(e=>e.remove());requestAnimationFrame(()=>{app.style.webkitTransform='translateZ(0)';app.style.transform='translateZ(0)';void app.offsetHeight;requestAnimationFrame(()=>{app.style.webkitTransform='';app.style.transform='';});});}
 function stopTimer(){if(timerId){clearInterval(timerId);timerId=null;}}
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
 function renderStart(){stopTimer();run=null;
- app.innerHTML=`<div class="hero" style="position:relative">${IKO}${ROCKET}<h1>Mission Komma</h1><div class="muted" style="font-size:20px">Die Dezimalzahlen-Expedition</div></div>
+ prep();app.innerHTML=`<div class="hero" style="position:relative">${IKO}${ROCKET}<h1>Mission Komma</h1><div class="muted" style="font-size:20px">Die Dezimalzahlen-Expedition</div></div>
  <div class="story">🚨 <b>Alarm in der Zahlengalaxie!</b> Der fiese <b>Kommadieb</b> hat alle Kommas gestohlen. Jetzt herrscht Chaos: Im Raumstations-Shop kostet ein Eis plötzlich <b>305 €</b> statt 3,05 €! 😱<br><br>
  Fliege mit deiner Rakete zu <b>fünf Planeten</b>, löse ihre Aufgaben und sammle <b>Sterne ⭐</b>. Knacke die lila <b>Knobelkristalle 🔮</b> für doppelte Punkte. Wenn du vier Planeten erkundet hast, kannst du den Kommadieb stellen!</div>
  <div class="namebox">${S.name?`<button class="btn go" data-a="map">Weiter als ${esc(S.name)} 🚀</button><button class="btn ghost" data-a="reset">Neue:r Pilot:in</button>`:`<input id="nm" maxlength="20" placeholder="Dein Pilotenname" autocomplete="off"><button class="btn go" data-a="go">Los geht's 🚀</button>`}</div>
@@ -425,7 +430,7 @@ function renderMap(){stopTimer();run=null;const rk=rankOf(S.xp);const pct=rk.nex
  h+=`<button class="pcard boss ${unl?'':'locked'}" data-a="boss">${bossSVG().replace('class="bossfig ','style="width:110px;height:110px" class="')}<div class="pn">Kommadieb</div><div class="ps">Endgegner</div>${unl?`<div class="lockinfo">${S.bossWon?'🏆 besiegt – nochmal?':'⚔️ Bereit zum Kampf!'}</div>`:`<div class="lockinfo">🔒 Erkunde erst 4 Planeten (mind. ⭐)</div>`}</button></div>
  <div class="section"><b>🏅 Abzeichen (${S.badges.length}/${Object.keys(BADGES).length})</b><div class="badges">${Object.entries(BADGES).map(([k,b])=>`<div class="badge ${S.badges.includes(k)?'':'off'}" title="${b[2]}"><span class="bi">${b[0]}</span><span><b>${b[1]}</b><br><small class="muted">${b[2]}</small></span></div>`).join('')}</div></div>
  <div class="row"><button class="btn go" data-a="cert">📜 Mein Zertifikat</button><button class="btn ghost" data-a="home">🏠 Start</button></div>${FOOT}`;
- app.innerHTML=h;window.scrollTo(0,0);}
+ prep();app.innerHTML=h;window.scrollTo(0,0);}
 
 function startPlanet(pid){const P=planetById(pid);const gens=shuffle(P.gens.concat(shuffle(P.gens).slice(0,2)));const tasks=gens.map(g=>G[g]());tasks.push(riddleTask());
  run={mode:'planet',P,tasks,i:0,correct:0,streak:0,hintUsed:false,res:[],xp0:S.xp};renderTask();}
@@ -442,7 +447,7 @@ function renderTask(){stopTimer();const t=run.tasks[run.i];cur={input:'',seq:[],
  if(boss){const tt=run.hp<=4?pick(TAUNTS_LOW):pick(TAUNTS);h+=`<div class="card" style="margin-bottom:14px"><div class="arena">${bossSVG()}<div style="flex:1"><div class="bubble">${tt}</div><div class="hp"><div id="hpbar" style="width:${run.hp/run.maxhp*100}%"></div></div><div style="display:flex;justify-content:space-between"><span class="lives" id="lives">${'❤️'.repeat(run.lives)}${'🖤'.repeat(3-run.lives)}</span><small class="muted" style="margin-top:10px">⚡ Schnell = +5 Bonus · 🔥3 = doppelter Schaden</small></div><div class="timer"><div id="tbar"></div></div></div></div></div>`;}
  h+=`<div class="card ${t.riddle?'riddle':''}">${t.riddle?'<div class="rtag">🔮 Knobelkristall · doppelte XP</div>':''}<div class="prompt">${t.prompt}</div>${t.big?`<div class="bignum">${t.big}</div>`:''}${t.visual?`<div class="visual">${t.visual}</div>`:''}${t.type==='tap'?'<div class="muted center" style="margin-top:6px">Tippe auf den Zahlenstrahl – du kannst so oft verschieben, wie du willst.</div>':''}<div id="hintbox" class="hintbox hidden">💡 ${t.hint||''}</div></div></div>`;
  h+=`<div class="answer">${answerUI(t)}<div class="actions">${t.hint?'<button class="btn ghost" data-a="hint" id="hintBtn">💡 Tipp <small>−5 XP</small></button>':''}${t.type!=='choice'?'<button class="btn go" data-a="check">Prüfen ✓</button>':''}</div></div></div>`;
- app.innerHTML=h;window.scrollTo(0,0);
+ prep();app.innerHTML=h;window.scrollTo(0,0);
  if(t.type==='sort')drawSort();
  if(t.type==='tap')bindTap(t);
  if(boss){run.timeLeft=30;const tb=$('#tbar');timerId=setInterval(()=>{run.timeLeft=Math.max(0,run.timeLeft-0.1);if(tb){tb.style.width=(run.timeLeft/30*100)+'%';if(run.timeLeft<8)tb.style.background='var(--bad)';}if(run.timeLeft<=0)stopTimer();},100);}}
@@ -450,25 +455,29 @@ function renderTask(){stopTimer();const t=run.tasks[run.i];cur={input:'',seq:[],
 function answerUI(t){
  if(t.type==='input')return `<div class="display" id="disp"><span class="ph">?</span>${t.unit?`<span class="unit">${t.unit}</span>`:''}</div><div class="keypad">${['7','8','9','4','5','6','1','2','3',',','0','⌫'].map(k=>`<button class="key ${k===','?'comma':''} ${k==='⌫'?'del':''}" data-k="${k}">${k}</button>`).join('')}</div>`;
  if(t.type==='choice')return `<div class="choices ${t.cls||''}">${t.choices.map((c,i)=>`<button class="choice" data-c="${i}">${c.label}</button>`).join('')}</div>`;
- if(t.type==='sort')return `<div class="sortlbl"><span>${t.asc?'kleinste':'größte'} ➜</span><span>➜ ${t.asc?'größte':'kleinste'}</span></div><div class="slots" id="slots"></div><div class="pool" id="pool"></div><div class="muted center" style="font-size:15px">Tippe die Zahlen der Reihe nach an. Antippen in der Reihe nimmt sie zurück.</div>`;
+ if(t.type==='sort')return `<div class="sortlbl"><span>${t.asc?'kleinste':'größte'} ➜</span><span>➜ ${t.asc?'größte':'kleinste'}</span></div><div class="slots" id="slots"></div><div class="pool" id="pool"></div><div class="muted center" style="font-size:15px">Tippe <b>alle</b> Zahlen der Reihe nach an, dann „Prüfen“. Antippen in der Reihe nimmt eine Zahl zurück.</div>`;
  return '';}
 function updDisp(){const d=$('#disp');if(!d)return;const t=run.tasks[run.i];d.innerHTML=(cur.input?`<span>${cur.input}</span>`:'<span class="ph">?</span>')+(t.unit?`<span class="unit">${t.unit}</span>`:'');}
 function key(k){if(cur.answered)return;let s=cur.input;if(k==='⌫')s=s.slice(0,-1);else if(k===','){if(!s.includes(','))s=(s||'0')+',';}else{if(s.replace(',','').length>=7)return;if(s.includes(',')&&s.split(',')[1].length>=3)return;s=s==='0'?k:s+k;}cur.input=s;updDisp();sfx.tap();}
 function drawSort(){const t=run.tasks[run.i];$('#slots').innerHTML=cur.seq.length?cur.seq.map((idx,k)=>`<button class="tile" data-s="${k}">${t.items[idx].s}</button>`).join(`<span style="font-size:24px;color:var(--muted)">${t.asc?'<':'>'}</span>`):'<span class="ph">Hier entsteht deine Reihe …</span>';
  $('#pool').innerHTML=t.items.map((it,i)=>`<button class="tile ${cur.seq.includes(i)?'used':''}" data-t="${i}">${it.s}</button>`).join('');}
-function bindTap(t){const svg=document.getElementById('tapline');if(!svg)return;svg.addEventListener('pointerdown',e=>{if(cur.answered)return;e.preventDefault();const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const p=pt.matrixTransform(svg.getScreenCTM().inverse());let idx=Math.round((p.x-NL.x0)/(NL.x1-NL.x0)*t.nl.n);idx=Math.max(0,Math.min(t.nl.n,idx));cur.tap=idx;svg.querySelector('#nlmark').innerHTML=flag(idx,t.nl.n,'#5ac8fa');sfx.tap();});}
+function bindTap(t){const svg=document.getElementById('tapline');if(!svg)return;const place=(cx)=>{if(cur.answered)return;const r=svg.getBoundingClientRect();if(!r.width)return;const px=(cx-r.left)/r.width*NL.W;let idx=Math.round((px-NL.x0)/(NL.x1-NL.x0)*t.nl.n);idx=Math.max(0,Math.min(t.nl.n,idx));cur.tap=idx;const m=document.getElementById('nlmark');if(m)m.innerHTML=flag(idx,t.nl.n,'#5ac8fa');sfx.tap();};
+ svg.addEventListener('click',e=>place(e.clientX));
+ svg.addEventListener('touchend',e=>{const tt=e.changedTouches&&e.changedTouches[0];if(tt){e.preventDefault();place(tt.clientX);}},{passive:false});}
+function nudge(msg){const o=document.querySelector('.nudge');if(o)o.remove();const d=document.createElement('div');d.className='nudge';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>{if(d.parentNode)d.remove();},2800);}
+window.addEventListener('error',e=>{nudge('⚠️ Technischer Fehler: '+(e.message||'unbekannt'));});
 function shakeEl(sel){const el=$(sel);if(!el)return;el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');}
 
 function check(){const t=run.tasks[run.i];if(cur.answered)return;let ok=false;
- if(t.type==='input'){const v=parseNum(cur.input);if(!cur.input||isNaN(v)){shakeEl('#disp');return;}ok=t.check?t.check(v):v===t.answer;}
- else if(t.type==='sort'){if(cur.seq.length<t.items.length){shakeEl('#slots');return;}ok=cur.seq.every((idx,k)=>t.items[idx].v===t.order[k]);}
- else if(t.type==='tap'){if(cur.tap==null){shakeEl('#tapline');return;}ok=cur.tap===t.nl.target;const m=$('#nlmark');m.innerHTML=(ok?'':flag(cur.tap,t.nl.n,'#ff5d73'))+flag(t.nl.target,t.nl.n,'#3ddc97',fmt(t.nl.start+t.nl.step*t.nl.target));}
+ if(t.type==='input'){const v=parseNum(cur.input);if(!cur.input){shakeEl('#disp');nudge('✏️ Tippe zuerst deine Antwort ins Zahlenfeld.');return;}if(isNaN(v)){shakeEl('#disp');nudge('Diese Eingabe ist keine gültige Zahl.');return;}ok=t.check?t.check(v):v===t.answer;}
+ else if(t.type==='sort'){if(cur.seq.length<t.items.length){shakeEl('#slots');const f=t.items.length-cur.seq.length;nudge(`👆 Lege erst alle Zahlen in die Reihe – es ${f===1?'fehlt':'fehlen'} noch ${f}.`);return;}ok=cur.seq.every((idx,k)=>t.items[idx].v===t.order[k]);}
+ else if(t.type==='tap'){if(cur.tap==null){shakeEl('#tapline');nudge('👆 Tippe zuerst auf den Zahlenstrahl, um deine Fahne zu setzen.');return;}ok=cur.tap===t.nl.target;const m=$('#nlmark');m.innerHTML=(ok?'':flag(cur.tap,t.nl.n,'#ff5d73'))+flag(t.nl.target,t.nl.n,'#3ddc97',fmt(t.nl.start+t.nl.step*t.nl.target));}
  resolve(ok);}
 function choose(i){const t=run.tasks[run.i];if(cur.answered)return;const ok=t.choices[i].ok;document.querySelectorAll('.choice').forEach((b,k)=>{if(t.choices[k].ok)b.classList.add('right');else if(k===i)b.classList.add('wrong');});resolve(ok);}
 function resolve(ok){cur.answered=true;stopTimer();const t=run.tasks[run.i];const boss=run.mode==='boss';let gain=0,extra='';run.res[run.i]=ok;
  if(ok){run.correct++;run.streak++;if(run.streak>S.bestCombo)S.bestCombo=run.streak;gain=(t.riddle?25:10)+Math.min(10,(run.streak-1)*2);
   if(boss&&run.timeLeft>0){gain+=5;extra='⚡ Tempo-Bonus! ';}
-  if(t.riddle){S.riddles++;confetti(30);}
+  if(t.riddle){S.riddles++;confetti(14);}
   if(boss){const dmg=run.streak>=3?2:1;run.hp=Math.max(0,run.hp-dmg);const f=$('.arena .bossfig');if(f){f.classList.add('hit');}const hb=$('#hpbar');if(hb)hb.style.width=(run.hp/run.maxhp*100)+'%';extra+=`💥 ${dmg} Schaden!`;sfx.hit();setTimeout(sfx.ok,180);}else sfx.ok();
  }else{run.streak=0;sfx.bad();if(boss){run.lives--;const l=$('#lives');if(l)l.innerHTML='❤️'.repeat(run.lives)+'🖤'.repeat(3-run.lives);extra='💔 Ein Herz verloren!';}}
  S.xp+=gain;save();
@@ -478,7 +487,7 @@ function resolve(ok){cur.answered=true;stopTimer();const t=run.tasks[run.i];cons
  const sol=t.solution||(t.answer!=null?fmt(t.answer)+(t.unit?' '+t.unit:''):'');
  const el=document.createElement('div');el.className='sheet '+(ok?'ok':'bad');
  el.innerHTML=`<div class="sheet-in"><div class="fbtitle"><span>${ok?'✅ '+praise+(run.streak>=3?` 🔥 Combo ×${run.streak}`:''):'❌ Leider nicht.'}</span>${gain?`<span class="xp">+${gain} XP</span>`:''}</div>${extra?`<div class="sol">${extra}</div>`:''}${!ok&&t.type!=='choice'&&t.type!=='tap'?`<div class="sol">Richtig wäre: <b>${sol}</b></div>`:''}<div class="expl">${t.explain}</div><button class="btn go" data-a="next">Weiter ➜</button></div>`;
- app.appendChild(el);}
+ document.body.appendChild(el);void el.offsetHeight;}
 function hint(){const t=run.tasks[run.i];const hb=$('#hintbox');if(!hb||!hb.classList.contains('hidden'))return;hb.classList.remove('hidden');run.hintUsed=true;S.xp=Math.max(0,S.xp-5);save();const xv=$('#xpv');if(xv)xv.textContent=S.xp;const b=$('#hintBtn');if(b)b.disabled=true;}
 function next(){if(run.mode==='boss'){if(run.hp<=0)return bossEnd(true);if(run.lives<=0)return bossEnd(false);run.tasks.push(bossTask(run.tasks.length));run.i++;return renderTask();}
  run.i++;if(run.i>=run.tasks.length)planetEnd();else renderTask();}
@@ -486,19 +495,19 @@ function next(){if(run.mode==='boss'){if(run.hp<=0)return bossEnd(true);if(run.l
 function planetEnd(){const P=run.P,c=run.correct,n=run.tasks.length;const st=c>=7?3:c>=5?2:c>=3?1:0;const wasUnl=bossUnlocked();S.stars[P.id]=Math.max(S.stars[P.id]||0,st);save();
  award('first');if(c===n)award('perfect');if(st===3&&!run.hintUsed)award('nohint');if(PLANETS.every(p=>S.stars[p.id]===3))award('allstars');
  const msg=st===3?'Fantastisch! Du hast den Planeten komplett erobert!':st===2?'Starke Leistung! Schaffst du beim nächsten Flug alle drei Sterne?':st===1?'Gelandet! Mit etwas Übung holst du mehr Sterne.':'Bruchlandung … Nutze die Tipps und versuch es nochmal!';
- if(st===3){sfx.win();confetti(110);}else if(st>0)sfx.win();
- app.innerHTML=`<div class="result">${planetSVG(P,150)}<h1>Planet ${P.name} ${st?'erkundet!':''}</h1><div class="bigstars">${[1,2,3].map(k=>`<span class="${k<=st?'on':''}">★</span>`).join('')}</div>
+ if(st===3){sfx.win();confetti(40);}else if(st>0)sfx.win();
+ prep();app.innerHTML=`<div class="result">${planetSVG(P,150)}<h1>Planet ${P.name} ${st?'erkundet!':''}</h1><div class="bigstars">${[1,2,3].map(k=>`<span class="${k<=st?'on':''}">★</span>`).join('')}</div>
  <div style="font-size:24px;margin:10px 0"><b>${c} von ${n}</b> richtig · <span style="color:var(--accent)">+${S.xp-run.xp0} XP</span></div><div class="muted" style="font-size:19px">${msg}</div>
  ${!wasUnl&&bossUnlocked()?'<div class="story center" style="border-color:#9a7bff">⚔️ <b>Der Kommadieb wurde entdeckt!</b> Auf der Sternenkarte kannst du ihn jetzt herausfordern.</div>':''}
  <div class="row"><button class="btn go" data-a="map">🗺️ Zur Sternenkarte</button><button class="btn" data-a="planet" data-p="${P.id}">🔁 Nochmal (neue Aufgaben)</button></div></div>`;run=null;window.scrollTo(0,0);}
 function bossEnd(win){stopTimer();const gained=S.xp-run.xp0;
- if(win){S.xp+=50;S.bossWon=true;save();award('boss');sfx.win();confetti(160);}
- app.innerHTML=`<div class="result">${win?`<div style="font-size:90px">🏆</div><h1>Der Kommadieb ist gefasst!</h1><div class="story">Alle Kommas sind zurück an ihrem Platz. Das Eis im Raumstations-Shop kostet wieder <b>3,05 €</b> – und die ganze Galaxie feiert dich, <b>${esc(S.name)}</b>! 🎉<br><br>Sieg-Bonus: <b>+50 XP</b> (insgesamt +${gained+50} XP in diesem Kampf)</div>`:`<div style="width:160px;margin:0 auto">${bossSVG()}</div><h1>Der Kommadieb ist entkommen …</h1><div class="story">„Hehe, bis zum nächsten Mal!“ – Lass dich nicht ärgern! Übe noch einmal auf einem Planeten oder fordere ihn direkt erneut heraus. (+${gained} XP gesammelt)</div>`}
+ if(win){S.xp+=50;S.bossWon=true;save();award('boss');sfx.win();confetti(50);}
+ prep();app.innerHTML=`<div class="result">${win?`<div style="font-size:90px">🏆</div><h1>Der Kommadieb ist gefasst!</h1><div class="story">Alle Kommas sind zurück an ihrem Platz. Das Eis im Raumstations-Shop kostet wieder <b>3,05 €</b> – und die ganze Galaxie feiert dich, <b>${esc(S.name)}</b>! 🎉<br><br>Sieg-Bonus: <b>+50 XP</b> (insgesamt +${gained+50} XP in diesem Kampf)</div>`:`<div style="width:160px;margin:0 auto">${bossSVG()}</div><h1>Der Kommadieb ist entkommen …</h1><div class="story">„Hehe, bis zum nächsten Mal!“ – Lass dich nicht ärgern! Übe noch einmal auf einem Planeten oder fordere ihn direkt erneut heraus. (+${gained} XP gesammelt)</div>`}
  <div class="row">${win?'<button class="btn go" data-a="cert">📜 Zertifikat ansehen</button>':'<button class="btn go" data-a="boss">⚔️ Revanche!</button>'}<button class="btn" data-a="map">🗺️ Sternenkarte</button></div></div>`;run=null;window.scrollTo(0,0);}
 
 function renderCert(){const rk=rankOf(S.xp);const totalStars=PLANETS.reduce((s,p)=>s+(S.stars[p.id]||0),0);
  let hsh=7;const str=S.name+'|'+S.xp+'|'+totalStars+'|'+S.badges.length+'|'+(S.bossWon?1:0);for(const ch of str)hsh=(hsh*31+ch.charCodeAt(0))%1679616;const code='MK-'+hsh.toString(36).toUpperCase().padStart(4,'0');
- app.innerHTML=`<div class="cert"><div style="font-size:50px">🚀</div><h1>Weltraum-Zertifikat</h1><div style="font-size:19px">Hiermit wird bestätigt, dass</div><div style="font-size:36px;font-weight:800;margin:6px 0">${esc(S.name)}</div><div style="font-size:19px">an der <b>Mission Komma</b> teilgenommen und den Rang</div><div style="font-size:28px;font-weight:800;color:#7a4a00;margin:6px 0">${rk.name}</div><div style="font-size:19px">erreicht hat.</div>
+ prep();app.innerHTML=`<div class="cert"><div style="font-size:50px">🚀</div><h1>Weltraum-Zertifikat</h1><div style="font-size:19px">Hiermit wird bestätigt, dass</div><div style="font-size:36px;font-weight:800;margin:6px 0">${esc(S.name)}</div><div style="font-size:19px">an der <b>Mission Komma</b> teilgenommen und den Rang</div><div style="font-size:28px;font-weight:800;color:#7a4a00;margin:6px 0">${rk.name}</div><div style="font-size:19px">erreicht hat.</div>
  <table>${PLANETS.map(p=>`<tr><td>Planet ${p.name}</td><td>${'⭐'.repeat(S.stars[p.id]||0)||'–'}</td></tr>`).join('')}<tr><td>Kommadieb</td><td>${S.bossWon?'🏆 besiegt':'noch auf freiem Fuß'}</td></tr><tr><td>Abzeichen</td><td>${S.badges.map(b=>BADGES[b][0]).join(' ')||'–'} (${S.badges.length}/${Object.keys(BADGES).length})</td></tr><tr><td>Erfahrung</td><td><b>${S.xp} XP</b> · beste Combo: ${S.bestCombo}</td></tr></table>
  <div>${new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div><div class="code">${code}</div><div style="font-size:14px;margin-top:6px">Zeige dieses Zertifikat deiner Lehrkraft.</div>${FOOT}</div>
  <div class="row"><button class="btn go" data-a="map">🗺️ Zurück zur Karte</button></div>`;window.scrollTo(0,0);}
@@ -516,7 +525,7 @@ function act(a,b){
  case 'check':check();break;
  case 'hint':hint();break;
  case 'next':next();break;}}
-app.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('button');if(!b||b.id==='muteBtn')return;
  if(b.dataset.a)return act(b.dataset.a,b);
  if(b.dataset.k!=null)return key(b.dataset.k);
  if(b.dataset.c!=null)return choose(+b.dataset.c);

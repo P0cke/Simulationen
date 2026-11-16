@@ -1,4 +1,9 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Teilchenlabor</title><style>:root{color-scheme:light dark}body{margin:0}[hidden]{display:none!important}</style></head><body><title>Teilchenlabor</title>
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Teilchenlabor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -153,8 +158,13 @@ dialog::backdrop{background:rgba(8,14,20,.62)}
 .dl-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:24px 28px 8px}
 .eyebrow{margin:0;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--hot)}
 .dl-head h2{font-family:var(--font-h);font-size:clamp(24px,3.6vw,36px);line-height:1.12;margin:4px 0 0;text-wrap:balance;letter-spacing:-.01em}
+.taskHint{margin:8px 0 0;font-size:14px;font-weight:700;color:var(--hot);display:flex;align-items:center;gap:6px}
+.taskHint[hidden]{display:none}
+.taskHint .arrow{display:inline-block;animation:bounceY 1.4s ease-in-out infinite}
+@keyframes bounceY{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
 .xbtn{border:1px solid var(--line);background:var(--soft);width:42px;height:42px;border-radius:50%;font-size:24px;line-height:1;flex:none}
-.dl-body{overflow:auto;display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:26px;padding:12px 28px 22px;align-items:start}
+.dl-body{overflow:auto;display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:26px;padding:12px 28px 22px;align-items:start;transition:box-shadow .2s}
+.dl-body.has-more{box-shadow:inset 0 -32px 22px -24px rgba(0,0,0,.22)}
 .dl-fig{position:sticky;top:0}
 .dl-fig canvas{display:block;width:100%;aspect-ratio:420/340;border:1px solid var(--line);border-radius:12px;background:var(--canvas)}
 .dl-fig p{margin:10px 0 0;font-size:16px;color:var(--muted)}
@@ -280,6 +290,7 @@ dialog::backdrop{background:rgba(8,14,20,.62)}
       <div>
         <p class="eyebrow">Forscheraufträge</p>
         <h2 id="introT">Warum dehnt sich alles aus, wenn es warm wird?</h2>
+        <p class="taskHint" id="taskHint" hidden><span class="arrow">↓</span><span id="taskHintText"></span></p>
       </div>
       <button type="button" class="xbtn" id="introX" aria-label="Schließen">&times;</button>
     </div>
@@ -865,10 +876,27 @@ function buildTasks(){
     li.querySelector('.load').addEventListener('click',function(){loadSetup(k.s||cur.s.id,k.T);closeIntro()});
     ol.appendChild(li);
   });
+  var hintText=$('taskHintText');
+  if(hintText)hintText.textContent='Es gibt '+TASKS.length+' Forscheraufträge – in dieser Liste nach unten scrollen, um alle zu sehen.';
 }
-function openIntro(){if(intro.showModal){if(!intro.open)intro.showModal()}else intro.setAttribute('open','')}
+function updateScrollHint(){
+  var db=document.querySelector('.dl-body'),hint=$('taskHint');
+  if(!db)return;
+  var more=(db.scrollTop+db.clientHeight)<(db.scrollHeight-4);
+  db.classList.toggle('has-more',more);
+  if(hint)hint.hidden=!more;
+}
+function openIntro(){
+  if(intro.showModal){if(!intro.open)intro.showModal()}else intro.setAttribute('open','');
+  requestAnimationFrame(function(){requestAnimationFrame(updateScrollHint)});
+}
 function closeIntro(){if(intro.close)intro.close();else intro.removeAttribute('open')}
 buildTasks();
+(function(){
+  var db=document.querySelector('.dl-body');
+  if(db)db.addEventListener('scroll',updateScrollHint);
+  window.addEventListener('resize',function(){if(intro.open)updateScrollHint()});
+})();
 $('openIntro').addEventListener('click',openIntro);
 $('introX').addEventListener('click',closeIntro);
 $('introGo').addEventListener('click',closeIntro);
@@ -978,7 +1006,6 @@ function drawIco(){
   for(i=0;i<N;i++){p=P[i];p.x=ox+sites[i].x*1.03;p.y=oy+sites[i].y*1.05;var d=randomDir(sp*rnd(.7,1.2));p.vx=d[0];p.vy=d[1];p.act=true;p.a=1}
   // Warmlaufen, damit das Bild von Anfang an "fluessig" wirkt
   for(i=0;i<40;i++)stepFluid(1/30);
-  if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){paused=true;$('pause').textContent='Weiter'}
   updateUI();
 })();
 if(window.matchMedia){try{window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',readTheme)}catch(e){}}
@@ -987,4 +1014,7 @@ requestAnimationFrame(frame);
 setTimeout(openIntro,250);
 })();
 </script>
-</body></html>
+
+
+</body>
+</html>

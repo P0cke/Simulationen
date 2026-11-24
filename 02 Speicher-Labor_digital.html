@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speicher-Labor Dateigröße</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: Platine als Leitmotiv – ein schmaler Kopf, vier Stationen als Reiter, jede Station eine Arbeitsfläche. */
+:root{
+  color-scheme:light;
+  --bg:#f2f5f0;
+  --panel:#ffffff;
+  --soft:#e8eee6;
+  --ink:#15221b;
+  --muted:#55665c;
+  --line:#d3ddd1;
+  --accent:#1d7a4c;
+  --accent-soft:#dcefe3;
+  --gold:#b9850f;
+  --gold-soft:#f8ecc9;
+  --good:#1d7a4c;
+  --bad:#c0392b;
+  --bad-soft:#fbe4e0;
+  --pix-off:#ffffff;
+  --pix-on:#15221b;
+  --display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --body:'Atkinson Hyperlegible','Segoe UI',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  --shadow:0 12px 30px -20px rgba(21,34,27,.45);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0d1511;--panel:#15201a;--soft:#1b2a22;--ink:#e5eee8;--muted:#9bb0a3;--line:#2a3b31;
+    --accent:#4fcf8b;--accent-soft:#183326;--gold:#e7b947;--gold-soft:#2f2712;
+    --good:#4fcf8b;--bad:#ff7d6b;--bad-soft:#3a1d19;--pix-off:#e5eee8;--pix-on:#0d1511;
+    --shadow:0 12px 30px -20px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0d1511;--panel:#15201a;--soft:#1b2a22;--ink:#e5eee8;--muted:#9bb0a3;--line:#2a3b31;
+  --accent:#4fcf8b;--accent-soft:#183326;--gold:#e7b947;--gold-soft:#2f2712;
+  --good:#4fcf8b;--bad:#ff7d6b;--bad-soft:#3a1d19;--pix-off:#e5eee8;--pix-on:#0d1511;
+  --shadow:0 12px 30px -20px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:1.05rem;line-height:1.55;padding:0 16px}
+main{max-width:1060px;margin:0 auto;padding:22px 0 60px}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.2;text-wrap:balance}
+p{margin:.35em 0 .7em}
+.mono,.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+button,input,select{font:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;padding-bottom:16px;border-bottom:2px solid var(--line)}
+.eyebrow{font-size:.75rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+header h1{font-size:clamp(1.8rem,4.5vw,2.6rem);font-weight:800}
+header .sub{color:var(--muted);margin:4px 0 0}
+
+nav.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+nav.tabs a{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:9px 16px 9px 10px;font-weight:700}
+nav.tabs a .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:7px;background:var(--soft);font-family:var(--mono);font-size:.9rem}
+nav.tabs a[aria-current="page"]{border-color:var(--accent);background:var(--accent-soft)}
+nav.tabs a[aria-current="page"] .n{background:var(--accent);color:var(--panel)}
+
+section.view{display:none}
+section.view.active{display:block}
+.lead{font-size:1.15rem;max-width:62ch}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:20px;align-items:start}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.btn{border:2px solid var(--accent);background:var(--accent);color:var(--panel);border-radius:10px;padding:9px 16px;font-weight:700}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.task{background:var(--gold-soft);border-left:5px solid var(--gold);border-radius:10px;padding:12px 16px;margin:14px 0}
+.task b{font-family:var(--display)}
+
+/* Einstieg: Handy */
+.phone{width:min(270px,100%);margin:0 auto;border:10px solid var(--ink);border-radius:34px;background:var(--panel);padding:22px 16px 26px;position:relative}
+.phone::before{content:"";position:absolute;top:8px;left:50%;transform:translateX(-50%);width:70px;height:6px;border-radius:4px;background:var(--line)}
+.alert{background:var(--bad-soft);color:var(--bad);border-radius:12px;padding:10px 12px;font-weight:700;font-size:.95rem;margin-top:8px}
+.storebar{display:flex;height:16px;border-radius:8px;overflow:hidden;margin:12px 0 6px;background:var(--soft)}
+.storebar span{display:block;height:100%}
+.legend{display:grid;grid-template-columns:auto 1fr auto;gap:2px 8px;font-size:.85rem;align-items:center}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin:12px 0}
+.item{position:relative;text-align:left;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:14px 14px 12px;color:var(--ink);min-height:96px}
+.item .ic{font-size:1.6rem;line-height:1}
+.item .lbl{display:block;font-weight:700;margin-top:6px}
+.item .det{display:block;color:var(--muted);font-size:.88rem}
+.item .badge{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--panel);font-family:var(--mono);font-weight:700}
+.item.picked{border-color:var(--accent);background:var(--accent-soft)}
+.item.right{border-color:var(--good)}
+.item.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.bars{display:grid;gap:8px;margin-top:10px}
+.bar{display:grid;grid-template-columns:150px 1fr 110px;gap:10px;align-items:center;font-size:.92rem}
+.bar .track{height:20px;background:var(--soft);border-radius:6px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:6px;transition:width .8s ease}
+@media (max-width:520px){.bar{grid-template-columns:100px 1fr 80px;font-size:.8rem}}
+.big-q{font-family:var(--display);font-size:clamp(1.3rem,3vw,1.7rem);font-weight:800;margin:18px 0 6px;color:var(--accent)}
+.hidden{display:none !important}
+
+/* Pixel-Labor */
+.controls{display:grid;gap:12px}
+.ctrl{display:grid;grid-template-columns:110px 1fr 40px;gap:8px;align-items:center}
+.seg{display:inline-flex;border:2px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:var(--panel);color:var(--ink);padding:8px 14px;font-weight:700}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--panel)}
+.palette{display:flex;flex-wrap:wrap;gap:6px}
+.palette button{width:30px;height:30px;border-radius:8px;border:3px solid var(--line)}
+.palette button[aria-pressed="true"]{border-color:var(--ink)}
+.canvas-wrap{display:flex;justify-content:center;overflow-x:auto;padding:6px}
+.pixgrid{display:grid;gap:2px;background:var(--line);padding:2px;border-radius:6px;touch-action:none}
+.pixgrid div{width:var(--px,34px);height:var(--px,34px);background:var(--pix-off);cursor:pointer}
+.bitrows{font-family:var(--mono);font-size:.82rem;color:var(--muted);text-align:center;margin-top:8px;word-break:break-all;line-height:1.35}
+.calc{display:grid;gap:8px;margin-top:6px}
+.calc .step{display:grid;grid-template-columns:90px 1fr;gap:10px;align-items:baseline;padding:10px 12px;background:var(--soft);border-radius:10px}
+.calc .step b{font-family:var(--display)}
+.calc .res{font-family:var(--mono);font-size:1.08rem}
+.calc .res strong{color:var(--accent)}
+.rgb{font-family:var(--mono);font-size:.85rem;background:var(--soft);border-radius:10px;padding:10px 12px;margin-top:10px;overflow-x:auto}
+.rgb span{display:inline-block;padding:1px 4px;border-radius:4px;margin-right:4px}
+details.q{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--panel);margin-top:10px}
+details.q summary{font-weight:700;cursor:pointer}
+details.q p{margin:.6em 0 .2em;color:var(--muted)}
+
+/* Merkkasten */
+.merke{border:3px solid var(--accent);border-radius:16px;padding:20px 22px;background:var(--panel)}
+.merke h3{font-size:1.4rem;color:var(--accent);margin-bottom:8px}
+.merke ol{padding-left:1.3em;margin:.4em 0 1em}
+.merke li{margin:.45em 0}
+.gap{display:inline-block;min-width:96px;border:0;border-bottom:2px dashed var(--gold);background:var(--gold-soft);color:transparent;border-radius:6px 6px 0 0;padding:0 8px;font-weight:700;font-family:var(--mono);text-align:center}
+.gap::after{content:"?";color:var(--gold)}
+.gap.show{color:var(--accent);background:var(--accent-soft);border-bottom-color:var(--accent)}
+.gap.show::after{content:""}
+.stairs{display:flex;align-items:flex-end;gap:0;overflow-x:auto;padding:10px 0 4px}
+.stair{display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto}
+.stair .blk{background:var(--accent);color:var(--panel);font-weight:700;border-radius:8px;padding:8px 12px;font-family:var(--display);white-space:nowrap}
+.stair .op{font-family:var(--mono);font-size:.9rem;color:var(--muted);padding:0 4px;align-self:center}
+
+/* Trainer */
+.levels{display:flex;flex-wrap:wrap;gap:8px}
+.levels button{border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:8px 14px;font-weight:700}
+.levels button[aria-pressed="true"]{border-color:var(--gold);background:var(--gold-soft)}
+.score{display:flex;gap:16px;flex-wrap:wrap;font-weight:700}
+.score .num{color:var(--accent);font-size:1.2rem}
+.prompt{font-size:1.15rem;margin:10px 0 4px}
+.prompt .sentence{display:inline-block;font-family:var(--mono);background:var(--soft);padding:2px 8px;border-radius:6px;white-space:pre}
+.steps{display:grid;gap:10px;margin-top:12px}
+.tstep{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:var(--panel)}
+.tstep.locked{opacity:.45}
+.tstep.ok{border-color:var(--good);background:var(--accent-soft)}
+.tstep.no{border-color:var(--bad);background:var(--bad-soft)}
+.tstep label{font-weight:700}
+.tstep .hint{grid-column:1/-1;font-size:.92rem;color:var(--muted)}
+.tstep input{width:100%;padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-family:var(--mono)}
+@media (max-width:560px){.tstep{grid-template-columns:1fr}}
+.fb{min-height:1.6em;font-weight:700;margin-top:10px}
+.fb.good{color:var(--good)}
+.fb.bad{color:var(--bad)}
+.foot-note{margin-top:30px;color:var(--muted);font-size:.85rem;text-align:center}
+.site-footer{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:.78rem}
+.footer-icosa{width:40px;height:40px;display:block;flex-shrink:0}
+.footer-copyright{letter-spacing:.01em}
+.theme-toggle{display:inline-flex;align-items:center;gap:7px;padding:7px 14px 7px 10px;border-radius:20px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-family:var(--body);font-weight:700;font-size:.85rem;box-shadow:var(--shadow)}
+.theme-toggle:hover{background:var(--accent-soft)}
+header.top{position:relative;padding-right:130px}
+header.top .theme-toggle{position:absolute;top:0;right:0}
+.theme-toggle-icon{font-size:1rem;line-height:1}
+/* ---------- Stationen-Freischaltung ---------- */
+nav.tabs a.locked{opacity:.5;cursor:not-allowed;border-style:dashed}
+nav.tabs a.done .n{background:var(--good);color:var(--panel)}
+.gatebar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-top:22px;padding:14px 18px;border-radius:14px;background:var(--soft);border:2px dashed var(--line)}
+.gatebar.ready{border-style:solid;border-color:var(--good);background:var(--accent-soft)}
+.gatebar .status{font-weight:700}
+.progress{display:flex;gap:6px;align-items:center}
+.progress i{width:14px;height:14px;border-radius:4px;background:var(--line);display:inline-block}
+.progress i.on{background:var(--good)}
+
+/* Forscher-Aufgaben */
+.fq{border:2px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--panel);margin-top:10px}
+.fq.ok{border-color:var(--good);background:var(--accent-soft)}
+.fq .qt{font-weight:700}
+.fq .row{margin-top:8px}
+.fq input[type=text]{width:120px;padding:7px 10px;border:2px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-family:var(--mono)}
+.fq .opt{border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:9px;padding:6px 12px;font-weight:700}
+.fq .opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.fq .opt.right{border-color:var(--good);background:var(--accent-soft)}
+.fq .why{margin:.5em 0 0;color:var(--muted)}
+.fq .msg{font-weight:700;font-size:.92rem}
+
+/* Merkkasten mit Eingaben */
+.bank{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.bank span{font-family:var(--mono);font-size:.9rem;background:var(--gold-soft);border:1px solid var(--gold);border-radius:6px;padding:2px 8px}
+input.gapin{width:118px;padding:3px 8px;border:0;border-bottom:2px dashed var(--gold);background:var(--gold-soft);color:var(--ink);font-family:var(--mono);font-weight:700;border-radius:6px 6px 0 0;text-align:center}
+input.gapin.s{width:64px}
+input.gapin.ok{border-bottom-color:var(--good);background:var(--accent-soft);color:var(--good)}
+input.gapin.no{border-bottom-color:var(--bad);background:var(--bad-soft)}
+input.gapin.rev{border-bottom-style:solid;border-bottom-color:var(--gold)}
+
+/* Sicherung */
+.formrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:14px}
+.formrow label{display:grid;gap:4px;font-weight:700}
+.formrow input,.ex textarea{padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font:inherit}
+.ex textarea{width:100%;min-height:70px}
+.sheet{background:#fff;color:#1b1b1b;border:1px solid var(--line);border-radius:10px;padding:28px 32px;font-family:'Atkinson Hyperlegible',Arial,sans-serif;box-shadow:var(--shadow)}
+.sheet h2{font-size:1.4rem;color:#1d7a4c;margin:4px 0 2px}
+.sheet h3{font-size:1.05rem;color:#1d7a4c;margin:16px 0 6px;break-after:avoid;page-break-after:avoid}
+.sheet tr,.sheet p,.sheet li{break-inside:avoid}
+.sheet .meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:.92rem;border-bottom:2px solid #1d7a4c;padding-bottom:6px;color:#444}
+.sheet ol,.sheet ul{margin:.2em 0 .6em;padding-left:1.4em}
+.sheet li{margin:.25em 0}
+.sheet b.a{color:#1d7a4c}
+.sheet .stairline{font-family:'JetBrains Mono',monospace;font-size:.92rem;background:#eef5f0;border-radius:6px;padding:6px 10px;display:inline-block}
+.sheet table{border-collapse:collapse;width:100%;font-size:.88rem}
+.sheet th,.sheet td{border:1px solid #c9d3cb;padding:5px 8px;text-align:left;vertical-align:top}
+.sheet th{background:#eef5f0}
+.sheet .foot{margin-top:18px;font-size:.78rem;color:#777;text-align:right}
+.teacher{display:flex;gap:6px;align-items:center;justify-content:center;margin-top:6px;font-size:.78rem;color:var(--muted)}
+.teacher button{background:none;border:0;color:var(--muted);text-decoration:underline;font-size:.78rem}
+.teacher input{width:90px;padding:2px 6px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+@media print{
+  @page{size:A4;margin:14mm}
+  body{background:#fff !important;padding:0}
+  body *{visibility:hidden}
+  #sheet,#sheet *{visibility:visible}
+  #sheet{position:absolute;left:0;top:0;width:100%;border:0;box-shadow:none;padding:0}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+<main>
+<header class="top">
+  <div>
+    <span class="eyebrow">Informatik 6a · Digitale Kodierung</span>
+    <h1>Speicher-Labor: Wie groß ist meine Datei?</h1>
+    <p class="sub">Fünf Stationen nacheinander: schätzen, erforschen, merken, trainieren, sichern.</p>
+  </div>
+  <button id="themeToggle" class="theme-toggle" type="button" aria-pressed="false">
+    <span class="theme-toggle-icon" aria-hidden="true">🌙</span>
+    <span class="theme-toggle-label">Dunkel</span>
+  </button>
+</header>
+
+<nav class="tabs" aria-label="Stationen">
+  <a href="#einstieg" data-view="einstieg"><span class="n">1</span>Speicher voll!</a>
+  <a href="#labor" data-view="labor"><span class="n">2</span>Pixel-Labor</a>
+  <a href="#merke" data-view="merke"><span class="n">3</span>Merkkasten</a>
+  <a href="#trainer" data-view="trainer"><span class="n">4</span>Rechen-Trainer</a>
+  <a href="#sicherung" data-view="sicherung"><span class="n">5</span>Sicherung</a>
+</nav>
+
+<!-- 1 EINSTIEG -->
+<section class="view" id="einstieg">
+  <div class="grid2">
+    <div class="card">
+      <div class="phone" aria-label="Handy mit Speicherwarnung">
+        <div style="font-weight:700">Einstellungen › Speicher</div>
+        <div class="alert">Speicher fast voll! Lösche Dateien, um Platz zu schaffen.</div>
+        <div class="num" style="margin-top:10px;font-size:1.25rem;font-weight:700">127,6 GB <span style="color:var(--muted);font-weight:500;font-size:.9rem">von 128 GB belegt</span></div>
+        <div class="storebar" aria-hidden="true">
+          <span style="width:38%;background:#1d7a4c"></span>
+          <span style="width:30%;background:#b9850f"></span>
+          <span style="width:22%;background:#3b6fb6"></span>
+          <span style="width:9.7%;background:#9b4fa8"></span>
+        </div>
+        <div class="legend">
+          <i style="background:#1d7a4c"></i><span>Videos</span><span class="num">48,6 GB</span>
+          <i style="background:#b9850f"></i><span>Fotos</span><span class="num">38,4 GB</span>
+          <i style="background:#3b6fb6"></i><span>Apps</span><span class="num">28,2 GB</span>
+          <i style="background:#9b4fa8"></i><span>Nachrichten</span><span class="num">12,4 GB</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <p class="lead">Kennst du das? Das Handy ist voll und du musst etwas löschen. Aber was braucht eigentlich am meisten Platz?</p>
+      <div class="task"><b>Schätz-Challenge:</b> Tippe die fünf Dateien an, von der <b>kleinsten</b> bis zur <b>größten</b>. Dann drücke „Prüfen“.</div>
+      <div class="items" id="items"></div>
+      <div class="row">
+        <button class="btn" id="checkRank" disabled>Prüfen</button>
+        <button class="btn ghost" id="resetRank">Neu sortieren</button>
+      </div>
+      <p class="fb" id="rankFb" aria-live="polite"></p>
+    </div>
+  </div>
+  <div class="card hidden" id="rankResult" style="margin-top:20px">
+    <h2 style="font-size:1.3rem">So groß sind die Dateien wirklich</h2>
+    <p style="color:var(--muted);margin:2px 0 0;font-size:.9rem">Jeder Balkenschritt bedeutet: ungefähr 10-mal so groß.</p>
+    <div class="bars" id="bars"></div>
+    <p style="margin-top:14px">Eine Minute Video braucht so viel Platz wie <b class="num">rund 7 Millionen</b> kurze Chat-Nachrichten.</p>
+    <p class="big-q">Wie kann man ausrechnen, wie groß eine Datei ist?</p>
+  </div>
+  <div class="gatebar" id="gate-einstieg"></div>
+</section>
+
+<!-- 2 PIXEL-LABOR -->
+<section class="view" id="labor">
+  <p class="lead">Jedes digitale Bild besteht aus Pixeln. Male ein Bild und beobachte, was mit dem Speicher passiert.</p>
+  <div class="grid2">
+    <div class="card controls">
+      <div>
+        <div style="font-weight:700;margin-bottom:6px">Bildart</div>
+        <div class="seg" role="group" aria-label="Bildart">
+          <button id="modeBW" aria-pressed="true">Schwarz-weiß</button>
+          <button id="modeCol" aria-pressed="false">Farbe</button>
+        </div>
+      </div>
+      <div class="ctrl"><label for="wIn">Breite</label><input type="range" id="wIn" min="4" max="16" value="8"><span class="num" id="wOut">8</span></div>
+      <div class="ctrl"><label for="hIn">Höhe</label><input type="range" id="hIn" min="2" max="12" value="6"><span class="num" id="hOut">6</span></div>
+      <div id="palWrap" class="hidden">
+        <div style="font-weight:700;margin-bottom:6px">Farbe wählen</div>
+        <div class="palette" id="palette"></div>
+      </div>
+      <div class="row"><button class="btn ghost" id="clearPix">Bild löschen</button></div>
+      <div class="calc" aria-live="polite">
+        <div class="step"><b>Pixel</b><span class="res" id="cPix"></span></div>
+        <div class="step"><b>Bit</b><span class="res" id="cBit"></span></div>
+        <div class="step"><b>Byte</b><span class="res" id="cByte"></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="canvas-wrap"><div class="pixgrid" id="pixgrid" aria-label="Pixelbild zum Anmalen"></div></div>
+      <div class="bitrows" id="bitrows"></div>
+      <div class="rgb hidden" id="rgbBox"></div>
+    </div>
+  </div>
+  <h2 style="font-size:1.35rem;margin-top:24px">Forscher-Aufgaben</h2>
+  <p>Probiere im Labor aus und beantworte alle vier Fragen. Erst dann geht es weiter.</p>
+  <div id="fqs"></div>
+  <div class="gatebar" id="gate-labor"></div>
+</section>
+
+<!-- 3 MERKKASTEN -->
+<section class="view" id="merke">
+  <p class="lead">Fülle den Merkkasten aus. Schreibe ihn genauso auch auf dein Arbeitsblatt.</p>
+  <div class="bank" aria-label="Wortspeicher"><span>Pixeln</span><span>Höhe</span><span>Bit</span><span>1</span><span>24</span><span>8</span><span>1000</span><span>Leerzeichen</span><span>Byte</span><span>teilen</span><span>48</span><span>6</span></div>
+  <div class="merke">
+    <h3>Merke: So berechnest du die Dateigröße</h3>
+    <b>Bilder</b>
+    <ol>
+      <li>Ein digitales Bild besteht aus vielen kleinen Punkten, den <input class="gapin" data-k="g1" aria-label="Lücke 1">.</li>
+      <li>Anzahl der Pixel = Breite × <input class="gapin" data-k="g2" aria-label="Lücke 2"></li>
+      <li>Speicher in Bit = Anzahl der Pixel × <input class="gapin" data-k="g3" aria-label="Lücke 3"> pro Pixel</li>
+      <li>Ein Schwarz-weiß-Pixel braucht <input class="gapin s" data-k="g4" aria-label="Lücke 4"> Bit, ein Farb-Pixel meistens <input class="gapin s" data-k="g5" aria-label="Lücke 5"> Bit.</li>
+    </ol>
+    <b>Text</b>
+    <ol start="5">
+      <li>Im ASCII-Code braucht jedes Zeichen <input class="gapin s" data-k="g6" aria-label="Lücke 6"> <input class="gapin" data-k="g7" aria-label="Lücke 7">. Auch <input class="gapin" data-k="g8" aria-label="Lücke 8"> und Satzzeichen zählen mit!</li>
+    </ol>
+    <b>Die Einheiten-Treppe</b>
+    <div class="stairs">
+      <div class="stair"><span class="blk">Bit</span></div>
+      <span class="op">→ ÷ <input class="gapin s" data-k="t1" aria-label="Treppe 1"> →</span>
+      <div class="stair"><span class="blk">Byte</span></div>
+      <span class="op">→ ÷ <input class="gapin s" data-k="t2" aria-label="Treppe 2"> →</span>
+      <div class="stair"><span class="blk">KB</span></div>
+      <span class="op">→ ÷ <input class="gapin s" data-k="t3" aria-label="Treppe 3"> →</span>
+      <div class="stair"><span class="blk">MB</span></div>
+      <span class="op">→ ÷ <input class="gapin s" data-k="t4" aria-label="Treppe 4"> →</span>
+      <div class="stair"><span class="blk">GB</span></div>
+    </div>
+    <ol start="6">
+      <li>Wenn ich zur größeren Einheit gehe, muss ich <input class="gapin" data-k="g9" aria-label="Lücke 9">.</li>
+    </ol>
+    <b>Unser Beispiel aus dem Pixel-Labor</b> (Schwarz-weiß, 8 × 6 Pixel)
+    <ul>
+      <li>Pixel: 8 × 6 = <input class="gapin s" data-k="e1" aria-label="Beispiel Pixel"> Pixel</li>
+      <li>Bit: <input class="gapin s" data-k="e2" aria-label="Beispiel Pixel"> × 1 Bit = <input class="gapin s" data-k="e3" aria-label="Beispiel Bit"> Bit</li>
+      <li>Byte: <input class="gapin s" data-k="e4" aria-label="Beispiel Bit"> ÷ 8 = <input class="gapin s" data-k="e5" aria-label="Beispiel Byte"> Byte</li>
+    </ul>
+  </div>
+  <div class="row" style="margin-top:14px">
+    <button class="btn" id="checkMerke">Prüfen</button>
+    <button class="btn ghost hidden" id="revealMerke">Restliche Lücken aufdecken</button>
+  </div>
+  <p class="fb" id="merkeFb" aria-live="polite"></p>
+  <div class="gatebar" id="gate-merke"></div>
+</section>
+
+<!-- 4 TRAINER -->
+<section class="view" id="trainer">
+  <p class="lead">Rechne Schritt für Schritt. Löse mindestens <b>5 Aufgaben</b>, dann ist die Sicherung freigeschaltet.</p>
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div class="levels" role="group" aria-label="Schwierigkeit">
+        <button data-lv="1" aria-pressed="true">★ Einsteiger</button>
+        <button data-lv="2" aria-pressed="false">★★ Profi</button>
+        <button data-lv="3" aria-pressed="false">★★★ Sprinter</button>
+      </div>
+      <div class="score"><span>Gelöst: <span class="num" id="sSolved">0</span></span><span>Serie: <span class="num" id="sStreak">0</span></span></div>
+    </div>
+    <div id="taskBox">
+      <p class="prompt" id="tPrompt"></p>
+      <div class="steps" id="tSteps"></div>
+      <p class="fb" id="tFb" aria-live="polite"></p>
+      <div class="row">
+        <button class="btn" id="tNew">Neue Aufgabe</button>
+        <button class="btn ghost" id="tSolve">Lösung zeigen</button>
+      </div>
+    </div>
+  </div>
+  <p style="color:var(--muted);margin-top:12px">Tipp: Große Zahlen mit oder ohne Punkte (1.440.000 oder 1440000), Kommazahlen mit Komma (1,44). Aufgaben mit „Lösung zeigen“ zählen nicht.</p>
+  <div class="gatebar" id="gate-trainer"></div>
+</section>
+
+<!-- 5 SICHERUNG -->
+<section class="view" id="sicherung">
+  <p class="lead">Geschafft! Ergänze deinen Namen und die letzte Frage. Dann speicherst du deine Sicherung als PDF oder druckst sie aus.</p>
+  <div class="card">
+    <div class="formrow">
+      <label>Vor- und Nachname <input id="sName" autocomplete="name"></label>
+      <label>Datum <input id="sDate" placeholder="TT.MM.JJJJ"></label>
+    </div>
+    <div class="ex">
+      <label for="sWhy" style="font-weight:700">Ergänze: Ein Farbfoto braucht mehr Speicher als ein Schwarz-weiß-Bild, weil …</label>
+      <textarea id="sWhy"></textarea>
+    </div>
+    <div style="margin-top:12px">
+      <div style="font-weight:700;margin-bottom:6px">Ich kann die Größe einer Bilddatei berechnen:</div>
+      <div class="seg" role="group" aria-label="Selbsteinschätzung" id="selfSeg">
+        <button data-v="sicher" aria-pressed="false">sicher</button>
+        <button data-v="fast" aria-pressed="false">fast</button>
+        <button data-v="noch nicht" aria-pressed="false">noch nicht</button>
+      </div>
+    </div>
+    <div class="row" style="margin-top:16px">
+      <button class="btn" id="pdfBtn">Als PDF speichern</button>
+      <button class="btn ghost" id="printBtn">Drucken</button>
+    </div>
+    <p class="fb" id="sFb" aria-live="polite"></p>
+  </div>
+  <h2 style="font-size:1.25rem;margin:22px 0 10px">Vorschau deiner Sicherung</h2>
+  <div class="sheet" id="sheet"></div>
+</section>
+
+<p class="foot-note">Rechnen mit 1 KB = 1000 Byte, 1 MB = 1000 KB, 1 GB = 1000 MB. Dateigrößen im Einstieg sind typische Richtwerte.</p>
+<footer class="site-footer">
+  <canvas class="footer-icosa" id="footerIcosaCanvas" width="80" height="80" aria-hidden="true"></canvas>
+  <span class="footer-copyright">© 2026 Stephan Holtkötter</span>
+</footer>
+<div class="teacher"><button id="tBtn" type="button">Lehrkraft</button><span id="tWrap" class="hidden"><input id="tCode" type="password" aria-label="Lehrkraft-Code" placeholder="Code"> <button id="tGo" type="button">alle Stationen freischalten</button> <button id="tReset" type="button">Fortschritt zurücksetzen</button></span></div>
+</main>
+
+<script>
+(function(){
+  const fmt = n => Number(n).toLocaleString('de-DE',{maximumFractionDigits:3});
+  const $ = id => document.getElementById(id);
+  const esc = t => String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  /* ---------- Zustand (bleibt beim Neuladen erhalten) ---------- */
+  const KEY='speicher-labor-v2';
+  const views=['einstieg','labor','merke','trainer','sicherung'];
+  let S={done:{},fq:{},gaps:{},rev:{},log:[],name:'',date:'',why:'',self:''};
+  try{const raw=localStorage.getItem(KEY); if(raw) S=Object.assign(S,JSON.parse(raw));}catch(e){}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+
+  function unlockedIdx(){let i=0;while(i<views.length-1&&S.done[views[i]])i++;return i;}
+  const gateText={
+    einstieg:['Sortiere alle fünf Dateien und drücke „Prüfen“.','Station 1 erledigt!'],
+    labor:['Beantworte alle vier Forscher-Aufgaben.','Station 2 erledigt!'],
+    merke:['Fülle alle Lücken richtig aus und drücke „Prüfen“.','Station 3 erledigt!'],
+    trainer:['Löse 5 Aufgaben im Rechen-Trainer.','Station 4 erledigt!']
+  };
+  function renderGates(){
+    const u=unlockedIdx();
+    views.forEach((v,i)=>{
+      const a=document.querySelector('nav a[data-view="'+v+'"]');
+      a.classList.toggle('locked',i>u);
+      a.classList.toggle('done',!!S.done[v]);
+      a.setAttribute('aria-disabled',i>u?'true':'false');
+      a.title=i>u?'Erst die vorherige Station bearbeiten':'';
+      const g=$('gate-'+v); if(!g) return;
+      const ok=!!S.done[v];
+      g.className='gatebar'+(ok?' ready':'');
+      let prog='';
+      if(v==='labor'){prog='<span class="progress">'+[0,1,2,3].map(k=>'<i class="'+(S.fq['f'+k]?'on':'')+'"></i>').join('')+'</span>';}
+      if(v==='trainer'){prog='<span class="progress">'+[0,1,2,3,4].map(k=>'<i class="'+(S.log.length>k?'on':'')+'"></i>').join('')+'</span>';}
+      g.innerHTML='<span class="status">'+(ok?'✓ '+gateText[v][1]:'🔒 '+gateText[v][0])+'</span>'+prog+
+        '<button class="btn" '+(ok?'':'disabled')+' data-next="'+views[i+1]+'">Weiter zu Station '+(i+2)+'</button>';
+      g.querySelector('button').addEventListener('click',()=>{location.hash=views[i+1];});
+    });
+  }
+  function markDone(v){if(!S.done[v]){S.done[v]=true;save();} renderGates();}
+
+  /* ---------- Routing mit Sperre ---------- */
+  function route(){
+    const h=(location.hash||'').replace('#','');
+    let idx=views.indexOf(h); if(idx<0) idx=0;
+    const u=unlockedIdx();
+    if(idx>u){idx=u; history.replaceState(null,'','#'+views[idx]);}
+    const v=views[idx];
+    views.forEach(x=>{
+      $(x).classList.toggle('active',x===v);
+      const a=document.querySelector('nav a[data-view="'+x+'"]');
+      if(x===v) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current');
+    });
+    if(v==='sicherung') renderSheet();
+    window.scrollTo(0,0);
+  }
+  document.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',e=>{
+    if(a.classList.contains('locked')){e.preventDefault();}
+  }));
+  window.addEventListener('hashchange',route);
+
+  /* ---------- 1 Einstieg ---------- */
+  const files=[
+    {id:'chat',ic:'💬',lbl:'Chat-Nachricht',det:'„Bin gleich da!“',bytes:14,txt:'14 Byte'},
+    {id:'draw',ic:'✏️',lbl:'Schwarz-weiß-Zeichnung',det:'800 × 600 Pixel',bytes:60000,txt:'60 KB'},
+    {id:'foto',ic:'📷',lbl:'Handyfoto',det:'Urlaubsbild',bytes:3e6,txt:'ca. 3 MB'},
+    {id:'video',ic:'🎬',lbl:'Video',det:'1 Minute, Full HD',bytes:1e8,txt:'ca. 100 MB'},
+    {id:'game',ic:'🎮',lbl:'Spiele-App',det:'ein großes Handyspiel',bytes:2e9,txt:'ca. 2 GB'}
+  ];
+  let order=[],shuffled=[];
+  function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+  function renderItems(){
+    const box=$('items'); box.innerHTML='';
+    shuffled.forEach(f=>{
+      const b=document.createElement('button'); b.className='item'; b.type='button'; b.dataset.id=f.id;
+      const pos=order.indexOf(f.id); if(pos>=0) b.classList.add('picked');
+      b.innerHTML='<span class="ic" aria-hidden="true">'+f.ic+'</span><span class="lbl">'+f.lbl+'</span><span class="det">'+f.det+'</span>'+(pos>=0?'<span class="badge">'+(pos+1)+'</span>':'');
+      b.addEventListener('click',()=>{const i=order.indexOf(f.id); if(i>=0) order.splice(i,1); else order.push(f.id); $('rankFb').textContent=''; renderItems();});
+      box.appendChild(b);
+    });
+    $('checkRank').disabled=order.length!==files.length;
+  }
+  $('resetRank').addEventListener('click',()=>{order=[];shuffled=shuffle(files);renderItems();$('rankFb').textContent='';});
+  $('checkRank').addEventListener('click',()=>{
+    let right=0;
+    order.forEach((id,i)=>{const el=document.querySelector('.item[data-id="'+id+'"]');const ok=files[i].id===id;if(ok)right++;el.classList.add(ok?'right':'wrong');});
+    const fb=$('rankFb');
+    if(right===files.length){fb.textContent='Alles richtig! Stark geschätzt.';fb.className='fb good';}
+    else{fb.textContent=right+' von 5 an der richtigen Stelle. Schau dir die echten Größen an.';fb.className='fb bad';}
+    showBars(); markDone('einstieg');
+  });
+  function showBars(){
+    const box=$('bars'); box.innerHTML='';
+    const max=Math.log10(2e9),min=Math.log10(10);
+    files.forEach(f=>{
+      const w=Math.max(4,(Math.log10(f.bytes)-min)/(max-min)*100);
+      const d=document.createElement('div'); d.className='bar';
+      d.innerHTML='<span>'+f.ic+' '+f.lbl+'</span><div class="track"><div class="fill" style="width:0"></div></div><span class="num">'+f.txt+'</span>';
+      box.appendChild(d);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{d.querySelector('.fill').style.width=w+'%';}));
+    });
+    $('rankResult').classList.remove('hidden');
+  }
+  shuffled=shuffle(files); renderItems();
+  if(S.done.einstieg) showBars();
+
+  /* ---------- 2 Pixel-Labor ---------- */
+  const colors=['#e53935','#fb8c00','#fdd835','#43a047','#1e88e5','#8e24aa','#6d4c41','#000000','#ffffff'];
+  let mode='bw',W=8,H=6,cur=colors[0],pix=[],lastIdx=-1,painting=false;
+  function initPix(){pix=new Array(W*H).fill(null);}
+  function renderPal(){
+    const p=$('palette'); p.innerHTML='';
+    colors.forEach(c=>{const b=document.createElement('button');b.type='button';b.style.background=c;b.setAttribute('aria-label','Farbe '+c);b.setAttribute('aria-pressed',c===cur);b.addEventListener('click',()=>{cur=c;renderPal();});p.appendChild(b);});
+  }
+  const hexToRgb=h=>[parseInt(h.substr(1,2),16),parseInt(h.substr(3,2),16),parseInt(h.substr(5,2),16)];
+  const bin8=n=>n.toString(2).padStart(8,'0');
+  function paint(i){ if(mode==='bw') pix[i]=pix[i]?null:1; else pix[i]=cur; lastIdx=i; renderGrid(false); }
+  function renderGrid(rebuild=true){
+    const g=$('pixgrid');
+    const size=Math.max(18,Math.min(36,Math.floor(440/Math.max(W,H*1.2))));
+    g.style.setProperty('--px',size+'px'); g.style.gridTemplateColumns='repeat('+W+',var(--px))';
+    if(rebuild||g.children.length!==W*H){g.innerHTML='';for(let i=0;i<W*H;i++){const d=document.createElement('div');d.dataset.i=i;g.appendChild(d);}}
+    [...g.children].forEach((d,i)=>{
+      let c; if(mode==='bw') c=pix[i]?'var(--pix-on)':'var(--pix-off)';
+      else c=pix[i]&&pix[i]!==1?pix[i]:(pix[i]===1?'#000000':'#ffffff');
+      d.style.background=c;
+    });
+    if(mode==='bw'){
+      let s=''; for(let r=0;r<H;r++){let row='';for(let c=0;c<W;c++)row+=pix[r*W+c]?'1':'0';s+=row+'<br>';}
+      $('bitrows').innerHTML='So speichert der Computer dein Bild:<br>'+s; $('rgbBox').classList.add('hidden');
+    } else {
+      $('bitrows').innerHTML='Jedes Pixel speichert jetzt einen Farbcode aus 24 Bit.';
+      const i=lastIdx>=0?lastIdx:0; const hex=pix[i]?(pix[i]===1?'#000000':pix[i]):'#ffffff'; const [r,gg,b]=hexToRgb(hex);
+      $('rgbBox').innerHTML='Zuletzt gemaltes Pixel:<br><span style="background:#e5393533">R '+bin8(r)+'</span><span style="background:#43a04733">G '+bin8(gg)+'</span><span style="background:#1e88e533">B '+bin8(b)+'</span><br>= 8 + 8 + 8 = <b>24 Bit</b> für ein einziges Pixel';
+      $('rgbBox').classList.remove('hidden');
+    }
+    const bpp=mode==='bw'?1:24, n=W*H, bits=n*bpp;
+    $('cPix').innerHTML=W+' × '+H+' = <strong>'+fmt(n)+'</strong>';
+    $('cBit').innerHTML=fmt(n)+' × '+bpp+' Bit = <strong>'+fmt(bits)+' Bit</strong>';
+    $('cByte').innerHTML=fmt(bits)+' ÷ 8 = <strong>'+fmt(bits/8)+' Byte</strong>';
+  }
+  const pg=$('pixgrid');
+  pg.addEventListener('pointerdown',e=>{const i=e.target.dataset.i;if(i===undefined)return;painting=true;paint(+i);e.preventDefault();});
+  pg.addEventListener('pointerover',e=>{if(!painting)return;const i=e.target.dataset.i;if(i===undefined)return;if(mode==='bw'){pix[+i]=1;lastIdx=+i;renderGrid(false);}else paint(+i);});
+  window.addEventListener('pointerup',()=>painting=false);
+  function setMode(m){mode=m;$('modeBW').setAttribute('aria-pressed',m==='bw');$('modeCol').setAttribute('aria-pressed',m==='col');$('palWrap').classList.toggle('hidden',m==='bw');renderGrid(false);}
+  $('modeBW').addEventListener('click',()=>setMode('bw'));
+  $('modeCol').addEventListener('click',()=>setMode('col'));
+  $('wIn').addEventListener('input',e=>{W=+e.target.value;$('wOut').textContent=W;initPix();lastIdx=-1;renderGrid();});
+  $('hIn').addEventListener('input',e=>{H=+e.target.value;$('hOut').textContent=H;initPix();lastIdx=-1;renderGrid();});
+  $('clearPix').addEventListener('click',()=>{initPix();lastIdx=-1;renderGrid();});
+  initPix(); renderPal(); renderGrid();
+
+  // Forscher-Aufgaben
+  const FQ=[
+    {q:'1. Male ein paar Pixel schwarz an. Wie verändert sich die Zahl der Bit?',type:'mc',opts:['Sie wird größer','Sie wird kleiner','Sie bleibt gleich'],a:2,
+      why:'Auch ein weißes Pixel wird gespeichert, nämlich als 0. Die Dateigröße hängt nur von der Zahl der Pixel ab, nicht davon, was gemalt ist.'},
+    {q:'2. Stelle das Bild auf 10 × 7 Pixel. Wie viele Pixel hat es?',type:'num',a:70,unit:'Pixel',
+      why:'Anzahl der Pixel = Breite × Höhe = 10 × 7 = 70.'},
+    {q:'3. Schalte auf „Farbe“ um. Wie viele Bit braucht jetzt ein einziges Pixel?',type:'num',a:24,unit:'Bit',
+      why:'Je 8 Bit für Rot, Grün und Blau: 8 + 8 + 8 = 24 Bit. Ein Farbbild ist darum 24-mal so groß.'},
+    {q:'4. Ein Bild braucht 48 Bit. Wie viele Byte sind das?',type:'num',a:6,unit:'Byte',
+      why:'8 Bit sind 1 Byte. Also: 48 ÷ 8 = 6 Byte.'}
+  ];
+  function renderFQ(){
+    const box=$('fqs'); box.innerHTML='';
+    FQ.forEach((f,k)=>{
+      const ok=!!S.fq['f'+k];
+      const d=document.createElement('div'); d.className='fq'+(ok?' ok':'');
+      let inner='<div class="qt">'+f.q+'</div><div class="row">';
+      if(f.type==='mc') inner+=f.opts.map((o,i)=>'<button class="opt'+(ok&&i===f.a?' right':'')+'" data-i="'+i+'" '+(ok?'disabled':'')+'>'+o+'</button>').join('');
+      else inner+='<input type="text" inputmode="numeric" aria-label="Antwort '+(k+1)+'" '+(ok?'disabled value="'+f.a+'"':'')+'> <span>'+f.unit+'</span> <button class="btn" '+(ok?'disabled':'')+'>Prüfen</button>';
+      inner+=' <span class="msg"></span></div>'+(ok?'<p class="why">'+f.why+'</p>':'');
+      d.innerHTML=inner; box.appendChild(d);
+      if(ok) return;
+      const msg=d.querySelector('.msg');
+      const win=()=>{S.fq['f'+k]=true;save();renderFQ();if(Object.keys(S.fq).length>=4)markDone('labor');else renderGates();};
+      if(f.type==='mc'){
+        d.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>{
+          if(+b.dataset.i===f.a) win(); else {b.classList.add('wrong');msg.textContent='Probier es im Labor aus!';msg.style.color='var(--bad)';}
+        }));
+      } else {
+        const inp=d.querySelector('input'), btn=d.querySelector('.btn');
+        const chk=()=>{if(parseNum(inp.value)===f.a) win(); else {msg.textContent='Noch nicht. Schau im Labor nach.';msg.style.color='var(--bad)';}};
+        btn.addEventListener('click',chk); inp.addEventListener('keydown',e=>{if(e.key==='Enter')chk();});
+      }
+    });
+  }
+
+  /* ---------- 3 Merkkasten ---------- */
+  const GA={g1:['pixeln','pixel','pixels'],g2:['höhe','hoehe'],g3:['bit'],g4:['1'],g5:['24'],g6:['1'],g7:['byte'],g8:['leerzeichen'],
+    t1:['8'],t2:['1000'],t3:['1000'],t4:['1000'],g9:['teilen','dividieren','durch teilen'],e1:['48'],e2:['48'],e3:['48'],e4:['48'],e5:['6']};
+  const SHOW={g1:'Pixeln',g2:'Höhe',g3:'Bit',g7:'Byte',g8:'Leerzeichen',g9:'teilen'};
+  const gaps=[...document.querySelectorAll('.gapin')];
+  let merkeTries=0;
+  const norm=v=>v.trim().toLowerCase().replace(/\s+/g,' ').replace(/\.$/,'');
+  function gapOk(k,v){return GA[k].includes(norm(v));}
+  gaps.forEach(g=>{
+    const k=g.dataset.k;
+    if(S.gaps[k]!=null) g.value=S.gaps[k];
+    if(S.gaps[k]!=null&&gapOk(k,S.gaps[k])){g.classList.add(S.rev[k]?'rev':'ok');g.classList.add('ok');g.disabled=true;}
+    g.addEventListener('input',()=>{g.classList.remove('no');S.gaps[k]=g.value;save();});
+    g.addEventListener('keydown',e=>{if(e.key==='Enter')$('checkMerke').click();});
+  });
+  $('checkMerke').addEventListener('click',()=>{
+    let wrong=0,empty=0;
+    gaps.forEach(g=>{
+      if(g.disabled) return;
+      const k=g.dataset.k;
+      if(!g.value.trim()){empty++;return;}
+      if(gapOk(k,g.value)){g.classList.add('ok');g.disabled=true;}
+      else{g.classList.add('no');wrong++;}
+    });
+    merkeTries++;
+    const fb=$('merkeFb');
+    if(wrong===0&&empty===0){fb.textContent='Alles richtig! Dein Merkkasten ist vollständig.';fb.className='fb good';markDone('merke');$('revealMerke').classList.add('hidden');}
+    else{
+      fb.textContent=(wrong?wrong+' Lücke(n) noch falsch. ':'')+(empty?empty+' Lücke(n) noch leer. ':'')+'Schau in den Wortspeicher.';fb.className='fb bad';
+      if(merkeTries>=3) $('revealMerke').classList.remove('hidden');
+    }
+  });
+  $('revealMerke').addEventListener('click',()=>{
+    gaps.forEach(g=>{ if(g.disabled) return; const k=g.dataset.k; g.value=SHOW[k]||GA[k][0]; S.gaps[k]=g.value; S.rev[k]=true; g.classList.remove('no'); g.classList.add('ok','rev'); g.disabled=true; });
+    save(); $('merkeFb').textContent='Lücken aufgedeckt. Übertrage sie sorgfältig auf dein Arbeitsblatt.'; $('merkeFb').className='fb'; markDone('merke'); $('revealMerke').classList.add('hidden');
+  });
+
+  /* ---------- 4 Trainer ---------- */
+  const pick=a=>a[Math.floor(Math.random()*a.length)];
+  function parseNum(s){
+    s=(s||'').trim().replace(/\s/g,'').replace(/(byte|bit|kb|mb|gb|pixel|stück|fotos?)$/i,'');
+    if(!s) return NaN;
+    if(s.includes('.')&&s.includes(',')) s=s.replace(/\./g,'').replace(',','.');
+    else if(s.includes(',')) s=s.replace(',','.');
+    else if(/^\d{1,3}(\.\d{3})+$/.test(s)) s=s.replace(/\./g,'');
+    return Number(s);
+  }
+  const sentences=['Bin gleich da!','Hast du die Hausaufgaben?','Treffen um 3 am Kiosk.','Ich komme heute spaeter.','Wer kommt mit ins Kino?','Gute Nacht und bis morgen!','Wie war das Spiel?'];
+  function makeTask(lv){
+    if(lv===1){
+      if(pick(['bw','bw','text'])==='bw'){
+        const w=pick([8,16,20,40,80,100]),h=pick([4,6,8,10,20,50]),n=w*h;
+        return {plain:'Schwarz-weiß-Bild '+w+' × '+h+' Pixel: Wie viele Byte?',prompt:'Ein <b>Schwarz-weiß-Bild</b> hat <b>'+w+' × '+h+'</b> Pixel. Wie viele Byte braucht es?',
+          steps:[{l:'Wie viele Pixel?',u:'Pixel',a:n,h:'Breite × Höhe = '+w+' × '+h},{l:'Wie viele Bit? (1 Bit pro Pixel)',u:'Bit',a:n,h:'Pixel × 1 Bit'},{l:'Wie viele Byte?',u:'Byte',a:n/8,h:'Bit ÷ 8'}]};
+      }
+      const s=pick(sentences);
+      return {plain:'ASCII-Nachricht „'+s+'“: Wie viele Byte?',prompt:'Diese Nachricht wird im ASCII-Code gespeichert: <span class="sentence">'+esc(s)+'</span>',
+        steps:[{l:'Wie viele Zeichen?',u:'Zeichen',a:s.length,h:'Leerzeichen und Satzzeichen zählen mit!'},{l:'Wie viele Byte?',u:'Byte',a:s.length,h:'1 Zeichen = 1 Byte'}]};
+    }
+    if(lv===2){
+      if(pick(['col','col','bwkb'])==='col'){
+        const w=pick([10,20,50,100,200]),h=pick([10,20,50,100]),n=w*h;
+        return {plain:'Farbbild '+w+' × '+h+' Pixel, 24 Bit: Wie viele KB?',prompt:'Ein <b>Farbbild</b> hat <b>'+w+' × '+h+'</b> Pixel. Jedes Pixel braucht <b>24 Bit</b>. Wie viele KB braucht es?',
+          steps:[{l:'Wie viele Pixel?',u:'Pixel',a:n,h:'Breite × Höhe'},{l:'Wie viele Bit?',u:'Bit',a:n*24,h:'Pixel × 24'},{l:'Wie viele Byte?',u:'Byte',a:n*3,h:'Bit ÷ 8'},{l:'Wie viele KB?',u:'KB',a:n*3/1000,h:'Byte ÷ 1000'}]};
+      }
+      const w=pick([200,400,800,1000]),h=pick([100,200,300,600]),n=w*h;
+      return {plain:'Schwarz-weiß-Zeichnung '+w+' × '+h+' Pixel: Wie viele KB?',prompt:'Eine <b>Schwarz-weiß-Zeichnung</b> hat <b>'+w+' × '+h+'</b> Pixel. Wie viele KB braucht sie?',
+        steps:[{l:'Wie viele Pixel?',u:'Pixel',a:n,h:'Breite × Höhe'},{l:'Wie viele Bit?',u:'Bit',a:n,h:'Pixel × 1 Bit'},{l:'Wie viele Byte?',u:'Byte',a:n/8,h:'Bit ÷ 8'},{l:'Wie viele KB?',u:'KB',a:n/8000,h:'Byte ÷ 1000'}]};
+    }
+    if(pick(['stick','back'])==='stick'){
+      const gb=pick([1,2,4,8,16]),mb=pick([2,3,4,5,8]),total=gb*1000;
+      return {plain:'USB-Stick '+gb+' GB, Foto '+mb+' MB: Wie viele Fotos passen drauf?',prompt:'Ein USB-Stick hat <b>'+gb+' GB</b> Speicher. Ein Foto ist <b>'+mb+' MB</b> groß. Wie viele Fotos passen höchstens drauf?',
+        steps:[{l:'Wie viele MB hat der Stick?',u:'MB',a:total,h:'1 GB = 1000 MB'},{l:'Wie viele Fotos passen drauf?',u:'Fotos',a:Math.floor(total/mb),h:'MB ÷ '+mb+', dann abrunden (ein halbes Foto gibt es nicht)'}]};
+    }
+    const w=pick([40,80,100,200]),h=pick([20,40,50,80,100,120]),bytes=w*h/8,kb=bytes/1000;
+    return {plain:'Schwarz-weiß-Bild '+fmt(kb)+' KB, '+w+' Pixel breit: Wie hoch?',prompt:'Ein <b>Schwarz-weiß-Bild</b> ist <b>'+fmt(kb)+' KB</b> groß und <b>'+w+' Pixel</b> breit. Wie hoch ist es?',
+      steps:[{l:'Wie viele Byte?',u:'Byte',a:bytes,h:'KB × 1000 (rückwärts auf der Treppe: malnehmen!)'},{l:'Wie viele Bit?',u:'Bit',a:bytes*8,h:'Byte × 8'},{l:'Wie viele Pixel hoch?',u:'Pixel',a:h,h:'Bit (= Pixel) ÷ Breite '+w}]};
+  }
+  let lv=1,task=null,stepIdx=0,tries=0,streak=0,usedHelp=false,revealed=false;
+  function renderTask(){
+    $('tPrompt').innerHTML=task.prompt;
+    const box=$('tSteps'); box.innerHTML='';
+    task.steps.forEach((s,i)=>{
+      const d=document.createElement('div'); d.className='tstep'+(i>stepIdx?' locked':''); d.id='st'+i;
+      d.innerHTML='<label for="in'+i+'">Schritt '+(i+1)+': '+s.l+'</label><input id="in'+i+'" inputmode="decimal" autocomplete="off" '+(i!==stepIdx?'disabled':'')+'><button class="btn" id="go'+i+'" '+(i!==stepIdx?'disabled':'')+'>Prüfen</button><span class="hint hidden" id="hi'+i+'">Hilfe: '+s.h+'</span>';
+      box.appendChild(d);
+    });
+    task.steps.forEach((s,i)=>{$('go'+i).addEventListener('click',()=>check(i));$('in'+i).addEventListener('keydown',e=>{if(e.key==='Enter')check(i);});});
+    $('tFb').textContent=''; $('tFb').className='fb';
+  }
+  function check(i){
+    if(i!==stepIdx) return;
+    const v=parseNum($('in'+i).value),a=task.steps[i].a;
+    const ok=Math.abs(v-a)<1e-9*Math.max(1,Math.abs(a)), st=$('st'+i);
+    if(ok){
+      st.className='tstep ok'; $('in'+i).disabled=true; $('go'+i).disabled=true; stepIdx++; tries=0;
+      if(stepIdx>=task.steps.length){
+        if(!usedHelp) streak++; else streak=0;
+        S.log.push({t:task.plain,s:task.steps.map(x=>x.l.replace(/\s*\(.*\)$/,'')+' '+fmt(x.a)+' '+x.u),help:usedHelp});
+        save(); $('sSolved').textContent=S.log.length; $('sStreak').textContent=streak;
+        $('tFb').textContent=(usedHelp?'Geschafft (mit Hilfe)! ':pick(['Super, alles richtig! ','Klasse gerechnet! ','Volltreffer! ']))+(S.log.length<5?'Noch '+(5-S.log.length)+' bis zur Sicherung.':'');
+        $('tFb').className='fb good';
+        if(S.log.length>=5) markDone('trainer'); else renderGates();
+      } else {
+        $('st'+stepIdx).classList.remove('locked'); $('in'+stepIdx).disabled=false; $('go'+stepIdx).disabled=false; $('in'+stepIdx).focus();
+        $('tFb').textContent='Richtig! Weiter mit Schritt '+(stepIdx+1)+'.'; $('tFb').className='fb good';
+      }
+    } else {
+      tries++; st.className='tstep no';
+      $('tFb').textContent=isNaN(v)?'Bitte gib eine Zahl ein.':'Noch nicht richtig. Versuch es nochmal.'; $('tFb').className='fb bad';
+      if(tries>=2){$('hi'+i).classList.remove('hidden');usedHelp=true;}
+    }
+  }
+  function newTask(){task=makeTask(lv);stepIdx=0;tries=0;usedHelp=false;renderTask();}
+  $('tNew').addEventListener('click',newTask);
+  $('tSolve').addEventListener('click',()=>{
+    streak=0; $('sStreak').textContent=0;
+    task.steps.forEach((s,i)=>{$('in'+i).value=fmt(s.a);$('in'+i).disabled=true;$('go'+i).disabled=true;$('st'+i).className='tstep ok';$('hi'+i).classList.remove('hidden');});
+    stepIdx=task.steps.length;
+    $('tFb').textContent='Lies dir den Rechenweg durch. Diese Aufgabe zählt nicht, starte eine neue.'; $('tFb').className='fb';
+  });
+  document.querySelectorAll('.levels button').forEach(b=>b.addEventListener('click',()=>{lv=+b.dataset.lv;document.querySelectorAll('.levels button').forEach(x=>x.setAttribute('aria-pressed',x===b));newTask();}));
+  $('sSolved').textContent=S.log.length;
+  newTask();
+
+  /* ---------- 5 Sicherung ---------- */
+  const today=new Date(); const dd=String(today.getDate()).padStart(2,'0')+'.'+String(today.getMonth()+1).padStart(2,'0')+'.'+today.getFullYear();
+  if(!S.date) S.date=dd;
+  $('sName').value=S.name; $('sDate').value=S.date; $('sWhy').value=S.why;
+  const segBtns=[...document.querySelectorAll('#selfSeg button')];
+  function paintSeg(){segBtns.forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===S.self));}
+  segBtns.forEach(b=>b.addEventListener('click',()=>{S.self=b.dataset.v;save();paintSeg();renderSheet();}));
+  paintSeg();
+  ['sName','sDate','sWhy'].forEach(id=>$(id).addEventListener('input',()=>{S.name=$('sName').value;S.date=$('sDate').value;S.why=$('sWhy').value;save();renderSheet();}));
+
+  const gv=k=>S.gaps[k]? (SHOW[k]||S.gaps[k].trim()) : '____';
+  function sheetData(){
+    return {
+      merke:[
+        'Ein digitales Bild besteht aus vielen kleinen Punkten, den '+gv('g1')+'.',
+        'Anzahl der Pixel = Breite × '+gv('g2'),
+        'Speicher in Bit = Anzahl der Pixel × '+gv('g3')+' pro Pixel',
+        'Ein Schwarz-weiß-Pixel braucht '+gv('g4')+' Bit, ein Farb-Pixel meistens '+gv('g5')+' Bit.',
+        'Im ASCII-Code braucht jedes Zeichen '+gv('g6')+' '+gv('g7')+'. Auch '+gv('g8')+' und Satzzeichen zählen mit!',
+        'Wenn ich zur größeren Einheit gehe, muss ich '+gv('g9')+'.'
+      ],
+      stair:'Bit  ÷ '+gv('t1')+'  Byte  ÷ '+gv('t2')+'  KB  ÷ '+gv('t3')+'  MB  ÷ '+gv('t4')+'  GB',
+      example:['Pixel: 8 × 6 = '+gv('e1')+' Pixel','Bit: '+gv('e2')+' × 1 Bit = '+gv('e3')+' Bit','Byte: '+gv('e4')+' ÷ 8 = '+gv('e5')+' Byte'],
+      log:S.log.slice(0,8)
+    };
+  }
+  function renderSheet(){
+    const d=sheetData();
+    const hl=t=>esc(t).replace(/(Pixeln|Höhe|Bit pro|teilen|Leerzeichen)/g,'<b class="a">$1</b>');
+    $('sheet').innerHTML=
+      '<div class="meta"><span>Informatik 6a · Digitale Kodierung</span><span>Name: <b>'+esc(S.name||'____________')+'</b> · Datum: '+esc(S.date||'')+'</span></div>'+
+      '<h2>Meine Sicherung: Wie groß ist meine Datei?</h2>'+
+      '<h3>Merkkasten</h3><ol>'+d.merke.map(t=>'<li>'+hl(t)+'</li>').join('')+'</ol>'+
+      '<p><b>Einheiten-Treppe:</b> <span class="stairline">'+esc(d.stair)+'</span></p>'+
+      '<p><b>Beispiel</b> (Schwarz-weiß, 8 × 6 Pixel):</p><ul>'+d.example.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul>'+
+      '<h3>Meine gelösten Aufgaben</h3>'+
+      (d.log.length?'<table><thead><tr><th>Aufgabe</th><th>Mein Rechenweg</th></tr></thead><tbody>'+d.log.map(r=>'<tr><td>'+esc(r.t)+(r.help?' <i>(mit Hilfe)</i>':'')+'</td><td>'+r.s.map(esc).join('<br>')+'</td></tr>').join('')+'</tbody></table>':'<p>Noch keine Aufgaben gelöst.</p>')+
+      '<h3>Zum Abschluss</h3><p>Ein Farbfoto braucht mehr Speicher als ein Schwarz-weiß-Bild, weil '+esc(S.why||'…')+'</p>'+
+      '<p>Ich kann die Größe einer Bilddatei berechnen: <b>'+esc(S.self||'–')+'</b></p>'+
+      '<div class="foot">© 2026 Stephan Holtkötter</div>';
+  }
+  function validSheet(){
+    const fb=$('sFb');
+    if(!/\S+\s+\S+/.test(S.name.trim())){fb.textContent='Bitte trage deinen Vor- und Nachnamen ein.';fb.className='fb bad';$('sName').focus();return false;}
+    if(S.why.trim().split(/\s+/).length<3){fb.textContent='Bitte ergänze den Satz zum Farbfoto mit ein paar Wörtern.';fb.className='fb bad';$('sWhy').focus();return false;}
+    if(!S.self){fb.textContent='Bitte kreuze deine Selbsteinschätzung an.';fb.className='fb bad';return false;}
+    return true;
+  }
+  function buildPdf(){
+    const {jsPDF}=window.jspdf; const doc0=new jsPDF({unit:'mm',format:'a4'});
+    const clean=t=>String(t).replace(/[„“”]/g,'"').replace(/[‚‘’]/g,"'").replace(/[–—]/g,'-').replace(/→/g,'->').replace(/[^\x00-\xFF]/g,'');
+    const doc=new Proxy(doc0,{get(o,k){ if(k==='text') return (t,...a)=>o.text(Array.isArray(t)?t.map(clean):clean(t),...a); if(k==='splitTextToSize') return (t,...a)=>o.splitTextToSize(clean(t),...a); const v=o[k]; return typeof v==='function'?v.bind(o):v; }});
+    const L=18,R=192,G=[29,122,76]; let y=18;
+    const nl=(h)=>{y+=h; if(y>275){doc.addPage();y=20;}};
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(90);
+    doc.text('Informatik 6a · Digitale Kodierung',L,y);
+    doc.text('Name: '+S.name+'   Datum: '+S.date,R,y,{align:'right'});
+    doc.setDrawColor(...G);doc.setLineWidth(.6);doc.line(L,y+2,R,y+2); nl(11);
+    doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(...G);doc.text('Meine Sicherung: Wie groß ist meine Datei?',L,y); nl(10);
+    const h3=t=>{doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(...G);doc.text(t,L,y);nl(6.5);};
+    const para=(t,ind=0,bold=false)=>{doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(10.5);doc.setTextColor(30);
+      doc.splitTextToSize(t,R-L-ind).forEach(line=>{doc.text(line,L+ind,y);nl(5.2);});};
+    const d=sheetData();
+    h3('Merkkasten');
+    d.merke.forEach((t,i)=>para((i+1)+'.  '+t,2)); nl(1.5);
+    para('Einheiten-Treppe:',0,true); para(d.stair,4); nl(1.5);
+    para('Beispiel (Schwarz-weiß, 8 × 6 Pixel):',0,true); d.example.forEach(t=>para('-  '+t,4)); nl(3);
+    h3('Meine gelösten Aufgaben');
+    if(!d.log.length) para('Noch keine Aufgaben gelöst.');
+    d.log.forEach((r,i)=>{para((i+1)+'.  '+r.t+(r.help?' (mit Hilfe)':''),2,true); r.s.forEach(s=>para(s,8)); nl(1.2);});
+    nl(2); h3('Zum Abschluss');
+    para('Ein Farbfoto braucht mehr Speicher als ein Schwarz-weiß-Bild, weil '+S.why);
+    para('Ich kann die Größe einer Bilddatei berechnen: '+S.self);
+    const pages=doc.getNumberOfPages();
+    for(let p=1;p<=pages;p++){doc.setPage(p);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(130);doc.text('© 2026 Stephan Holtkötter',R,289,{align:'right'});doc.text('Seite '+p+' / '+pages,L,289);}
+    return doc;
+  }
+  const fileName=()=>'Sicherung_Dateigroesse_'+(S.name.trim().replace(/\s+/g,'_').replace(/[^\wäöüÄÖÜß_-]/g,'')||'6a')+'.pdf';
+  let downloadsNS=null;
+  try{ if(window.claude&&window.claude.use) window.claude.use('downloads').then(ns=>{downloadsNS=ns;}).catch(()=>{}); }catch(e){}
+  $('pdfBtn').addEventListener('click',async()=>{
+    if(!validSheet()) return;
+    const fb=$('sFb');
+    if(!window.jspdf){fb.textContent='Das PDF-Modul konnte nicht geladen werden (keine Internetverbindung?). Nutze „Drucken“ und wähle dort „Als PDF speichern“.';fb.className='fb bad';return;}
+    const doc=buildPdf();
+    try{
+      if(downloadsNS){
+        await downloadsNS.save({filename:fileName(),data:doc.output('blob')});
+        fb.textContent='Deine Sicherung wurde gespeichert.';fb.className='fb good';
+      } else {
+        const url=URL.createObjectURL(doc.output('blob'));
+        const a=document.createElement('a');a.href=url;a.download=fileName();document.body.appendChild(a);a.click();a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),4000);
+        fb.textContent='Deine Sicherung wird heruntergeladen.';fb.className='fb good';
+      }
+    }catch(err){
+      const code=err&&err.code;
+      fb.textContent=code==='declined'?'Speichern abgebrochen. Du kannst es nochmal versuchen.':'Speichern hat hier nicht geklappt. Versuche „Drucken“.';fb.className='fb bad';
+    }
+  });
+  $('printBtn').addEventListener('click',()=>{
+    if(!validSheet()) return;
+    renderSheet();
+    try{window.print();}catch(e){}
+    if(window.self!==window.top){$('sFb').textContent='Falls sich kein Druckfenster öffnet: Nutze „Als PDF speichern“ und drucke die PDF-Datei.';$('sFb').className='fb';}
+  });
+
+  /* ---------- Lehrkraft ---------- */
+  $('tBtn').addEventListener('click',()=>$('tWrap').classList.toggle('hidden'));
+  $('tGo').addEventListener('click',()=>{
+    if($('tCode').value.trim().toLowerCase()!=='lehrer'){ $('tCode').value=''; return; }
+    views.slice(0,4).forEach(v=>S.done[v]=true); save(); renderGates(); $('tWrap').classList.add('hidden');
+  });
+  $('tReset').addEventListener('click',()=>{
+    if($('tCode').value.trim().toLowerCase()!=='lehrer'){ $('tCode').value=''; return; }
+    try{localStorage.removeItem(KEY);}catch(e){}
+    location.hash='einstieg'; location.reload();
+  });
+
+  renderFQ(); renderGates(); route();
+})();
+
+/* ---------- Hell / Dunkel ---------- */
+(function(){
+  var root=document.documentElement, btn=document.getElementById('themeToggle');
+  var icon=btn.querySelector('.theme-toggle-icon'), label=btn.querySelector('.theme-toggle-label');
+  function apply(t){
+    root.setAttribute('data-theme',t);
+    var dark=t==='dark';
+    icon.textContent=dark?'☀️':'🌙'; label.textContent=dark?'Hell':'Dunkel';
+    btn.setAttribute('aria-pressed',dark?'true':'false');
+  }
+  var saved=null; try{saved=localStorage.getItem('speicher-labor-theme');}catch(e){}
+  var sys=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;
+  apply(saved||(sys?'dark':'light'));
+  btn.addEventListener('click',function(){
+    var next=root.getAttribute('data-theme')==='dark'?'light':'dark';
+    apply(next); try{localStorage.setItem('speicher-labor-theme',next);}catch(e){}
+  });
+})();
+
+/* ---------- Footer-Logo: rotierendes Ikosaeder ---------- */
+(function(){
+  const PHI=(1+Math.sqrt(5))/2;
+  const RAW=[[-1,PHI,0],[1,PHI,0],[-1,-PHI,0],[1,-PHI,0],[0,-1,PHI],[0,1,PHI],[0,-1,-PHI],[0,1,-PHI],[PHI,0,-1],[PHI,0,1],[-PHI,0,-1],[-PHI,0,1]];
+  const LEN=Math.sqrt(1+PHI*PHI);
+  const VERTS=RAW.map(v=>v.map(c=>c/LEN));
+  const FACES=[[0,11,5],[0,5,1],[0,1,7],[0,7,10],[0,10,11],[1,5,9],[5,11,4],[11,10,2],[10,7,6],[7,1,8],[3,9,4],[3,4,2],[3,2,6],[3,6,8],[3,8,9],[4,9,5],[2,4,11],[6,2,10],[8,6,7],[9,8,1]];
+  const LIGHT=(()=>{const l=[0.35,0.55,0.9];const n=Math.hypot(...l);return l.map(c=>c/n);})();
+  const TILT=-0.34;
+  const canvas=document.getElementById('footerIcosaCanvas');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  function draw(angle){
+    const w=canvas.width,h=canvas.height; ctx.clearRect(0,0,w,h);
+    const cA=Math.cos(angle),sA=Math.sin(angle),cT=Math.cos(TILT),sT=Math.sin(TILT);
+    const pts=VERTS.map(([x,y,z])=>{const x1=x*cA+z*sA,z1=-x*sA+z*cA;return [x1,y*cT-z1*sT,y*sT+z1*cT];});
+    const s=Math.min(w,h)*0.42,cx=w/2,cy=h/2;
+    const faces=FACES.map(([i,j,k])=>{
+      const a=pts[i],b=pts[j],c=pts[k];
+      const u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],v=[c[0]-a[0],c[1]-a[1],c[2]-a[2]];
+      let n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
+      const nl=Math.hypot(...n)||1; n=n.map(q=>q/nl);
+      return {i,j,k,a,b,c,n};
+    }).filter(f=>f.n[2]>0.015);
+    faces.sort((f,g)=>(f.a[2]+f.b[2]+f.c[2])-(g.a[2]+g.b[2]+g.c[2]));
+    const P=p=>[cx+p[0]*s,cy-p[1]*s];
+    faces.forEach(f=>{
+      const br=Math.max(0.08,Math.min(1,f.n[0]*LIGHT[0]+f.n[1]*LIGHT[1]+f.n[2]*LIGHT[2]));
+      const shade=0.22+0.78*Math.pow(br,1.15), g=Math.round(60+shade*150);
+      const pa=P(f.a),pb=P(f.b),pc=P(f.c);
+      ctx.beginPath();ctx.moveTo(pa[0],pa[1]);ctx.lineTo(pb[0],pb[1]);ctx.lineTo(pc[0],pc[1]);ctx.closePath();
+      ctx.fillStyle='rgba('+g+','+g+','+g+',0.5)';ctx.fill();
+    });
+    const edges=new Set();
+    faces.forEach(f=>{const id=[f.i,f.j,f.k];for(let e=0;e<3;e++){const p=id[e],q=id[(e+1)%3];edges.add(p<q?p+'-'+q:q+'-'+p);}});
+    ctx.strokeStyle='rgba(120,86,176,.55)';ctx.lineWidth=1.1;ctx.lineCap='round';
+    edges.forEach(k=>{const [p,q]=k.split('-').map(Number);const pa=P(pts[p]),pb=P(pts[q]);ctx.beginPath();ctx.moveTo(pa[0],pa[1]);ctx.lineTo(pb[0],pb[1]);ctx.stroke();});
+  }
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){draw(0.6);return;}
+  let t0=null;
+  (function loop(ts){if(t0===null)t0=ts||0;draw(((ts||0)-t0)/1000*0.55);requestAnimationFrame(loop);})();
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Escape: Die Zeitschleife – periodische Dezimalbrüche</title>
+<meta name="author" content="Stephan Holtkötter">
+<!-- © 2026 Stephan Holtkötter. Alle Rechte vorbehalten. -->
+<style>
+:root{--ink:#e9fbff;--muted:#9cc3cc;--accent:#ffb84d;--cyan:#4de1d2;--pink:#ff6fae;--good:#3ddc97;--bad:#ff5d73;--card:rgba(12,38,50,.95);--card2:#164556}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:#061218;color:var(--ink);font-family:"Avenir Next","Avenir","Nunito","Segoe UI",system-ui,sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none;overflow-x:hidden}
+input{-webkit-user-select:text;user-select:text}
+#bg{position:fixed;top:0;left:0;right:0;bottom:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 50% -20%,rgba(77,225,210,.25),rgba(6,18,24,0) 60%),linear-gradient(rgba(77,225,210,.07) 1px,rgba(0,0,0,0) 1px),linear-gradient(90deg,rgba(77,225,210,.07) 1px,rgba(0,0,0,0) 1px),#061218;background-size:auto,44px 44px,44px 44px,auto}
+#app{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 16px 170px}
+button{font:inherit;color:inherit;border:none;cursor:pointer;touch-action:manipulation}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:16px 26px;border-radius:18px;font-size:21px;font-weight:800;background:var(--card2);box-shadow:0 5px 0 rgba(0,0,0,.4);margin:4px}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.4)}
+.btn.go{background:linear-gradient(180deg,#ffd27a,#ffa62e);color:#2a1a00}
+.btn.ghost{background:rgba(255,255,255,.08);box-shadow:none;font-size:17px;padding:12px 18px}
+.btn small{font-weight:600;opacity:.75;font-size:14px;margin-left:6px}
+.btn[disabled]{opacity:.4}
+h1,h2{margin:.2em 0}
+.muted{color:var(--muted)}
+.center{text-align:center}
+.ov{border-top:.09em solid currentColor;padding-top:.02em}
+.frac{display:inline-block;vertical-align:middle;text-align:center;margin:0 .12em;line-height:1.08;font-weight:800}
+.frac>span{display:block;padding:0 .18em}
+.frac>span:first-child{border-bottom:.09em solid currentColor}
+.mixed{white-space:nowrap}
+/* Start */
+.hero{text-align:center;padding-top:16px;position:relative}
+.hero h1{font-size:clamp(38px,7vw,64px);line-height:1.05;color:var(--accent);text-shadow:0 0 24px rgba(255,184,77,.35)}
+.hero .sub{font-size:20px;color:var(--cyan)}
+.hero svg.loopy{width:110px}
+.hero svg.iko{width:52px;position:absolute;right:6px;top:10px}
+.story{background:var(--card);border-radius:24px;padding:22px 26px;max-width:740px;margin:18px auto;font-size:19px;line-height:1.5;border:2px solid rgba(77,225,210,.2)}
+.story b{color:var(--accent)}
+.namebox{display:flex;justify-content:center;flex-wrap:wrap;margin:16px 0}
+.namebox input{font:inherit;font-size:22px;padding:14px 18px;border-radius:16px;border:3px solid #2a6f80;background:#0a2630;color:#fff;width:300px;outline:none;margin:4px}
+details.teacher{max-width:740px;margin:24px auto 0;background:rgba(255,255,255,.05);border-radius:16px;padding:12px 18px;font-size:15px;color:var(--muted);line-height:1.5}
+details.teacher summary{cursor:pointer;font-weight:700;color:var(--ink)}
+/* Map */
+.maphead{display:flex;align-items:center;background:var(--card);border-radius:22px;padding:14px 18px;border:2px solid rgba(77,225,210,.2)}
+.maphead svg.loopy{width:58px;margin-right:14px;flex:none}
+.maphead .rk{flex:1}
+.maphead .nm{font-size:22px;font-weight:800}
+.xpbar{height:14px;background:#06161d;border-radius:10px;overflow:hidden;margin-top:6px}
+.xpbar>div{height:100%;background:linear-gradient(90deg,#ffa62e,#ffd27a);border-radius:10px}
+.codepanel{display:flex;align-items:center;flex-wrap:wrap;justify-content:center;background:#06161d;border:2px solid var(--accent);border-radius:18px;padding:12px 16px;margin-top:16px}
+.codepanel .lbl{font-weight:800;color:var(--accent);margin-right:12px;font-size:18px}
+.cd{display:inline-block;width:46px;height:58px;line-height:58px;text-align:center;border-radius:10px;background:#123b4a;font-size:32px;font-weight:900;margin:3px;font-family:Menlo,Consolas,monospace;color:var(--muted)}
+.cd.on{background:var(--accent);color:#2a1a00}
+.rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(184px,1fr));grid-gap:16px;margin-top:16px}
+.rcard{background:var(--card);border-radius:22px;padding:12px 10px 14px;text-align:center;border:2px solid rgba(77,225,210,.15);box-shadow:0 6px 0 rgba(0,0,0,.35)}
+.rcard:active{transform:translateY(3px)}
+.rcard .rn{font-size:19px;font-weight:800;line-height:1.2}
+.rcard .rs{font-size:14px;color:var(--muted);min-height:2.4em;margin-top:2px}
+.stars{font-size:24px;letter-spacing:2px;color:#2a5563}
+.stars .on{color:var(--accent)}
+.rcard.fin{background:linear-gradient(160deg,#3a2a10,#13252c);border-color:var(--accent)}
+.rcard.locked{opacity:.55}
+.lockinfo{font-size:14px;color:#ffd9a0}
+.section{background:var(--card);border-radius:22px;padding:16px 18px;margin-top:18px;border:2px solid rgba(77,225,210,.12)}
+.badges{display:flex;flex-wrap:wrap;margin-top:8px}
+.badge{display:flex;align-items:center;background:rgba(255,255,255,.06);border-radius:14px;padding:8px 12px;font-size:15px;margin:4px}
+.badge .bi{font-size:24px;margin-right:8px}
+.badge.off{opacity:.35;filter:grayscale(1)}
+.row{display:flex;flex-wrap:wrap;justify-content:center;margin-top:18px}
+/* Task */
+.topbar{display:flex;align-items:center;margin-bottom:10px}
+.topbar .ttl{flex:1;font-weight:800;font-size:19px;margin:0 10px}
+.chip{background:rgba(255,255,255,.09);border-radius:30px;padding:8px 14px;font-size:18px;font-weight:700;white-space:nowrap;margin-left:6px}
+.chip.hot{background:linear-gradient(90deg,#ff6fae,#ffb84d);color:#2a1000}
+.dots{display:flex;justify-content:center;margin:2px 0 12px}
+.dots i{width:30px;height:9px;border-radius:5px;background:#1d4b5a;margin:0 4px}
+.dots i.cur{background:#fff}.dots i.ok{background:var(--good)}.dots i.no{background:var(--bad)}.dots i.rid{box-shadow:0 0 0 2px #061218,0 0 0 4px var(--accent)}
+.stage{display:grid;grid-template-columns:1fr;grid-gap:16px}
+@media (min-width:900px) and (orientation:landscape){.stage{grid-template-columns:1.4fr 1fr;align-items:start}}
+.card{background:var(--card);border-radius:24px;padding:20px 22px;border:2px solid rgba(77,225,210,.15)}
+.card.riddle{border-color:var(--accent);box-shadow:0 0 26px rgba(255,184,77,.22)}
+.rtag{display:inline-block;background:linear-gradient(90deg,#ffa62e,#ff6fae);color:#2a1000;font-weight:800;border-radius:12px;padding:5px 12px;font-size:15px;margin-bottom:10px}
+.tag{display:inline-block;background:var(--pink);color:#2a0014;border-radius:8px;padding:2px 8px;font-size:14px;font-weight:800;vertical-align:middle}
+.prompt{font-size:22px;line-height:1.5}
+.bignum{font-size:clamp(40px,6.5vw,60px);font-weight:800;text-align:center;margin:14px 0 4px;line-height:1.3;word-break:break-all}
+.bigtxt{font-size:30px;font-weight:800;text-align:center;margin:12px 0 4px;line-height:1.4;word-break:break-word}
+.visual{margin-top:14px;text-align:center}
+.visual svg{max-width:100%;height:auto}
+.hintbox{margin-top:14px;background:rgba(77,225,210,.12);border-left:5px solid var(--cyan);border-radius:12px;padding:10px 14px;font-size:18px;line-height:1.45}
+.memo{display:inline-block;background:#fff6d8;color:#3a2a10;border-radius:6px;padding:6px 12px;font-size:18px;transform:rotate(-1.5deg);margin-top:8px;box-shadow:0 3px 8px rgba(0,0,0,.4)}
+.hidden{display:none}
+/* Division */
+.divbox{display:inline-block;background:#06161d;border:2px solid #2a6f80;border-radius:16px;padding:12px 18px;text-align:left;font-family:Menlo,Consolas,monospace}
+.divhead{font-size:24px;font-weight:800;color:var(--accent);margin-bottom:6px}
+table.steps{border-collapse:collapse;font-size:22px}
+table.steps td{padding:4px 8px}
+table.steps .q{font-weight:900;color:var(--cyan)}
+table.steps .rest{color:var(--muted)}
+table.steps tr.ask td{color:var(--accent);font-weight:900}
+/* Keypad */
+.answer{display:flex;flex-direction:column}
+.answer>*{margin-bottom:14px}
+.display{display:flex;align-items:center;justify-content:center;background:#06161d;border:3px solid #2a6f80;border-radius:18px;min-height:80px;font-size:40px;font-weight:800;padding:6px 12px;word-break:break-all;text-align:center}
+.display .ph{opacity:.35}
+.display .pm{font-size:15px;color:var(--accent);margin-left:10px;font-weight:700}
+.shake{animation:shake .35s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.keypad{display:grid;grid-template-columns:repeat(4,1fr);grid-gap:10px}
+.key{height:64px;border-radius:16px;font-size:30px;font-weight:800;background:#1d5466;box-shadow:0 4px 0 rgba(0,0,0,.4)}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.4)}
+.key.cm{background:#2a6f80;font-size:38px;line-height:.6}
+.key.del,.key.clr{background:#4a2a3a;font-size:24px}
+.key.per{background:#5a3a7c;font-size:18px;line-height:1.1}
+.key.per b{display:block;font-size:26px}
+.key.per.on{background:var(--accent);color:#2a1a00}
+.key.zero{grid-column:span 2}
+.choices{display:grid;grid-template-columns:1fr 1fr;grid-gap:12px}
+.choices.three{grid-template-columns:1fr 1fr 1fr}
+.choice{min-height:84px;border-radius:18px;background:#1d5466;font-size:28px;font-weight:800;box-shadow:0 5px 0 rgba(0,0,0,.4);padding:8px}
+.choice:active{transform:translateY(3px)}
+.choice.right{background:var(--good);color:#063020}
+.choice.wrong{background:var(--bad)}
+.actions{display:flex;justify-content:space-between;flex-wrap:wrap}
+.actions .go{flex:1;min-width:160px}
+/* Sort */
+.slots{display:flex;flex-wrap:wrap;min-height:76px;background:#06161d;border:3px dashed #2a6f80;border-radius:18px;padding:6px;align-items:center}
+.slots .ph{color:var(--muted);font-size:17px;padding:0 8px}
+.slots .lt{font-size:24px;color:var(--muted);margin:0 2px}
+.pool{display:flex;flex-wrap:wrap;justify-content:center}
+.tile{min-width:96px;height:64px;border-radius:14px;background:#1d5466;font-size:26px;font-weight:800;padding:0 14px;box-shadow:0 4px 0 rgba(0,0,0,.4);margin:5px}
+.tile.used{visibility:hidden}
+.slots .tile{background:#5a3a7c}
+.sortlbl{font-size:17px;color:var(--muted);display:flex;justify-content:space-between}
+/* Sheet & Meldungen */
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;pointer-events:none;-webkit-transform:translateZ(0)}
+.sheet-in{pointer-events:auto;width:100%;max-width:760px;background:#0d2a35;border-radius:26px 26px 0 0;padding:18px 22px max(20px,env(safe-area-inset-bottom));border-top:6px solid var(--good);box-shadow:0 -10px 40px rgba(0,0,0,.55);max-height:62vh;overflow:auto;animation:up .25s ease-out}
+@keyframes up{from{transform:translateY(100%)}}
+.sheet.bad .sheet-in{border-top-color:var(--bad)}
+.fbtitle{font-size:26px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+.sheet.ok .fbtitle{color:var(--good)}.sheet.bad .fbtitle{color:var(--bad)}
+.fbtitle .xp{color:var(--accent);font-size:22px}
+.sol{font-size:22px;margin-top:6px}
+.expl{font-size:18px;line-height:1.55;margin:8px 0 14px;color:#d8f3f8}
+.sheet .btn{width:100%;margin:0}
+.toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:80;background:linear-gradient(90deg,#ffa62e,#ff6fae);color:#2a1000;padding:14px 22px;border-radius:18px;font-size:19px;font-weight:800;box-shadow:0 8px 30px rgba(0,0,0,.45);white-space:nowrap}
+.nudge{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:85;background:var(--cyan);color:#062028;font-weight:800;font-size:19px;padding:14px 22px;border-radius:18px;box-shadow:0 8px 30px rgba(0,0,0,.5);max-width:92vw;text-align:center}
+.conf{position:fixed;top:-20px;width:10px;height:16px;z-index:90;border-radius:2px;animation:fall linear forwards;pointer-events:none}
+@keyframes fall{to{transform:translateY(112vh) rotate(800deg)}}
+/* Finale */
+.arena{display:flex;align-items:center}
+.arena svg.machine{width:130px;flex:none;margin-right:14px}
+.bubble{background:#e9fbff;color:#062028;border-radius:16px;padding:10px 14px;font-size:16px;font-weight:700}
+.lives{font-size:22px;margin-top:6px}
+.timer{height:8px;background:#06161d;border-radius:6px;overflow:hidden;margin-top:8px}
+.timer>div{height:100%;background:var(--cyan);width:100%}
+/* Ergebnis */
+.result{text-align:center;padding-top:16px}
+.bigstars{font-size:76px;letter-spacing:8px}
+.bigstars span{color:#2a5563}
+.bigstars span.on{color:var(--accent)}
+.codeslots{display:flex;justify-content:center;margin:18px 0}
+.codeslots .cd{width:62px;height:78px;line-height:78px;font-size:44px;background:#0a2630;border:3px solid #2a6f80;color:var(--ink)}
+.codeslots .cd.on{border-color:var(--accent)}
+.codepad{display:grid;grid-template-columns:repeat(5,1fr);grid-gap:10px;max-width:520px;margin:0 auto}
+/* Zertifikat */
+.cert{background:linear-gradient(160deg,#fffaf0,#ffeec7);color:#2a2140;border-radius:24px;padding:30px;max-width:720px;margin:20px auto;border:8px double #c99a2e;text-align:center}
+.cert h1{color:#7a4a00;font-size:38px}
+.cert table{margin:14px auto;border-collapse:collapse;font-size:19px}
+.cert td{padding:6px 14px;border-bottom:1px solid #e3cf9a;text-align:left}
+.cert .code{font-family:Menlo,monospace;font-size:22px;letter-spacing:3px;background:#2a2140;color:#ffe07a;display:inline-block;padding:6px 16px;border-radius:10px;margin-top:8px}
+.foot{display:flex;align-items:center;justify-content:center;margin:34px auto 0;color:var(--muted);font-size:14px;text-align:center}
+.foot svg.iko{width:34px;height:34px;flex:none;margin-right:10px}
+.cert .foot{color:#6a5a40;margin-top:16px}
+.mute{position:fixed;right:14px;bottom:14px;z-index:40;width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.1);font-size:24px}
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<div id="app"></div>
+<button class="mute" id="muteBtn" aria-label="Ton an/aus">🔊</button>
+<script>
+"use strict";
+/* ================= Grundlagen ================= */
+var KEY='zeitschleife_v1';
+const $=s=>document.querySelector(s);
+const app=$('#app');
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t;}return a;}
+const pow10=k=>Math.pow(10,k);
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){const t=a%b;a=b;b=t;}return a;}
+function R(n,d){const g=gcd(n,d)||1;return {n:n/g,d:d/g};}
+const eq=(x,y)=>x.n===y.n&&x.d===y.d;
+const cmp=(x,y)=>x.n*y.d-y.n*x.d;
+// Dezimalentwicklung per schriftlicher Division: {I, pre (Vorperiode), per (Periode)}
+function dec(n,d){const I=Math.floor(n/d);let r=n%d;const seen={},ds=[];while(r!==0&&seen[r]===undefined){seen[r]=ds.length;r*=10;ds.push(Math.floor(r/d));r%=d;}
+ if(r===0)return {I:String(I),pre:ds.join(''),per:''};const s=seen[r];return {I:String(I),pre:ds.slice(0,s).join(''),per:ds.slice(s).join('')};}
+function partsHTML(p){return p.I+((p.pre||p.per)?','+p.pre+(p.per?`<span class="ov">${p.per}</span>`:''):'');}
+const dh=(n,d)=>partsHTML(dec(n,d));
+const rh=r=>dh(r.n,r.d);
+function partsRat(p){const a=p.pre.length,b=p.per.length;const base=(+p.I)*pow10(a)+(a?+p.pre:0);if(!b)return R(base,pow10(a));const m=pow10(b)-1;return R(base*m+(+p.per),pow10(a)*m);}
+function P(s){const parts=s.split(',');const rest=parts[1]||'';const q=rest.split('|');return {I:parts[0],pre:q[0]||'',per:q[1]||''};}
+function digitsFrom(p,k){let s=p.pre;while(s.length<k&&p.per)s+=p.per;return s.slice(0,k).padEnd(k,'0');}
+function expStr(r,k){const p=dec(r.n,r.d);return p.I+','+digitsFrom(p,k)+(p.per?'…':'');}
+function isTerm(n,d){d=d/gcd(n,d);while(d%2===0)d/=2;while(d%5===0)d/=5;return d===1;}
+function factors(n){const f=[];for(let p=2;p*p<=n;p++)while(n%p===0){f.push(p);n/=p;}if(n>1)f.push(n);return f;}
+const frac=(a,b)=>`<span class="frac"><span>${a}</span><span>${b}</span></span>`;
+const fr=r=>r.d===1?String(r.n):frac(r.n,r.d);
+const PROFI=' <span class="tag">Profi</span>';
+const ovs=(a,b)=>`${a}<span class="ov">${b}</span>`;
+
+let S=load()||fresh();
+function fresh(){return {name:'',xp:0,stars:{},badges:[],riddles:0,finaleWon:false,escaped:false,bestCombo:0};}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));return d&&typeof d==='object'?Object.assign(fresh(),d):null;}catch(e){return null;}}
+
+/* ================= Ton ================= */
+let AC=null,muted=false;
+function beep(fs,dur,type,vol){if(muted)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();const t=AC.currentTime;fs.forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;const s=t+i*dur;g.gain.setValueAtTime(0.0001,s);g.gain.exponentialRampToValueAtTime(vol||0.16,s+0.015);g.gain.exponentialRampToValueAtTime(0.0001,s+dur);o.connect(g);g.connect(AC.destination);o.start(s);o.stop(s+dur+0.03);});}catch(e){}}
+const sfx={ok:()=>beep([660,880,1320],.09),bad:()=>beep([240,170],.17,'square',.06),tap:()=>beep([560],.035,'sine',.08),win:()=>beep([523,659,784,1046,1318],.12),zap:()=>beep([300,600,1200],.07,'sawtooth',.06),door:()=>beep([196,262,392,523,784],.16,'triangle',.14)};
+$('#muteBtn').addEventListener('click',()=>{muted=!muted;$('#muteBtn').textContent=muted?'🔇':'🔊';});
+
+/* ================= Grafiken ================= */
+const IKO=`<svg viewBox="12 12 76 76" class="iko" aria-label="Ikosaeder"><polygon points="71.4,40.8 63.5,85.9 94.9,58.2" fill="#7590ec" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="71.4,40.8 63.5,85.9 26.7,58.2" fill="#8cd1f9" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="71.4,40.8 77.4,13.5 35.3,13.5" fill="#6767e4" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="71.4,40.8 77.4,13.5 94.9,58.2" fill="#6767e4" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="71.4,40.8 35.3,13.5 26.7,58.2" fill="#7ea9f1" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="63.5,85.9 64.7,86.5 22.6,86.5" fill="#83b7f4" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="63.5,85.9 64.7,86.5 94.9,58.2" fill="#7080e9" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="63.5,85.9 22.6,86.5 26.7,58.2" fill="#95e9fe" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="35.3,13.5 26.7,58.2 5.1,41.8" fill="#7ea8f1" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/><polygon points="22.6,86.5 26.7,58.2 5.1,41.8" fill="#8bcef9" stroke="#eef1ff" stroke-width="1.2" stroke-linejoin="round"/></svg>`;
+const YEAR=new Date().getFullYear()>2026?'2026–'+new Date().getFullYear():'2026';
+const FOOT=`<div class="foot">${IKO}<span>© ${YEAR} Stephan Holtkötter · Escape: Die Zeitschleife · Alle Rechte vorbehalten</span></div>`;
+const LOOPY=`<svg viewBox="0 0 120 140" class="loopy"><line x1="60" y1="10" x2="60" y2="26" stroke="#9cc3cc" stroke-width="4"/><circle cx="60" cy="9" r="7" fill="#ffb84d"/><rect x="16" y="24" width="88" height="66" rx="22" fill="#2a7f8f" stroke="#e9fbff" stroke-width="3"/><rect x="27" y="35" width="66" height="44" rx="13" fill="#06161d"/><path d="M60 57 C52 45 38 45 38 57 C38 69 52 69 60 57 C68 45 82 45 82 57 C82 69 68 69 60 57Z" fill="none" stroke="#ffb84d" stroke-width="4.5"/><rect x="34" y="96" width="52" height="38" rx="11" fill="#2a7f8f" stroke="#e9fbff" stroke-width="3"/><circle cx="60" cy="115" r="7" fill="#4de1d2"/><rect x="8" y="100" width="22" height="10" rx="5" fill="#9cc3cc"/><rect x="90" y="100" width="22" height="10" rx="5" fill="#9cc3cc"/></svg>`;
+function machineSVG(pct){const r=52,c=2*Math.PI*r;return `<svg viewBox="0 0 140 140" class="machine"><circle cx="70" cy="70" r="64" fill="#06161d" stroke="#2a6f80" stroke-width="3"/><circle cx="70" cy="70" r="${r}" fill="none" stroke="#164556" stroke-width="14"/><circle id="energy" cx="70" cy="70" r="${r}" fill="none" stroke="#ffb84d" stroke-width="14" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c*(1-pct)).toFixed(1)}" transform="rotate(-90 70 70)"/><path d="M70 70 C62 56 44 56 44 70 C44 84 62 84 70 70 C78 56 96 56 96 70 C96 84 78 84 70 70Z" fill="none" stroke="#4de1d2" stroke-width="5"/></svg>`;}
+function doorSVG(Rm,st){return `<svg viewBox="0 0 120 150" width="100" height="125"><rect x="10" y="8" width="100" height="138" rx="10" fill="#0b2a36" stroke="${Rm.c}" stroke-width="4"/><rect x="22" y="20" width="76" height="120" rx="6" fill="#123b4a" stroke="${Rm.c}" stroke-opacity=".5" stroke-width="2"/><circle cx="60" cy="62" r="31" fill="#06161d" stroke="${Rm.c}" stroke-width="4"/><g fill="${Rm.c}" stroke="${Rm.c}">${Rm.ico}</g><circle cx="88" cy="104" r="5" fill="${Rm.c}"/>${st>0?'<text x="60" y="132" text-anchor="middle" font-size="16" fill="#3ddc97" font-weight="800">OFFEN</text>':'<rect x="50" y="114" width="20" height="16" rx="3" fill="#9cc3cc"/><path d="M54 114v-5a6 6 0 0 1 12 0v5" stroke="#9cc3cc" stroke-width="3" fill="none"/>'}</svg>`;}
+function carousel(per){const L=per.length,cx=130,cy=130,r=L===1?0:88;let s=`<svg viewBox="0 0 260 260" style="width:min(100%,230px)"><circle cx="${cx}" cy="${cy}" r="88" fill="none" stroke="#4de1d2" stroke-width="3" stroke-dasharray="6 8"/>`;
+ for(let i=0;i<L;i++){const a=-Math.PI/2+2*Math.PI*i/L;const x=(cx+88*Math.cos(a)).toFixed(1),y=(cy+88*Math.sin(a)).toFixed(1);s+=`<circle cx="${x}" cy="${y}" r="25" fill="${i===0?'#ffb84d':'#164556'}" stroke="#e9fbff" stroke-width="2.5"/><text x="${x}" y="${(+y+9).toFixed(1)}" text-anchor="middle" font-size="26" font-weight="800" fill="${i===0?'#2a1a00':'#e9fbff'}">${per[i]}</text>`;}
+ return s+`<text x="${cx}" y="${cy+14}" text-anchor="middle" font-size="44" fill="#ffb84d">↻</text></svg>`;}
+
+/* ================= Aufgaben-Generatoren ================= */
+function genParts(minPre,maxPre){const I=String(pick([0,0,0,1,2,3]));const pl=ri(minPre,maxPre);const L=pick([1,1,2,2,3]);let per='';
+ for(;;){per='';for(let i=0;i<L;i++)per+=ri(0,9);if(L>1&&/^(\d)\1*$/.test(per))continue;if(/^0+$/.test(per)||/^9+$/.test(per))continue;break;}
+ let pre='';for(let i=0;i<pl;i++)pre+=ri(0,9);if(pl&&pre[pl-1]===per[L-1])pre=pre.slice(0,-1)+((+per[L-1]+ri(1,8))%10);
+ return {I,pre,per};}
+function coprime(lo,hi,d){let n=ri(lo,hi),g=0;while(gcd(n,d)!==1&&g++<200)n=ri(lo,hi);return n;}
+function distinctOpts(correct,cands,k){const out=[{v:correct,ok:true}];for(const c of cands){if(out.length>k)break;if(!c)continue;if(out.some(o=>eq(o.v.r,c.r)||o.v.html===c.html))continue;out.push({v:c,ok:false});}return out;}
+
+const G={
+/* ---- Raum 1: Teilungsmaschine ---- */
+divTerm(){const d=pick([4,5,8,8,16,20,25,25,40,50,125,32]);let n=ri(1,d*2);while(gcd(n,d)!==1||n===d)n=ri(1,d*2);let T=10;while(T%d)T*=10;const k=T/d;
+ return {type:'input',prompt:`Rechne in eine Dezimalzahl um:<div class="bigtxt">${frac(n,d)}</div>`+([16,32,40,125].indexOf(d)>=0?PROFI:''),answer:R(n,d),
+ hint:`Erweitere auf 10, 100, 1000 … – oder rechne schriftlich ${n} : ${d}.`,
+ explain:`${frac(n,d)} = ${frac(n*k,T)} = <b>${dh(n,d)}</b><br>Die Division geht auf (Rest 0) → <b>abbrechender</b> Dezimalbruch.`};},
+divChoice(){const pr=pick([[7,8],[3,8],[5,8],[3,4],[1,8],[9,20],[7,25],[3,16],[11,20],[13,25],[1,40],[3,40]]);const n=pr[0],d=pr[1];const c={r:R(n,d),html:dh(n,d)};
+ const mk=r=>({r,html:rh(r)});const cat=P(`0,${n}${d}`);
+ const opts=distinctOpts(c,[{r:partsRat(cat),html:partsHTML(cat)},mk(R(n*10,d)),mk(R(d,n)),mk(R(n,d*10)),mk(R(n+1,d))],3);
+ return {type:'choice',prompt:`Die Teilungsmaschine spuckt vier Ergebnisse aus. Welches ist <b>${frac(n,d)}</b>?`,choices:shuffle(opts).map(o=>({label:o.v.html,ok:o.ok})),
+ hint:`Rechne ${n} : ${d} schriftlich oder erweitere den Bruch.`,explain:`${n} : ${d} = <b>${dh(n,d)}</b>`};},
+restNext(){const d=pick([3,6,7,7,7,9,11,12,13]);const n=coprime(1,d-1,d);const steps=[];let r=n;const seenR=[n];
+ for(let i=0;i<8;i++){const q=Math.floor(r*10/d),r2=(r*10)%d;steps.push({a:r*10,q,r:r2});r=r2;}
+ const k=ri(2,4),s=steps[k];const before=[n].concat(steps.slice(0,k).map(x=>x.r));const rep=before.indexOf(s.r)>=0;
+ const rows=steps.slice(0,k).map(st=>`<tr><td>${st.a} : ${d}</td><td>=</td><td class="q">${st.q}</td><td class="rest">Rest ${st.r}</td></tr>`).join('')+`<tr class="ask"><td>? : ${d}</td><td>=</td><td class="q">?</td><td class="rest">Rest ?</td></tr>`;
+ return {type:'input',prompt:'Die Teilungsmaschine rechnet schriftlich. Welche <b>Ziffer</b> kommt als Nächstes?',visual:`<div class="divbox"><div class="divhead">${n} : ${d} = 0,${steps.slice(0,k).map(x=>x.q).join('')}…</div><table class="steps">${rows}</table></div>`,answer:R(s.q,1),
+ hint:'Nimm den letzten Rest mal 10 und teile wieder.',
+ explain:`Letzter Rest ${steps[k-1].r} → ${s.a} : ${d} = <b>${s.q}</b> Rest ${s.r}.${rep?` Der Rest ${s.r} kam schon einmal vor – ab jetzt wiederholt sich alles!`:''}<br>${frac(n,d)} = ${dh(n,d)}`};},
+restMax(){const d=pick([7,11,13,17,19]);
+ return {type:'input',prompt:`Bei der Division durch <b>${d}</b> können nur die Reste 0, 1, 2, …, ${d-1} auftreten.<br>Wie viele Ziffern kann die Periode eines Bruchs mit dem Nenner ${d} <b>höchstens</b> haben?`+PROFI,answer:R(d-1,1),
+ hint:'Rest 0 heißt: Die Rechnung geht auf. Wie viele andere Reste gibt es?',
+ explain:`Bei Rest 0 bricht die Rechnung ab. Sonst gibt es nur ${d-1} mögliche Reste – spätestens nach ${d-1} Schritten kommt ein Rest doppelt, und alles wiederholt sich. Also höchstens <b>${d-1}</b> Ziffern.<br>Beispiel: ${frac(1,d)} = ${dh(1,d)}`};},
+/* ---- Raum 2: Spiegelkabinett ---- */
+writeBar(){const p=genParts(0,2);const k=p.pre.length+3*p.per.length+2;
+ return {type:'input',prompt:`Schreibe kurz <b>mit Periodenstrich</b>:<div class="bigtxt">${p.I},${digitsFrom(p,Math.max(9,k))}…</div>`,answer:partsRat(p),
+ hint:'Suche die Ziffernfolge, die sich immer wieder wiederholt. Tippe dann ‾ und schreibe die Periode.',
+ explain:`Die Folge <b>${p.per}</b> wiederholt sich${p.pre?`, davor steht einmal ${p.pre}`:''}.<br>Kürzeste Schreibweise: <b>${partsHTML(p)}</b>`};},
+readBar(){const p=genParts(0,2);const want=digitsFrom(p,8);
+ return {type:'input',prompt:`Schreibe die ersten <b>8 Nachkommastellen</b> auf – diesmal <b>ohne</b> Periodenstrich:<div class="bigtxt">${partsHTML(p)}</div>`,
+ check:q=>!q.per&&q.I===p.I&&q.pre===want,solution:`${p.I},${want}`,
+ hint:'Unter dem Strich steht die Periode: Diese Ziffern wiederholst du immer wieder.',
+ explain:`${partsHTML(p)} = ${p.I},${want}…`};},
+barChoice(){const p=genParts(1,2);const c={r:partsRat(p),html:partsHTML(p)};const mk=q=>({r:partsRat(q),html:partsHTML(q)});
+ const cands=[mk({I:p.I,pre:'',per:p.pre+p.per}),mk({I:p.I,pre:p.pre+p.per,per:''}),mk({I:p.I,pre:p.pre.slice(1),per:p.pre[0]+p.per}),mk({I:p.I,pre:p.pre,per:p.per+p.pre[0]}),mk({I:p.I,pre:'',per:p.pre})];
+ const opts=distinctOpts(c,cands,3);
+ return {type:'choice',prompt:`Welche Schreibweise passt genau zu dieser Zahl?<div class="bigtxt">${p.I},${digitsFrom(p,10)}…</div>`,choices:shuffle(opts).map(o=>({label:o.v.html,ok:o.ok})),
+ hint:'Welche Ziffern stehen nur einmal am Anfang (Vorperiode), welche wiederholen sich (Periode)?',
+ explain:`Vorperiode: ${p.pre}, Periode: ${p.per} → <b>${partsHTML(p)}</b>`};},
+periodLen(){const p=genParts(0,3);if(Math.random()<.4)p.per=p.per+ri(0,9)+''+ri(0,9);if(/^(\d+)\1+$/.test(p.per)||p.pre&&p.pre.slice(-1)===p.per.slice(-1))return G.periodLen();
+ const askPre=p.pre&&Math.random()<.5;const ans=askPre?p.pre.length:p.per.length;
+ return {type:'input',prompt:`Wie viele Ziffern hat die <b>${askPre?'Vorperiode':'Periode'}</b>?<div class="bignum">${partsHTML(p)}</div>`,answer:R(ans,1),
+ hint:'Die Periode steht unter dem Strich. Die Vorperiode steht zwischen Komma und Strich.',
+ explain:`${partsHTML(p)}: Vorperiode „${p.pre||'–'}“ (${p.pre.length} Ziffer${p.pre.length===1?'':'n'}), Periode „${p.per}“ (${p.per.length} Ziffer${p.per.length===1?'':'n'}) → <b>${ans}</b>`};},
+digitAt(){const pr=pick([[1,7],[2,7],[3,7],[1,13],[5,11],[1,27],[4,33],[1,6],[5,12],[1,22],[3,7],[4,7]]);const p=dec(pr[0],pr[1]);const a=p.pre.length,L=p.per.length;const N=ri(12,60);
+ const dig=N<=a?+p.pre[N-1]:+p.per[(N-a-1)%L];const pos=(N-a-1)%L+1;
+ return {type:'input',prompt:`Welche Ziffer steht an der <b>${N}. Nachkommastelle</b>?<div class="bigtxt">${frac(pr[0],pr[1])} = ${partsHTML(p)}</div>`+PROFI,visual:carousel(p.per),answer:R(dig,1),
+ hint:`Die Periode hat ${L} Ziffer${L===1?'':'n'}${a?` und davor stehen ${a} Ziffer${a===1?'':'n'} Vorperiode`:''}. Wie oft passt die Periode hinein?`,
+ explain:`${a?`Nach der Vorperiode (${a} Stelle${a===1?'':'n'}) bleiben ${N-a} Stellen. `:''}${N-a} : ${L} = ${Math.floor((N-a-1)/L)} Rest ${pos} (im Karussell die ${pos}. Ziffer) → <b>${dig}</b>`};},
+/* ---- Raum 3: Primfaktor-Schleuse ---- */
+termOrPer(){let n,d;if(Math.random()<.4){const t=pick([[12,3],[15,3],[21,7],[24,3],[28,7],[30,3],[35,7],[45,9],[48,3],[60,3],[75,3],[14,7],[18,9],[6,3]]);d=t[0];const red=d/t[1];n=coprime(1,red-1,red)*t[1];}
+ else{d=pick([6,7,8,9,11,12,15,16,18,20,22,24,25,30,40,45,50]);n=ri(1,d-1);}
+ const g=gcd(n,d),rn=n/g,rd=d/g,t=isTerm(n,d);const f=factors(rd);
+ return {type:'choice',prompt:`Bricht dieser Bruch als Dezimalzahl ab – oder ist er periodisch?<div class="bigtxt">${frac(n,d)}</div>`,choices:[{label:'🛑 abbrechend',ok:t},{label:'🔁 periodisch',ok:!t}],
+ hint:'Kürze zuerst! Dann zerlege den Nenner in Primfaktoren. Nur 2 und 5? → abbrechend.',
+ explain:`${g>1?`Gekürzt: ${frac(n,d)} = ${frac(rn,rd)}. `:''}Nenner ${rd}${rd>1?' = '+f.join(' · '):''} → ${t?'nur Primfaktoren 2 und 5 → <b>abbrechend</b>':'enthält einen anderen Primfaktor als 2 und 5 → <b>periodisch</b>'}: ${dh(n,d)}`};},
+factorNenner(){const d=pick([12,18,20,24,28,30,36,40,45,48,50,60,72,75,80,90]);const fs=factors(d);const lab=f=>f.join(' · ');const opts=[lab(fs)];
+ const comps=[4,6,8,9,10,12,15].filter(c=>d%c===0&&c<d);if(comps.length){const c=pick(comps);const l=lab([c].concat(factors(d/c)).sort((a,b)=>a-b));if(opts.indexOf(l)<0)opts.push(l);}
+ for(const dd of shuffle([d-6,d-4,d-2,d+2,d+4,d+6,d*2,Math.floor(d/2)])){if(opts.length>=4)break;if(dd<4)continue;const l=lab(factors(dd));if(opts.indexOf(l)<0)opts.push(l);}
+ const other=fs.filter(x=>x!==2&&x!==5);
+ return {type:'choice',prompt:`Die Schleuse öffnet nur mit der richtigen <b>Primfaktorzerlegung</b> von<div class="bignum">${d}</div>`,choices:shuffle(opts).map(l=>({label:l,ok:l===opts[0]})),
+ hint:'Primfaktoren sind Primzahlen (2, 3, 5, 7, …). Multipliziere zur Kontrolle alle Faktoren.',
+ explain:`${d} = <b>${lab(fs)}</b><br>${other.length?`Der Faktor ${other[0]} steckt drin → gekürzte Brüche mit diesem Nenner sind <b>periodisch</b>.`:'Nur 2 und 5 → Brüche mit diesem Nenner sind <b>abbrechend</b>.'}`};},
+whichTerm(){const wantT=Math.random()<.5;let target=null;const pool=[];let g=0;
+ while((pool.length<3||!target)&&g++<800){const d=ri(3,40),n=ri(1,d-1);const item={n,d};if((target&&target.n===n&&target.d===d)||pool.some(x=>x.n===n&&x.d===d))continue;if(isTerm(n,d)===wantT){if(!target)target=item;}else if(pool.length<3)pool.push(item);}
+ const all=shuffle([target].concat(pool));
+ return {type:'choice',prompt:`Nur <b>einer</b> dieser Brüche ist ${wantT?'<b>abbrechend</b>':'<b>periodisch</b>'}. Welcher?`,choices:all.map(x=>({label:frac(x.n,x.d),ok:x===target})),
+ hint:'Kürzen, dann den Nenner zerlegen: nur 2 und 5 → abbrechend.',
+ explain:all.map(x=>{const g2=gcd(x.n,x.d);return `${frac(x.n,x.d)}${g2>1?` = ${frac(x.n/g2,x.d/g2)}`:''} → ${isTerm(x.n,x.d)?'abbrechend':'periodisch'}`;}).join('<br>')};},
+missingDen(){const n=ri(1,9);const ds=shuffle(Array.from({length:35},(_,i)=>i+6)).filter(d=>d!==n&&n%d!==0);const T=ds.filter(d=>isTerm(n,d)),N=ds.filter(d=>!isTerm(n,d));const good=T[0];const opts=shuffle([good].concat(N.slice(0,3)));
+ return {type:'choice',prompt:`Welcher Nenner macht <b>${frac(n,'■')}</b> zu einem <b>abbrechenden</b> Dezimalbruch?`+PROFI,choices:opts.map(d=>({label:String(d),ok:d===good})),
+ hint:'Denk ans Kürzen – manchmal verschwindet ein störender Faktor!',
+ explain:opts.map(d=>{const g2=gcd(n,d);return `${frac(n,d)}${g2>1?` = ${frac(n/g2,d/g2)}`:''} → ${isTerm(n,d)?'<b>abbrechend</b>':'periodisch'}`;}).join('<br>')};},
+/* ---- Raum 4: Endlos-Korridor ---- */
+toPerSimple(){const d=pick([3,3,9,9,11,11]);const n=coprime(1,2*d,d);
+ return {type:'input',prompt:`Schreibe als Dezimalzahl (mit Periodenstrich):<div class="bigtxt">${frac(n,d)}</div>`,answer:R(n,d),
+ hint:`Rechne ${n} : ${d} schriftlich, bis ein Rest zum zweiten Mal auftaucht.`,explain:`${n} : ${d} = <b>${dh(n,d)}</b> – die Reste wiederholen sich, also auch die Ziffern.`};},
+toPerPre(){const d=pick([6,12,15,18,22,24,30,36,44,45,60]);const n=coprime(1,d-1,d);const p=dec(n,d);
+ return {type:'input',prompt:`Schreibe als Dezimalzahl (mit Periodenstrich):<div class="bigtxt">${frac(n,d)}</div>`,answer:R(n,d),
+ hint:'Achtung: Hier gibt es eine Vorperiode – nicht alle Ziffern wiederholen sich!',
+ explain:`${n} : ${d} = <b>${dh(n,d)}</b>${p.pre?` (Vorperiode ${p.pre}, Periode ${p.per})`:''}`};},
+ninths(){const v=ri(0,2);let n,den;if(v===0){den=9;n=ri(1,8);}else if(v===1){den=99;n=ri(1,98);}else{den=999;n=ri(1,998);}
+ const pad=String(n).padStart(String(den).length,'0');const memo='<div class="memo">📝 Laborzettel: '+frac(1,9)+' = '+ovs('0,','1')+' · '+frac(1,99)+' = '+ovs('0,','01')+' · '+frac(1,999)+' = '+ovs('0,','001')+'</div>';
+ const r=R(n,den);const short=rh(r);
+ return {type:'input',prompt:`Nutze den Laborzettel! Schreibe als Dezimalzahl:<div class="bigtxt">${frac(n,den)}</div>${v?memo+PROFI:''}`,answer:r,
+ hint:`${frac(1,den)} = ${ovs('0,',pad.replace(/\d(?=\d)/g,'0').slice(0,-1)+'1')} – also ist ${frac(n,den)} das ${n}-Fache davon.`,
+ explain:`${frac(n,den)} = ${n} · ${frac(1,den)} = <b>${ovs('0,',pad)}</b>${short!==ovs('0,',pad)?` (gekürzt geschrieben: ${short})`:''}`};},
+mixedPer(){const w=ri(1,5);const pr=pick([[1,3],[2,3],[1,6],[5,6],[1,9],[4,9],[2,11],[1,12],[7,12],[4,15]]);const r=R(w*pr[1]+pr[0],pr[1]);
+ return {type:'input',prompt:`Schreibe als Dezimalzahl:<div class="bigtxt"><span class="mixed">${w}${frac(pr[0],pr[1])}</span></div>`,answer:r,
+ hint:`Die ${w} Ganzen stehen vor dem Komma. Wandle nur den Bruch um.`,explain:`${frac(pr[0],pr[1])} = ${dh(pr[0],pr[1])} → <b>${rh(r)}</b>`};},
+sevenths(){const pr=pick([[1,7],[2,7],[3,7],[4,7],[5,7],[6,7],[1,13],[2,13]]);
+ return {type:'input',prompt:`Die längste Schleife im Korridor! Schreibe als Dezimalzahl:<div class="bigtxt">${frac(pr[0],pr[1])}</div>`+PROFI,answer:R(pr[0],pr[1]),
+ hint:`Rechne geduldig ${pr[0]} : ${pr[1]} schriftlich und notiere alle Reste. Sobald ein Rest doppelt kommt, ist die Periode komplett.`,
+ explain:`${pr[0]} : ${pr[1]} = <b>${dh(pr[0],pr[1])}</b> – Periodenlänge ${dec(pr[0],pr[1]).per.length}.`};},
+/* ---- Raum 5: Zeit-Tresor ---- */
+comparePer(){const v=ri(0,4);let A,B;const PS=s=>{const p=P(s);return {html:partsHTML(p),r:partsRat(p)};};const FS=(n,d)=>({html:frac(n,d),r:R(n,d)});
+ if(v===0){const d=ri(1,8);A=PS(`0,|${d}`);B=PS(`0,${d}${d}`);}
+ else if(v===1){const pr=pick([[1,3],[2,3],[1,6],[5,6],[1,9],[7,9],[2,11],[5,12],[4,7]]);A=FS(pr[0],pr[1]);const q=Math.floor((2*pr[0]*100+pr[1])/(2*pr[1]));B={html:`0,${String(q).padStart(2,'0')}`,r:R(q,100)};}
+ else if(v===2){const a=ri(1,8);let b=ri(1,8);if(b===a)b=a+1;A=PS(`0,|${a}${b}`);B=PS(`0,${a}|${b}`);}
+ else if(v===3){const e=pick([()=>[PS('0,|9'),PS('1')],()=>[FS(1,3),PS('0,|3')],()=>[PS('0,|3'),PS('0,3|3')],()=>[FS(2,3),PS('0,|6')],()=>[PS('0,1|6'),FS(1,6)],()=>[PS('0,|45'),PS('0,4|54')]])();A=e[0];B=e[1];}
+ else{const a=ri(1,8),b=ri(1,8);A=PS(`0,${a}|${b}`);B=PS(`0,${a}${b}`);}
+ if(Math.random()<.5){const t=A;A=B;B=t;}const c=cmp(A.r,B.r);const sym=c<0?'<':c>0?'>':'=';
+ return {type:'choice',cls:'three',prompt:'Der Tresor fragt: Welches Zeichen gehört dazwischen?',big:`${A.html} <span style="color:var(--accent)">?</span> ${B.html}`,choices:['<','=','>'].map(s=>({label:s,ok:s===sym})),
+ hint:'Schreibe beide Zahlen mit vielen Nachkommastellen untereinander. Brüche erst umwandeln!',
+ explain:`${A.html} = ${expStr(A.r,7)}<br>${B.html} = ${expStr(B.r,7)}<br>Also: <b>${A.html} ${sym} ${B.html}</b>${v===3&&eq(A.r,R(1,1))||v===3&&eq(B.r,R(1,1))?'<br>Ja, wirklich: 0,‾9 ist genau 1!':''}`};},
+roundPer(){const pr=pick([[1,3],[2,3],[1,6],[5,6],[1,7],[3,7],[5,9],[7,9],[2,11],[5,11],[1,12],[7,12],[4,13],[19,6],[7,3]]);const n=pr[0],d=pr[1];const k=ri(1,3),T=pow10(k);const q=Math.floor((2*n*T+d)/(2*d));
+ const sol=`${Math.floor(q/T)},${String(q%T).padStart(k,'0')}`;const ex=expStr(R(n,d),k+2);const nd=+ex.split(',')[1][k];const names=['','Zehntel','Hundertstel','Tausendstel'];
+ return {type:'input',prompt:`Runde auf <b>${names[k]}</b>:<div class="bigtxt">${Math.random()<.5?frac(n,d):dh(n,d)}</div>`,answer:R(q,T),solution:sol,
+ hint:'Schreib die Zahl mit ein paar Nachkommastellen mehr aus. Dann wie gewohnt runden.',
+ explain:`${frac(n,d)} = ${ex}<br>Die Ziffer nach der ${names[k]}stelle ist <b>${nd}</b> → ${nd>=5?'aufrunden':'abrunden'} → <b>${sol}</b>`};},
+backFrac(){let opts,ex,lbl;if(Math.random()<.5){const d=ri(1,8);lbl=ovs('0,',d);opts=[[d,9,1],[d,10],[d,99],[d,90]];const r=R(d,9);ex=`${ovs('0,','1')} = ${frac(1,9)}, also ${lbl} = ${frac(d,9)}${r.d!==9?` = ${fr(r)}`:''}`;}
+ else{let ab=ri(10,98);while(ab%11===0)ab=ri(10,98);lbl=ovs('0,',ab);opts=[[ab,99,1],[ab,100],[ab,90],[ab,999]];const r=R(ab,99);ex=`${ovs('0,','01')} = ${frac(1,99)}, also ${lbl} = ${frac(ab,99)}${r.d!==99?` = ${fr(r)}`:''}`;}
+ return {type:'choice',prompt:`Verwandle zurück in einen Bruch:`+PROFI,big:lbl,choices:shuffle(opts).map(o=>({label:frac(o[0],o[1]),ok:!!o[2]})),
+ hint:`Denk an ${frac(1,9)} = ${ovs('0,','1')} und ${frac(1,99)} = ${ovs('0,','01')}.`,explain:ex};},
+sortPer(){const fam=pick([['0,3','0,33','0,|3','0,34','0,3|4','0,|34','0,333'],['0,6','0,66','0,|6','0,67','0,6|7','0,|65','0,656'],['0,45','0,|45','0,4|5','0,455','0,454','0,|4'],['0,27','0,|27','0,2|7','0,277','0,272','0,|2'],['0,1|6','0,16','0,17','0,|16','0,1|7','0,|1']]);
+ const items=[];for(const s of shuffle(fam)){if(items.length>=4)break;const p=P(s);const r=partsRat(p);if(items.some(x=>eq(x.r,r)))continue;items.push({r,s:partsHTML(p)});}
+ const asc=Math.random()<.6;const order=items.slice().sort((a,b)=>asc?cmp(a.r,b.r):cmp(b.r,a.r));
+ return {type:'sort',asc,items,order,prompt:`Ordne die Zahlen – beginne mit der <b>${asc?'kleinsten':'größten'}</b>!`,solution:order.map(x=>x.s).join(asc?' &lt; ':' &gt; '),
+ hint:'Schreibe alle Zahlen mit 5 Nachkommastellen aus, dann Stelle für Stelle vergleichen.',
+ explain:order.map(x=>`${x.s} = ${expStr(x.r,5)}`).join('<br>')};}
+};
+/* ---- Knobelschlüssel ---- */
+const RIDDLES=[
+ {q:`Ich bin ein Bruch mit dem Nenner 9. Als Dezimalzahl ist meine Periode die 5. Schreibe mich als Dezimalzahl!`,a:R(5,9),h:`${frac(1,9)} = ${ovs('0,','1')}`,e:`${frac(5,9)} = ${ovs('0,','5')}`},
+ {q:`Welche Zahl ist ${ovs('0,','9')} ganz genau?`,a:R(1,1),h:`${ovs('0,','1')} = ${frac(1,9)}. Was ist dann 9 · ${frac(1,9)}?`,e:`${ovs('0,','9')} = 9 · ${ovs('0,','1')} = 9 · ${frac(1,9)} = 1. Verblüffend, aber wahr!`},
+ {q:`Berechne: ${ovs('0,','3')} + ${ovs('0,','6')}`,a:R(1,1),h:'Schreibe beide Zahlen als Bruch.',e:`${frac(1,3)} + ${frac(2,3)} = 1`},
+ {q:`Welche Zahl ist dreimal so groß wie ${ovs('0,','1')}? Schreibe sie mit Periodenstrich.`,a:R(1,3),h:`${ovs('0,','1')} = ${frac(1,9)}`,e:`3 · ${frac(1,9)} = ${frac(3,9)} = ${frac(1,3)} = ${ovs('0,','3')}`},
+ {q:`Schreibe ${frac(1,99)} als Dezimalzahl.`,a:R(1,99),h:'Rechne 1 : 99 schriftlich – achte auf die Null!',e:`${frac(1,99)} = ${ovs('0,','01')}`},
+ {q:`Ich bin der kleinste Stammbruch (Zähler 1), dessen Periode <b>genau 2</b> Ziffern lang ist. Schreibe mich als Dezimalzahl!`,a:R(1,11),h:`Probiere ${frac(1,3)}, ${frac(1,6)}, ${frac(1,7)}, ${frac(1,9)}, ${frac(1,11)} …`,e:`${frac(1,3)}, ${frac(1,6)}, ${frac(1,9)} haben 1 Ziffer, ${frac(1,7)} hat 6 – erst ${frac(1,11)} = ${ovs('0,','09')} hat genau 2`},
+ {q:`Wie viele Ziffern hat die Periode von ${frac(1,13)}?`,a:R(6,1),h:'Rechne 1 : 13 schriftlich und beobachte die Reste.',e:`${frac(1,13)} = ${dh(1,13)} → 6 Ziffern`},
+ {q:`Welche Ziffer steht an der <b>100.</b> Nachkommastelle von ${frac(1,7)} = ${dh(1,7)}?`,a:R(8,1),h:'Die Periode hat 6 Ziffern. 100 : 6 = 16 Rest 4',e:'Nach 96 Stellen (16 Perioden) beginnt die Periode neu – die 4. Ziffer davon ist 8'},
+ {q:`Welche Zahl liegt genau in der Mitte zwischen ${ovs('0,','3')} und ${ovs('0,','6')}?`,a:R(1,2),h:`${ovs('0,','3')} = ${frac(1,3)} und ${ovs('0,','6')} = ${frac(2,3)}`,e:`Die Mitte zwischen ${frac(1,3)} und ${frac(2,3)} ist ${frac(1,2)} = 0,5`},
+ {q:`Wie viele Ziffern hat die <b>Vorperiode</b> von ${frac(1,12)}?`,a:R(2,1),h:'Rechne 1 : 12 schriftlich.',e:`${frac(1,12)} = ${dh(1,12)} → Vorperiode „08“ → 2 Ziffern`}
+];
+let riddlePool=[];
+function riddleTask(){if(!riddlePool.length)riddlePool=shuffle(RIDDLES);const r=riddlePool.pop();return {type:'input',riddle:true,prompt:r.q,answer:r.a,hint:r.h,explain:r.e+` → <b>${rh(r.a)}</b>`};}
+
+/* ================= Räume ================= */
+const ROOMS=[
+ {id:'teilung',name:'Die Teilungsmaschine',sub:'Schriftlich dividieren & Reste',c:'#ffb84d',ico:'<text x="60" y="76" text-anchor="middle" font-size="42" font-weight="800" stroke="none">÷</text>',gens:['divTerm','divTerm','divChoice','restNext','restNext','restMax']},
+ {id:'spiegel',name:'Das Spiegelkabinett',sub:'Periodenstrich & Schreibweise',c:'#4de1d2',ico:'<text x="60" y="78" text-anchor="middle" font-size="36" font-weight="800" stroke="none">3</text><line x1="49" y1="46" x2="71" y2="46" stroke-width="4"/>',gens:['writeBar','writeBar','readBar','barChoice','periodLen','digitAt']},
+ {id:'schleuse',name:'Die Primfaktor-Schleuse',sub:'Abbrechend oder periodisch?',c:'#ff6fae',ico:'<text x="60" y="70" text-anchor="middle" font-size="22" font-weight="800" stroke="none">2 · 5</text>',gens:['termOrPer','termOrPer','factorNenner','whichTerm','missingDen']},
+ {id:'korridor',name:'Der Endlos-Korridor',sub:'Brüche → periodische Dezimalzahlen',c:'#b79bff',ico:'<path d="M60 62 C52 50 38 50 38 62 C38 74 52 74 60 62 C68 50 82 50 82 62 C82 74 68 74 60 62Z" fill="none" stroke-width="5"/>',gens:['toPerSimple','toPerSimple','toPerPre','ninths','mixedPer','sevenths']},
+ {id:'tresor',name:'Der Zeit-Tresor',sub:'Vergleichen, Runden, Zurück-verwandeln',c:'#7dff9b',ico:'<circle cx="60" cy="62" r="17" fill="none" stroke-width="4"/><line x1="60" y1="62" x2="60" y2="49" stroke-width="4"/><circle cx="60" cy="62" r="3"/>',gens:['comparePer','comparePer','roundPer','backFrac','sortPer']}
+];
+const CODE=[1,4,2,8,5,7];
+const BADGES={first:['🔓','Erste Tür','Einen Raum geöffnet'],combo5:['🔁','Schleifenflitzer:in','5 richtige am Stück'],combo10:['♾️','Endlos-Combo','10 richtige am Stück'],perfect:['💎','Fehlerfrei','Alle Aufgaben eines Raums richtig'],nohint:['🧠','Ohne Laborzettel','3 Sterne ohne Tipp'],riddle3:['🗝️','Schlüsselmeister:in','3 Knobelschlüssel geknackt'],allstars:['🌟','Laborleitung','Überall 3 Sterne'],escape:['🚪','Ausgebrochen!','Der Zeitschleife entkommen']};
+const RANKS=[[0,'Praktikant:in'],[80,'Laborassistent:in'],[200,'Forscher:in'],[350,'Ingenieur:in'],[550,'Professor:in'],[800,'Zeitmeister:in']];
+function rankOf(xp){let i=0;RANKS.forEach((r,k)=>{if(xp>=r[0])i=k;});return {i,name:RANKS[i][1],next:RANKS[i+1]?RANKS[i+1][0]:null,base:RANKS[i][0]};}
+const roomById=id=>ROOMS.find(p=>p.id===id);
+const finaleUnlocked=()=>ROOMS.filter(p=>(S.stars[p.id]||0)>=1).length>=4;
+function award(k){if(S.badges.indexOf(k)>=0)return;S.badges.push(k);save();const b=BADGES[k];const t=document.createElement('div');t.className='toast';t.textContent=`🏅 Abzeichen: ${b[0]} ${b[1]}`;document.body.appendChild(t);setTimeout(()=>{if(t.parentNode)t.remove();},3000);}
+function confetti(n){const cols=['#ffb84d','#ff6fae','#4de1d2','#3ddc97','#b79bff'];for(let i=0;i<n;i++){const d=document.createElement('i');d.className='conf';d.style.left=Math.random()*100+'vw';d.style.background=pick(cols);d.style.animationDuration=(1.8+Math.random()*1.8)+'s';d.style.animationDelay=Math.random()*.5+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),4500);}}
+function nudge(msg){const o=$('.nudge');if(o)o.remove();const d=document.createElement('div');d.className='nudge';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>{if(d.parentNode)d.remove();},2800);}
+window.addEventListener('error',e=>{nudge('⚠️ Technischer Fehler: '+(e.message||'unbekannt'));});
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* ================= Bildschirme ================= */
+let run=null,cur=null,timerId=null;
+// Safari-sicher: alte Rückmeldung weg + Neuzeichnen erzwingen
+function prep(){document.querySelectorAll('.sheet').forEach(e=>e.remove());requestAnimationFrame(()=>{app.style.webkitTransform='translateZ(0)';app.style.transform='translateZ(0)';void app.offsetHeight;requestAnimationFrame(()=>{app.style.webkitTransform='';app.style.transform='';});});}
+function stopTimer(){if(timerId){clearInterval(timerId);timerId=null;}}
+function show(html){stopTimer();prep();app.innerHTML=html;window.scrollTo(0,0);}
+
+function renderStart(){run=null;cur=null;
+ show(`<div class="hero">${IKO}${LOOPY}<h1>Escape: Die Zeitschleife</h1><div class="sub">Ein Mathe-Escape-Room zu periodischen Dezimalbrüchen</div></div>
+ <div class="story">⏰ <b>Alarm im Labor von Professorin Periodika!</b> Bei einem Experiment mit einer geheimnisvollen Division ist etwas schiefgelaufen: Das ganze Labor steckt in einer <b>Zeitschleife</b>. Alles wiederholt sich – immer und immer und immer wieder … genau wie die Ziffern von ${ovs('0,','3')} = 0,3333…<br><br>
+ Laborroboter <b>LOOPY</b> hilft dir. Öffne die <b>fünf Labortüren</b>, sammle <b>Sterne ⭐</b> und die Ziffern des <b>Fluchtcodes</b>. Die goldenen <b>Knobelschlüssel 🗝️</b> bringen doppelte Punkte. Hast du vier Türen geöffnet, kannst du die <b>Zeitmaschine</b> starten und ausbrechen!</div>
+ <div class="namebox">${S.name?`<button class="btn go" data-a="map">Weiter als ${esc(S.name)} ⏩</button><button class="btn ghost" data-a="reset">Neue:r Forscher:in</button>`:`<input id="nm" maxlength="20" placeholder="Dein Name" autocomplete="off"><button class="btn go" data-a="go">Ins Labor ⏩</button>`}</div>
+ <details class="teacher"><summary>ℹ️ Für Lehrkräfte</summary>Gamifizierte Sprinter-Übung zu <b>abbrechenden und periodischen Dezimalbrüchen</b> (Kl. 6, GY NRW): schriftliche Division und Reste, Periodenstrich/Vorperiode, Kriterium über die Primfaktoren des gekürzten Nenners, Brüche → periodische Dezimalzahlen (inkl. Neuntel-Muster), Vergleichen, Runden und (Profi) Zurückverwandeln reinperiodischer Zahlen.<br>
+ Pro Raum 7 Zufallsaufgaben + 1 Knobelschlüssel. ⭐⭐⭐ ab 7/8, ⭐⭐ ab 5/8, ⭐ ab 3/8. Eingabe über ein eigenes Tastenfeld mit <b>Periodenstrich-Taste ‾</b>; jede wertgleiche Schreibweise wird akzeptiert, die Rückmeldung zeigt die kürzeste. Der Fluchtcode 142857 ist die Periode von 1/7 – ein schönes Gesprächsthema für die Sicherung. Fortschritt wird nur lokal auf dem iPad gespeichert.</details>${FOOT}`);
+ const nm=$('#nm');if(nm)nm.addEventListener('keydown',e=>{if(e.key==='Enter')act('go');});}
+
+function codePanel(){return `<div class="codepanel"><span class="lbl">🔐 Fluchtcode</span>${CODE.map((c,i)=>{const on=i<5?(S.stars[ROOMS[i].id]||0)>=1:S.escaped;return `<span class="cd ${on?'on':''}">${on?c:'?'}</span>`;}).join('')}</div>`;}
+function renderMap(){run=null;cur=null;const rk=rankOf(S.xp);const pct=rk.next?Math.round((S.xp-rk.base)/(rk.next-rk.base)*100):100;const unl=finaleUnlocked();
+ let h=`<div class="maphead">${LOOPY}<div class="rk"><div class="nm">${esc(S.name)} · ${rk.name}</div><div class="muted">⚡ ${S.xp} XP${rk.next?` · noch ${rk.next-S.xp} XP bis ${RANKS[rk.i+1][1]}`:' · Höchster Rang!'}</div><div class="xpbar"><div style="width:${pct}%"></div></div></div></div>${codePanel()}
+ <h2 style="margin-top:18px">🧪 Laborplan – welche Tür knackst du?</h2><div class="rooms">`;
+ ROOMS.forEach((Rm,i)=>{const st=S.stars[Rm.id]||0;h+=`<button class="rcard" data-a="room" data-p="${Rm.id}">${doorSVG(Rm,st)}<div class="rn">${i+1}. ${Rm.name}</div><div class="rs">${Rm.sub}</div><div class="stars">${[1,2,3].map(k=>`<span class="${k<=st?'on':''}">★</span>`).join('')}</div></button>`;});
+ h+=`<button class="rcard fin ${unl?'':'locked'}" data-a="finale">${machineSVG(S.finaleWon?1:0).replace('class="machine"','width="110" height="110"')}<div class="rn">Die Zeitmaschine</div><div class="rs">Finale & Fluchtcode</div>${unl?`<div class="lockinfo">${S.escaped?'🚪 Ausgebrochen – nochmal?':S.finaleWon?'🔐 Code eingeben!':'⚡ Bereit zum Start!'}</div>`:'<div class="lockinfo">🔒 Erst 4 Türen öffnen (mind. ⭐)</div>'}</button></div>
+ <div class="section"><b>🏅 Abzeichen (${S.badges.length}/${Object.keys(BADGES).length})</b><div class="badges">${Object.keys(BADGES).map(k=>{const b=BADGES[k];return `<div class="badge ${S.badges.indexOf(k)>=0?'':'off'}"><span class="bi">${b[0]}</span><span><b>${b[1]}</b><br><small class="muted">${b[2]}</small></span></div>`;}).join('')}</div></div>
+ <div class="row"><button class="btn go" data-a="cert">📜 Mein Zertifikat</button><button class="btn ghost" data-a="home">🏠 Start</button></div>${FOOT}`;
+ show(h);}
+
+function startRoom(id){const Rm=roomById(id);const gens=shuffle(Rm.gens).slice(0,7);while(gens.length<7)gens.push(pick(Rm.gens));const tasks=shuffle(gens).map(g=>G[g]());tasks.push(riddleTask());
+ run={mode:'room',Rm,tasks,i:0,correct:0,streak:0,hintUsed:false,res:[],xp0:S.xp};renderTask();}
+function startFinale(){if(!finaleUnlocked()){nudge('🔒 Öffne erst vier Labortüren (mindestens ⭐).');return;}if(S.finaleWon&&!S.escaped)return renderCode();
+ run={mode:'finale',tasks:[finaleTask(0)],i:0,correct:0,streak:0,energy:0,need:10,lives:3,res:[],xp0:S.xp,timeLeft:0};renderTask();}
+function finaleTask(k){if(k>0&&k%4===3)return riddleTask();const Rm=pick(ROOMS);return G[pick(Rm.gens)]();}
+const LOOPY_SAYS=['Energie wird geladen … rechne schnell!','Die Schleife beginnt gleich von vorn!','Bei richtigen Antworten in Serie lädt es doppelt!','Fast geschafft – nicht nachlassen!','Bzzzt! Die Periode muss stimmen!'];
+
+function renderTask(){const t=run.tasks[run.i];cur={tok:[],pm:false,seq:[],answered:false};const fin=run.mode==='finale';
+ let h=`<div class="topbar"><button class="btn ghost" data-a="map" aria-label="Zur Karte">✕</button><div class="ttl">${fin?'⚡ Finale: Die Zeitmaschine':`${run.Rm.name} · ${run.i+1}/${run.tasks.length}`}</div><span class="chip">⚡ <b id="xpv">${S.xp}</b></span><span class="chip ${run.streak>=3?'hot':''}" id="stk">🔁 ${run.streak}</span></div>`;
+ if(!fin)h+=`<div class="dots">${run.tasks.map((x,k)=>`<i class="${k<run.i?(run.res[k]?'ok':'no'):k===run.i?'cur':''} ${x.riddle?'rid':''}"></i>`).join('')}</div>`;
+ h+=`<div class="stage"><div>`;
+ if(fin)h+=`<div class="card" style="margin-bottom:14px"><div class="arena">${machineSVG(run.energy/run.need)}<div style="flex:1"><div class="bubble">🤖 LOOPY: ${pick(LOOPY_SAYS)}</div><div style="margin-top:8px;font-weight:800">Energie: <span id="en">${Math.round(run.energy/run.need*100)} %</span></div><div class="lives" id="lives">Zeitschleifen übrig: ${'♾️'.repeat(run.lives)}${'✖️'.repeat(3-run.lives)}</div><div class="timer"><div id="tbar"></div></div></div></div></div>`;
+ h+=`<div class="card ${t.riddle?'riddle':''}">${t.riddle?'<div class="rtag">🗝️ Knobelschlüssel · doppelte XP</div>':''}<div class="prompt">${t.prompt}</div>${t.big?`<div class="bignum">${t.big}</div>`:''}${t.visual?`<div class="visual">${t.visual}</div>`:''}<div id="hintbox" class="hintbox hidden">💡 ${t.hint||''}</div></div></div>`;
+ h+=`<div class="answer">${answerUI(t)}<div class="actions">${t.hint?'<button class="btn ghost" data-a="hint" id="hintBtn">💡 Tipp <small>−5 XP</small></button>':''}${t.type!=='choice'?'<button class="btn go" data-a="check">Prüfen ✓</button>':''}</div></div></div>`;
+ show(h);
+ if(t.type==='sort')drawSort();
+ if(fin){run.timeLeft=40;const tb=$('#tbar');timerId=setInterval(()=>{run.timeLeft=Math.max(0,run.timeLeft-0.25);if(tb){tb.style.width=(run.timeLeft/40*100)+'%';if(run.timeLeft<10)tb.style.background='var(--bad)';}if(run.timeLeft<=0)stopTimer();},250);}}
+
+function answerUI(t){
+ if(t.type==='input')return `<div class="display" id="disp"><span class="ph">?</span></div><div class="keypad">${['7','8','9','⌫','4','5','6','C','1','2','3','P','0',','].map(k=>k==='P'?`<button class="key per" data-k="P" id="perKey"><b>‾</b>Periode</button>`:`<button class="key ${k===','?'cm':''} ${k==='⌫'?'del':''} ${k==='C'?'clr':''} ${k==='0'||k===','?'zero':''}" data-k="${k}">${k}</button>`).join('')}</div>`;
+ if(t.type==='choice')return `<div class="choices ${t.cls||''}">${t.choices.map((c,i)=>`<button class="choice" data-c="${i}">${c.label}</button>`).join('')}</div>`;
+ if(t.type==='sort')return `<div class="sortlbl"><span>${t.asc?'kleinste':'größte'} ➜</span><span>➜ ${t.asc?'größte':'kleinste'}</span></div><div class="slots" id="slots"></div><div class="pool" id="pool"></div><div class="muted center" style="font-size:15px">Tippe <b>alle</b> Zahlen der Reihe nach an, dann „Prüfen“. Antippen in der Reihe nimmt eine Zahl zurück.</div>`;
+ return '';}
+/* ---- Eingabe mit Periodenstrich ---- */
+function parseTok(tok){let I='',pre='',per='',comma=false;for(const x of tok){if(x.c){comma=true;continue;}if(!comma)I+=x.d;else if(x.p)per+=x.d;else pre+=x.d;}return {I,pre,per,comma};}
+function updDisp(){const d=$('#disp');if(!d)return;const q=parseTok(cur.tok);let s='';
+ if(cur.tok.length){s=q.I+(q.comma?','+q.pre+(q.per?`<span class="ov">${q.per}</span>`:''):'');}
+ d.innerHTML=(s?`<span>${s}</span>`:'<span class="ph">?</span>')+(cur.pm?'<span class="pm">‾ Periode an</span>':'');
+ const pk=$('#perKey');if(pk)pk.classList.toggle('on',cur.pm);}
+function key(k){if(cur.answered)return;const tok=cur.tok;const q=parseTok(tok);
+ if(k==='⌫'){tok.pop();if(!tok.some(x=>x.p))cur.pm=cur.pm&&tok.some(x=>x.c);}
+ else if(k==='C'){cur.tok=[];cur.pm=false;}
+ else if(k===','){if(q.comma)return;if(!q.I)tok.push({d:'0'});tok.push({c:true});}
+ else if(k==='P'){if(!q.comma){nudge('Die Periode steht immer hinter dem Komma – tippe zuerst ein Komma.');return;}cur.pm=!cur.pm;}
+ else{if(q.per&&!cur.pm){nudge('Nach der Periode kommt keine Ziffer mehr. Tippe ‾ oder ⌫.');return;}
+  if(!q.comma&&q.I.length>=4)return;if(q.comma&&q.pre.length+q.per.length>=10)return;
+  if(!q.comma&&q.I==='0'){tok.pop();}
+  tok.push({d:k,p:cur.pm&&q.comma});}
+ updDisp();sfx.tap();}
+function drawSort(){const t=run.tasks[run.i];$('#slots').innerHTML=cur.seq.length?cur.seq.map((idx,k)=>`<button class="tile" data-s="${k}">${t.items[idx].s}</button>`).join(`<span class="lt">${t.asc?'&lt;':'&gt;'}</span>`):'<span class="ph">Hier entsteht deine Reihe …</span>';
+ $('#pool').innerHTML=t.items.map((it,i)=>`<button class="tile ${cur.seq.indexOf(i)>=0?'used':''}" data-t="${i}">${it.s}</button>`).join('');}
+function shakeEl(sel){const el=$(sel);if(!el)return;el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');}
+
+function check(){const t=run.tasks[run.i];if(cur.answered)return;let ok=false;
+ if(t.type==='input'){const q=parseTok(cur.tok);if(!q.I){shakeEl('#disp');nudge('✏️ Tippe zuerst deine Antwort ins Zahlenfeld.');return;}
+  if(t.check)ok=t.check(q);else ok=eq(partsRat(q),t.answer);}
+ else if(t.type==='sort'){if(cur.seq.length<t.items.length){shakeEl('#slots');const f=t.items.length-cur.seq.length;nudge(`👆 Lege erst alle Zahlen in die Reihe – es ${f===1?'fehlt':'fehlen'} noch ${f}.`);return;}ok=cur.seq.every((idx,k)=>eq(t.items[idx].r,t.order[k].r));}
+ resolve(ok);}
+function choose(i){const t=run.tasks[run.i];if(cur.answered)return;const ok=t.choices[i].ok;document.querySelectorAll('.choice').forEach((b,k)=>{if(t.choices[k].ok)b.classList.add('right');else if(k===i)b.classList.add('wrong');});resolve(ok);}
+function resolve(ok){cur.answered=true;stopTimer();const t=run.tasks[run.i];const fin=run.mode==='finale';let gain=0,extra='';run.res[run.i]=ok;
+ if(ok){run.correct++;run.streak++;if(run.streak>S.bestCombo)S.bestCombo=run.streak;gain=(t.riddle?25:10)+Math.min(10,(run.streak-1)*2);
+  if(fin&&run.timeLeft>0){gain+=5;extra='⚡ Tempo-Bonus! ';}
+  if(t.riddle){S.riddles++;confetti(12);}
+  if(fin){const add=run.streak>=3?2:1;run.energy=Math.min(run.need,run.energy+add);const e=$('#energy');if(e){const c=2*Math.PI*52;e.setAttribute('stroke-dashoffset',(c*(1-run.energy/run.need)).toFixed(1));}const en=$('#en');if(en)en.textContent=Math.round(run.energy/run.need*100)+' %';extra+=`🔋 +${add*10} % Energie!`;sfx.zap();setTimeout(sfx.ok,160);}else sfx.ok();
+ }else{run.streak=0;sfx.bad();if(fin){run.lives--;const l=$('#lives');if(l)l.textContent='Zeitschleifen übrig: '+'♾️'.repeat(run.lives)+'✖️'.repeat(3-run.lives);extra='⏪ Die Zeit springt zurück – eine Schleife verbraucht!';}}
+ S.xp+=gain;save();
+ if(run.streak===5)award('combo5');if(run.streak===10)award('combo10');if(S.riddles>=3)award('riddle3');
+ const xv=$('#xpv');if(xv)xv.textContent=S.xp;const sk=$('#stk');if(sk){sk.textContent='🔁 '+run.streak;sk.classList.toggle('hot',run.streak>=3);}
+ const praise=pick(['Richtig!','Volltreffer!','Klasse!','Stark!','Genau so!','Perfekt!']);
+ const sol=t.solution||(t.answer?rh(t.answer):'');
+ const el=document.createElement('div');el.className='sheet '+(ok?'ok':'bad');
+ el.innerHTML=`<div class="sheet-in"><div class="fbtitle"><span>${ok?'✅ '+praise+(run.streak>=3?` 🔁 Serie ×${run.streak}`:''):'❌ Leider nicht.'}</span>${gain?`<span class="xp">+${gain} XP</span>`:''}</div>${extra?`<div class="sol">${extra}</div>`:''}${!ok&&t.type==='input'?`<div class="sol">Richtig wäre: <b>${sol}</b></div>`:''}${!ok&&t.type==='sort'?`<div class="sol">Richtig: <b>${t.solution}</b></div>`:''}<div class="expl">${t.explain}</div><button class="btn go" data-a="next">Weiter ➜</button></div>`;
+ document.body.appendChild(el);void el.offsetHeight;}
+function hint(){const hb=$('#hintbox');if(!hb||!hb.classList.contains('hidden'))return;hb.classList.remove('hidden');run.hintUsed=true;S.xp=Math.max(0,S.xp-5);save();const xv=$('#xpv');if(xv)xv.textContent=S.xp;const b=$('#hintBtn');if(b)b.disabled=true;}
+function next(){if(run.mode==='finale'){if(run.energy>=run.need)return finaleEnd(true);if(run.lives<=0)return finaleEnd(false);run.tasks.push(finaleTask(run.tasks.length));run.i++;return renderTask();}
+ run.i++;if(run.i>=run.tasks.length)roomEnd();else renderTask();}
+
+function roomEnd(){const Rm=run.Rm,c=run.correct,n=run.tasks.length;const st=c>=7?3:c>=5?2:c>=3?1:0;const wasUnl=finaleUnlocked();const had=(S.stars[Rm.id]||0)>=1;S.stars[Rm.id]=Math.max(S.stars[Rm.id]||0,st);save();
+ if(st>0)award('first');if(c===n)award('perfect');if(st===3&&!run.hintUsed)award('nohint');if(ROOMS.every(p=>S.stars[p.id]===3))award('allstars');
+ const idx=ROOMS.indexOf(Rm);const newDigit=st>0&&!had;
+ const msg=st===3?'Großartig! Diese Tür steht sperrangelweit offen!':st===2?'Tür geöffnet! Schaffst du beim nächsten Versuch drei Sterne?':st===1?'Die Tür klemmt noch etwas, aber sie ist auf!':'Die Tür bleibt zu … Nutze die Tipps und versuch es nochmal!';
+ if(st===3){sfx.door();confetti(36);}else if(st>0)sfx.door();
+ const xpGain=S.xp-run.xp0;run=null;
+ show(`<div class="result">${doorSVG(Rm,st)}<h1>${Rm.name}${st?' geöffnet!':''}</h1><div class="bigstars">${[1,2,3].map(k=>`<span class="${k<=st?'on':''}">★</span>`).join('')}</div>
+ <div style="font-size:24px;margin:10px 0"><b>${c} von ${n}</b> richtig · <span style="color:var(--accent)">+${xpGain} XP</span></div><div class="muted" style="font-size:19px">${msg}</div>
+ ${newDigit?`<div class="story center">🔐 Hinter der Tür klebt ein Zettel mit einer Ziffer des Fluchtcodes: <span class="cd on" style="width:56px">${CODE[idx]}</span></div>`:''}
+ ${!wasUnl&&finaleUnlocked()?'<div class="story center">⚡ <b>Die Zeitmaschine ist bereit!</b> Du kannst sie jetzt im Laborplan starten.</div>':''}
+ <div class="row"><button class="btn go" data-a="map">🧪 Zum Laborplan</button><button class="btn" data-a="room" data-p="${Rm.id}">🔁 Nochmal (neue Aufgaben)</button></div></div>`);}
+function finaleEnd(win){const gained=S.xp-run.xp0;run=null;
+ if(win){S.finaleWon=true;S.xp+=50;save();sfx.win();renderCode('⚡ Die Zeitmaschine ist voll geladen! (+50 XP) Jetzt fehlt nur noch der Fluchtcode …');return;}
+ show(`<div class="result"><div style="width:150px;margin:0 auto">${machineSVG(0)}</div><h1>⏪ Die Zeit springt zurück …</h1><div class="story">Alle Zeitschleifen sind verbraucht, die Maschine hat nicht genug Energie. Aber keine Sorge – in einer Zeitschleife darf man es immer wieder versuchen! (+${gained} XP gesammelt)</div>
+ <div class="row"><button class="btn go" data-a="finale">⚡ Neuer Versuch</button><button class="btn" data-a="map">🧪 Laborplan</button></div></div>`);}
+function renderCode(msg){run=null;cur={code:'',tries:cur&&cur.tries||0};
+ const known=CODE.map((c,i)=>i<5&&(S.stars[ROOMS[i].id]||0)>=1?c:'?').join(' ');
+ show(`<div class="result">${LOOPY.replace('class="loopy"','class="loopy" style="width:110px"')}<h1>🔐 Der Fluchtcode</h1>${msg?`<div class="story center">${msg}</div>`:''}
+ <div class="story">Die Tür der Zeitmaschine verlangt einen <b>6-stelligen Code</b>. Deine gefundenen Ziffern: <b style="font-family:Menlo,monospace;font-size:24px">${known}</b><br>Die letzte Ziffer musst du selbst herausfinden. LOOPY flüstert: <i>„Professorin Periodika liebt eine ganz bestimmte Periode …“</i></div>
+ <div class="codeslots" id="codeslots"></div>
+ <div class="codepad">${['1','2','3','4','5','6','7','8','9','0'].map(k=>`<button class="key" data-cd="${k}">${k}</button>`).join('')}</div>
+ <div class="row"><button class="btn ghost" data-cd="⌫">⌫ Löschen</button><button class="btn go" data-a="opencode">🚪 Tür öffnen</button></div>
+ <div class="row"><button class="btn ghost" data-a="map">🧪 Laborplan</button></div></div>`);drawCode();}
+function drawCode(){const s=$('#codeslots');if(!s)return;let h='';for(let i=0;i<6;i++)h+=`<span class="cd ${cur.code[i]?'on':''}">${cur.code[i]||''}</span>`;s.innerHTML=h;}
+function codeKey(k){if(k==='⌫')cur.code=cur.code.slice(0,-1);else if(cur.code.length<6)cur.code+=k;sfx.tap();drawCode();}
+function openCode(){if(cur.code.length<6){nudge('Der Code hat 6 Ziffern.');shakeEl('#codeslots');return;}
+ if(cur.code===CODE.join('')){S.escaped=true;save();award('escape');return escapeScreen();}
+ cur.tries++;sfx.bad();shakeEl('#codeslots');cur.code='';drawCode();
+ const tips=['❌ Falsch! Tipp: Alle Ziffern zusammen sind die Periode eines Bruchs mit dem Zähler 1.','❌ Noch nicht! Tipp: Der Nenner ist 7. Rechne 1 : 7 schriftlich!',`❌ LOOPY verrät es dir: ${frac(1,7)} = ${dh(1,7)}`];
+ const el=document.createElement('div');el.className='sheet bad';el.innerHTML=`<div class="sheet-in"><div class="fbtitle"><span>${tips[Math.min(cur.tries,3)-1]}</span></div><button class="btn go" data-a="closesheet" style="margin-top:12px">Nochmal versuchen</button></div>`;document.body.appendChild(el);}
+function escapeScreen(){sfx.win();confetti(45);
+ show(`<div class="result"><div style="font-size:90px">🚪✨</div><h1>Ausgebrochen!</h1><div class="story">Die Tür springt auf, die Uhren ticken wieder normal – die Zeitschleife ist durchbrochen! Professorin Periodika ist begeistert, <b>${esc(S.name)}</b>.<br><br>Hast du es bemerkt? Der Fluchtcode <b>142857</b> ist genau die Periode von ${frac(1,7)} = ${dh(1,7)}.<br>🤓 Knobel-Bonus: Rechne mal ${frac(2,7)}, ${frac(3,7)} … – was passiert mit den Ziffern?</div>
+ <div class="row"><button class="btn go" data-a="cert">📜 Zertifikat ansehen</button><button class="btn" data-a="map">🧪 Laborplan</button></div></div>`);}
+
+function renderCert(){run=null;const rk=rankOf(S.xp);const totalStars=ROOMS.reduce((s,p)=>s+(S.stars[p.id]||0),0);
+ let hsh=11;const str=S.name+'|'+S.xp+'|'+totalStars+'|'+S.badges.length+'|'+(S.escaped?1:0);for(const ch of str)hsh=(hsh*31+ch.charCodeAt(0))%1679616;const code='ZS-'+hsh.toString(36).toUpperCase().padStart(4,'0');
+ show(`<div class="cert"><div style="font-size:50px">⏰</div><h1>Labor-Zertifikat</h1><div style="font-size:19px">Hiermit wird bestätigt, dass</div><div style="font-size:36px;font-weight:800;margin:6px 0">${esc(S.name)}</div><div style="font-size:19px">im Escape-Room <b>„Die Zeitschleife“</b> den Rang</div><div style="font-size:28px;font-weight:800;color:#7a4a00;margin:6px 0">${rk.name}</div><div style="font-size:19px">erreicht hat.</div>
+ <table>${ROOMS.map(p=>`<tr><td>${p.name}</td><td>${'⭐'.repeat(S.stars[p.id]||0)||'–'}</td></tr>`).join('')}<tr><td>Zeitschleife</td><td>${S.escaped?'🚪 entkommen':S.finaleWon?'⚡ Maschine geladen':'noch gefangen'}</td></tr><tr><td>Abzeichen</td><td>${S.badges.map(b=>BADGES[b][0]).join(' ')||'–'} (${S.badges.length}/${Object.keys(BADGES).length})</td></tr><tr><td>Erfahrung</td><td><b>${S.xp} XP</b> · beste Serie: ${S.bestCombo}</td></tr></table>
+ <div>${new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div><div class="code">${code}</div><div style="font-size:14px;margin-top:6px">Zeige dieses Zertifikat deiner Lehrkraft.</div>${FOOT}</div>
+ <div class="row"><button class="btn go" data-a="map">🧪 Zurück zum Laborplan</button></div>`);}
+
+/* ================= Steuerung ================= */
+function act(a,b){
+ switch(a){
+ case 'go':{const v=($('#nm')||{}).value;const name=(v||'').trim();if(!name){shakeEl('#nm');nudge('Gib zuerst deinen Namen ein.');return;}S.name=name.slice(0,20);save();sfx.win();renderMap();break;}
+ case 'map':if(run&&run.mode==='room'&&run.i>0&&!confirm('Raum verlassen? Dieser Versuch wird nicht gewertet (XP bleiben).'))return;renderMap();break;
+ case 'home':renderStart();break;
+ case 'reset':if(confirm('Wirklich neu starten? Alle Sterne, XP und Abzeichen auf diesem iPad werden gelöscht.')){S=fresh();save();renderStart();}break;
+ case 'room':startRoom(b.getAttribute('data-p'));break;
+ case 'finale':startFinale();break;
+ case 'cert':renderCert();break;
+ case 'check':check();break;
+ case 'hint':hint();break;
+ case 'next':next();break;
+ case 'opencode':openCode();break;
+ case 'closesheet':document.querySelectorAll('.sheet').forEach(e=>e.remove());break;}}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('button');if(!b||b.id==='muteBtn')return;
+ const a=b.getAttribute('data-a');if(a)return act(a,b);
+ const k=b.getAttribute('data-k');if(k!=null)return key(k);
+ const cd=b.getAttribute('data-cd');if(cd!=null)return codeKey(cd);
+ const c=b.getAttribute('data-c');if(c!=null)return choose(+c);
+ const ti=b.getAttribute('data-t');if(ti!=null){if(cur.answered)return;const i=+ti;if(cur.seq.indexOf(i)<0){cur.seq.push(i);sfx.tap();drawSort();}return;}
+ const si=b.getAttribute('data-s');if(si!=null){if(cur.answered)return;cur.seq.splice(+si,1);drawSort();}});
+document.addEventListener('keydown',e=>{if(e.target&&e.target.tagName==='INPUT')return;
+ if(cur&&cur.code!==undefined&&!run){if(/^[0-9]$/.test(e.key))codeKey(e.key);else if(e.key==='Backspace')codeKey('⌫');else if(e.key==='Enter')openCode();return;}
+ if(!run||!cur)return;const t=run.tasks[run.i];
+ if(cur.answered){if(e.key==='Enter'){e.preventDefault();next();}return;}
+ if(t.type==='input'){if(/^[0-9]$/.test(e.key))key(e.key);else if(e.key===','||e.key==='.')key(',');else if(e.key==='p'||e.key==='P')key('P');else if(e.key==='Backspace'){e.preventDefault();key('⌫');}else if(e.key==='Enter')check();}
+ else if(t.type==='choice'&&/^[1-4]$/.test(e.key)&&t.choices[+e.key-1])choose(+e.key-1);
+ else if(e.key==='Enter')check();});
+
+renderStart();
+</script>
+</body>
+</html>
